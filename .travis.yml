@@ -11,7 +11,7 @@ before_script:
   - composer require --dev "satooshi/php-coveralls ~0.6"
 
 script:
-  - ./vendor/bin/phpunit --configuration phpunit-report.xml.dist
+  - ./vendor/bin/phpunit --coverage-text --coverage-clover=build/logs/clover.xml
 
 after_script:
   - php ./vendor/bin/coveralls -v
