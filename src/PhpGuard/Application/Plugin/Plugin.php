@@ -40,15 +40,9 @@ abstract class Plugin implements PluginInterface,LoggerAwareInterface
         $this->watchers[] = $watcher;
     }
 
-    private function matchFile($file)
+    public function getWatchers()
     {
-        /* @var Watcher $watcher */
-        foreach($this->watchers as $watcher){
-            if($watcher->matchFile($file)){
-                return true;
-            }
-        }
-        return false;
+        return $this->watchers;
     }
 
     /**
@@ -76,6 +70,8 @@ abstract class Plugin implements PluginInterface,LoggerAwareInterface
         $resolver = new OptionsResolver();
         $this->setDefaultOptions($resolver);
         $this->options = $resolver->resolve($options);
+
+        return $this;
     }
 
     public function getOptions()
@@ -91,5 +87,16 @@ abstract class Plugin implements PluginInterface,LoggerAwareInterface
     public function log($message,$context = array(),$level=LogLevel::INFO)
     {
         $this->logger->log($level,$message,$context);
+    }
+
+    private function matchFile($file)
+    {
+        /* @var Watcher $watcher */
+        foreach($this->watchers as $watcher){
+            if($watcher->matchFile($file)){
+                return true;
+            }
+        }
+        return false;
     }
 }
