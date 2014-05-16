@@ -2,5 +2,6 @@
 *.phar
 vendor
 composer.lock
-*.xml
 build
+phpguard.yml
+phpunit.xml
