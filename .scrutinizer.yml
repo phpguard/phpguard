@@ -1,0 +1,12 @@
+imports:
+    - javascript
+    - php
+
+tools:
+  php_code_sniffer:
+    filter:
+      excluded-paths: [ spec/*, vendor/*, tests/* ]
+
+  php_analyzer:
+    filter:
+      excluded-paths: [ spec/*, vendor/*, tests/* ]
