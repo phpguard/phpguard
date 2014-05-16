@@ -22,7 +22,7 @@ class MockPlugin extends Plugin
         // TODO: Implement runAll() method.
     }
 
-    public function run(ChangeSetEvent $event)
+    public function run(array $paths = array())
     {
         // TODO: Implement run() method.
     }

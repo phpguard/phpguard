@@ -59,15 +59,10 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $container = $this->container;
 
         foreach($container->getByPrefix('guard.plugins') as $plugin){
-            $plugin->run($event->getChangeSet());
+            $paths = $plugin->getMatchedFiles($event->getChangeSet());
+            if(count($paths) > 0){
+                $plugin->run($paths);
+            }
         }
-    }
-
-    /**
-     * @return Guard
-     */
-    private function getGuard()
-    {
-        return $this->container->get('guard');
     }
 }

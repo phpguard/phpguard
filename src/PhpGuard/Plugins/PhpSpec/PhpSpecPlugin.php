@@ -28,14 +28,9 @@ class PhpSpecPlugin extends Plugin
 
     }
 
-    public function run(ChangeSetEvent $event)
+    public function run(array $paths = array())
     {
-        $files = $this->matchFiles($event->getFiles());
-
-        if(!empty($files)){
-
-        }
-        foreach($files as $file)
+        foreach($paths as $file)
         {
             $this->log(
                 '<info>start to run <comment>phpspec</comment> for <comment>{file}</comment></info>',

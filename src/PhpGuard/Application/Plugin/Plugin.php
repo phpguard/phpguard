@@ -12,6 +12,7 @@ namespace PhpGuard\Application\Plugin;
  */
 use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\Watcher;
+use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Util\PathUtil;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -51,12 +52,14 @@ abstract class Plugin implements PluginInterface,LoggerAwareInterface
     }
 
     /**
-     * @param $files
+     * @param ChangeSetEvent $event
+     *
      * @return array|bool
      */
-    protected function matchFiles($files)
+    public function getMatchedFiles(ChangeSetEvent $event)
     {
         $filtered = array();
+        $files = $event->getFiles();
         foreach($files as $file){
             if($this->matchFile($file)){
                 if(!$file instanceof SplFileInfo){
@@ -65,11 +68,7 @@ abstract class Plugin implements PluginInterface,LoggerAwareInterface
                 $filtered[] = $file;
             }
         }
-        if(!empty($filtered)){
-            return $filtered;
-        }else{
-            return false;
-        }
+        return $filtered;
     }
 
     public function setOptions(array $options = array())

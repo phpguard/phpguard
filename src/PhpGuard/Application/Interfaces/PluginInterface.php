@@ -22,9 +22,11 @@ interface PluginInterface
 
     public function runAll();
 
-    public function run(ChangeSetEvent $event);
+    public function run(array $paths = array());
 
     public function setOptions(array $options = array());
 
     public function setDefaultOptions(OptionsResolverInterface $resolver);
+
+    public function getMatchedFiles(ChangeSetEvent $event);
 }
