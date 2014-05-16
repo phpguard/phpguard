@@ -1,0 +1,17 @@
+language: php
+
+php: [5.3.3, 5.3, 5.4, 5.5]
+
+before_script:
+  - "pyrus install pecl/inotify && pyrus build pecl/inotify"
+  - "echo \"extension=inotify.so\" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini"
+  - composer selfupdate
+  - export COMPOSER_ROOT_VERSION=2.0.0-RC3
+  - composer install --prefer-source
+  - composer require --dev "satooshi/php-coveralls ~0.6"
+
+script:
+  - ./vendor/bin/phpunit --configuration phpunit-report.xml.dist
+
+after_script:
+  - php ./vendor/bin/coveralls -v

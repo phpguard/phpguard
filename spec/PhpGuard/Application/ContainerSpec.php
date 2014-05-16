@@ -1,0 +1,126 @@
+<?php
+
+namespace spec\PhpGuard\Application;
+
+use PhpSpec\ObjectBehavior;
+use Prophecy\Argument;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+
+include __DIR__ . '/ContainerAwareMock.php';
+
+class ContainerSpec extends ObjectBehavior
+{
+    function it_is_initializable()
+    {
+        $this->shouldHaveType('PhpGuard\Application\Container');
+    }
+
+    function it_should_implement_the_ContainerInterface()
+    {
+        $this->shouldImplement('PhpGuard\Application\Interfaces\ContainerInterface');
+    }
+
+    function it_stores_parameters()
+    {
+        $this->setParameter('some','value');
+        $this->getParameter('some')->shouldReturn('value');
+    }
+
+    function it_returns_null_value_for_unexisting_parameter()
+    {
+        $this->getParameter('none')->shouldReturn(null);
+    }
+
+    function it_returns_custom_default_value_for_unexisting_parameter_if_provided()
+    {
+        $this->getParameter('none','value')->shouldReturn('value');
+    }
+
+    function it_should_tell_when_parameter_are_already_defined()
+    {
+        $this->setParameter('some','value');
+        $this->hasParameter('some')->shouldReturn(true);
+    }
+
+    function it_stores_services($service)
+    {
+        $this->set('name',$service);
+        $this->get('name')->shouldReturn($service);
+    }
+
+    function it_provides_a_way_to_retrieve_services_by_prefix($service1, $service2, $service3)
+    {
+        $this->set('collection1.serv1', $service1);
+        $this->set('collection1.serv2', $service2);
+        $this->set('collection2.serv3', $service3);
+
+        $this->getByPrefix('collection1')->shouldReturn(array($service1, $service2));
+    }
+
+    function it_should_tell_if_service_registered_or_not($service)
+    {
+        $this->set('name',$service);
+        $this->has('name')->shouldReturn(true);
+        $this->has('none')->shouldReturn(false);
+    }
+    function it_throws_exception_when_trying_to_set_an_invalid_service()
+    {
+        $this->shouldThrow('InvalidArgumentException')
+            ->duringSet('id','none');
+    }
+
+    function it_throws_exception_when_trying_to_get_unexisting_service()
+    {
+        $this->shouldThrow('InvalidArgumentException')
+            ->duringGet('none');
+    }
+
+    function it_should_set_container_when_service_is_an_implement_of_ContainerInterface(\ContainerAwareMock $mock)
+    {
+        $mock->setContainer($this)->shouldBeCalled();
+
+        $this->set('mock',$mock);
+        $this->get('mock')->shouldReturn($mock);
+    }
+
+    function it_should_set_logger_when_service_is_an_implement_of_LoggerAwareInterface(LoggerInterface $logger, LoggerAwareInterface $aware)
+    {
+        $aware->setLogger($logger)
+            ->shouldBeCalled();
+
+        $this->set('guard.logger',$logger);
+        $this->set('some.logger_aware',$aware);
+        $this->get('some.logger_aware');
+    }
+
+    function it_evaluates_factory_function_set_as_service()
+    {
+        $this->set('random_number', function () { return rand(); });
+        $number1 = $this->get('random_number');
+        $number2 = $this->get('random_number');
+
+        $number1->shouldBeInteger();
+        $number2->shouldBeInteger();
+
+        $number2->shouldNotBe($number1);
+    }
+
+    function it_evaluates_factory_function_only_once_for_shared_services()
+    {
+        $this->setShared('random_number', function () { return rand(); });
+        $number1 = $this->get('random_number');
+        $number2 = $this->get('random_number');
+
+        $number2->shouldBe($number1);
+    }
+
+    function it_throws_when_set_shared_service_with_an_invalid_type()
+    {
+        $this->shouldThrow('InvalidArgumentException')
+            ->duringSetShared('id','foo');
+    }
+
+
+}

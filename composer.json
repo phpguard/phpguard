@@ -1,0 +1,30 @@
+{
+    "name": "phpguard/development",
+    "description": "PHP PhpGuard Development Package",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Anthonius Munthi",
+            "email": "me@itstoni.com"
+        }
+    ],
+    "prefer-stable": true,
+    "require": {
+        "symfony/console":  "*",
+        "symfony/finder":   "*",
+        "symfony/process":  "*",
+        "monolog/monolog":  "*",
+        "phpguard/listen":  "0.1.*@dev",
+        "symfony/options-resolver": "*"
+    },
+    "require-dev": {
+        "phpspec/phpspec": "~2.0",
+        "phpunit/phpunit": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "PhpGuard": "src/"
+        }
+    },
+    "bin": ["bin/phpguard"]
+}

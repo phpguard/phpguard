@@ -1,0 +1,12 @@
+phpspec:
+    options:
+        format: pretty
+        ansi: true
+    watch:
+        - { pattern: #^src.*\.php$# }
+        - { pattern: #^spec.*\.php$# }
+
+phpunit:
+    watch:
+        - { pattern: #^src.*\.php$# }
+        - { pattern: #^tests.*\.php$# }
