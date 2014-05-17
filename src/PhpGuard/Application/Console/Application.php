@@ -56,7 +56,8 @@ class Application extends BaseApplication
     {
         $container = new Container();
         $guard = new PhpGuard();
-        $guard->setupServices($container);
+        $guard->setContainer($container);
+        $guard->setupServices();
         $guard->loadConfiguration();
 
         $this->guard = $guard;
@@ -77,6 +78,11 @@ class Application extends BaseApplication
         $container->set('phpguard.ui.output',$output);
         $container->set('phpguard.ui.application',$this);
         return parent::doRun($input, $output);
+    }
+
+    public function setContainer(ContainerInterface $container)
+    {
+        $this->container = $container;
     }
 
     /**

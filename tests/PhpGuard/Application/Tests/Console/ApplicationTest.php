@@ -11,36 +11,17 @@
 
 namespace PhpGuard\Application\Tests\Console;
 
-use PhpGuard\Application\Console\Application;
-use Symfony\Component\Console\Input\StringInput;
-use Symfony\Component\Console\Tester\ApplicationTester;
-use PhpGuard\Application\Console\Shell;
+use PhpGuard\Application\Tests\FunctionalTestCase;
 
-class ShellTest extends Shell
+class ApplicationTest extends FunctionalTestCase
 {
-    public function run()
+    public function testShouldStartTest()
     {
-        $this->getOutput()->write('shell is running');
-    }
-}
-
-class ApplicationTest extends \PHPUnit_Framework_TestCase
-{
-    public function getApplication()
-    {
-        $app = new Application();
-        $container = $app->getContainer();
-
-        $container->set('guard.ui.shell',function($c){
-            return new ShellTest($c);
-        });
-        $app->setAutoExit(false);
-        return $app;
-    }
-
-    public function testRun()
-    {
-        $this->markTestIncomplete();
+        $tester = $this->getApplicationTester();
+        $exit = $tester->run(array('start'));
+        $display = $tester->getDisplay(true);
+        $this->assertEquals(0,$exit);
+        $this->assertContains(getcwd(),$display);
     }
 }
  

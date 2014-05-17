@@ -30,6 +30,7 @@ use Psr\Log\LogLevel;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\GenericEvent;
+use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -40,37 +41,14 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 class PhpGuard
 {
     const VERSION = '1.0.0-dev';
-
-    private $watchers = array();
-
     /**
      * @var Container
      */
     private $container;
 
-    private $options;
-
-    public function addWatcher($definition)
-    {
-        $watcher = new Watcher();
-        foreach($definition as $name => $value){
-            if(!$watcher->hasOption($name)){
-                throw new ConfigurationException(sprintf(
-                    'Watcher do not have "%s" configuration.',
-                    $name
-                ));
-            }
-            call_user_func(array($watcher,'setOption'),$name,$value);
-
-        }
-        $this->watchers[] = $watcher;
-        return $watcher;
-    }
-
-    public function getWatchers()
-    {
-        return $this->watchers;
-    }
+    private $options = array(
+        'ignores' => array(),
+    );
 
     /**
      * @return Container
@@ -80,15 +58,19 @@ class PhpGuard
         return $this->container;
     }
 
-    public function setupServices(ContainerInterface $container)
+    public function setContainer(ContainerInterface $container)
     {
+        $this->container = $container;
+    }
+
+    public function setupServices()
+    {
+        $container = $this->container;
         $container->set('phpguard',$this);
 
         $container->setShared('phpguard.config',function(){
             return new Configuration();
         });
-
-        $container->set('phpguard.ui.output',new ConsoleOutput());
 
         $container->setShared('phpguard.dispatcher', function ($c) {
             $dispatcher = new EventDispatcher;
@@ -131,9 +113,6 @@ class PhpGuard
     public function setupListen()
     {
         $container = $this->container;
-        $container->setShared('phpguard.listen.adapter',function($c){
-            return Listen::getDefaultAdapter();
-        });
 
         $container->setShared('phpguard.listen.listener',function($c){
             $listener = Listen::to(getcwd());
@@ -171,10 +150,9 @@ class PhpGuard
     {
         /* @var \PhpGuard\Listen\Listener */
         $listener = $this->container->get('phpguard.listen.listener');
-        if(isset($this->options['ignores'])){
-            foreach($this->options['ignores'] as $ignored){
-                $listener->ignores($ignored);
-            }
+
+        foreach($this->options['ignores'] as $ignored){
+            $listener->ignores($ignored);
         }
 
         $this->log('<info>Starting to watch at <comment>{path}</comment></info>',array('path'=>getcwd()));
@@ -191,8 +169,12 @@ class PhpGuard
     {
         $resolver = new OptionsResolver();
         $this->setDefaultOptions($resolver);
-
         $this->options = $resolver->resolve($options);
+    }
+
+    public function getOptions()
+    {
+        return $this->options;
     }
 
     private function setDefaultOptions(OptionsResolverInterface $resolver)
@@ -202,10 +184,11 @@ class PhpGuard
         ));
 
         $resolver->setNormalizers(array(
-            'ignores' => function($value){
-                    if(!is_array($value)){
-                        return array($value);
-                    }
+            'ignores' => function(Options $options,$value){
+                if(!is_array($value)){
+                    $value = array($value);
+                }
+                return $value;
             }
         ));
     }
@@ -214,6 +197,8 @@ class PhpGuard
     {
         /* @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->container->get('phpguard.logger');
-        $logger->log($level,$message,$context);
+        if($logger){
+            $logger->log($level,$message,$context);
+        }
     }
 }
