@@ -10,6 +10,7 @@ namespace PhpGuard\Application\Plugin;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+use PhpGuard\Application\ContainerAware;
 use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
@@ -24,7 +25,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  * Class Plugin
  *
  */
-abstract class Plugin implements PluginInterface,LoggerAwareInterface
+abstract class Plugin extends ContainerAware implements PluginInterface,LoggerAwareInterface
 {
     protected $watchers = array();
 
@@ -34,6 +35,8 @@ abstract class Plugin implements PluginInterface,LoggerAwareInterface
      * @var LoggerInterface
      */
     protected $logger;
+
+    public function configure(){}
 
     public function addWatcher(Watcher $watcher)
     {

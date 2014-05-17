@@ -70,7 +70,7 @@ class Shell extends ContainerAware
         if ($this->hasReadline) {
             readline_read_history($this->history);
             readline_completion_function(array($this, 'autocompleter'));
-            readline_callback_handler_install($this->getPrompt(),array($this,'readlineCallback'));
+            $this->installReadlineCallback();
         }
         $this->running = true;
         stream_set_blocking(STDIN,0);
@@ -78,7 +78,7 @@ class Shell extends ContainerAware
             $r = array(STDIN);
             $w = array();
             $e = array();
-            $n = stream_select($r,$w,$e,1);
+            $n = @stream_select($r,$w,$e,2);
             if ($n && in_array(STDIN, $r)) {
                 // read a character, will call the callback when a newline is entered
                 if($this->hasReadline){
@@ -112,11 +112,29 @@ class Shell extends ContainerAware
         if(!empty($changeset)){
             $this->output->writeln("");
             $this->output->writeln('<info>Start to running commands</info>');
+
+            $this->unsetStreamBlocking();
             $event = new ChangeSetEvent($listener,$changeset);
             $this->container->get('phpguard.dispatcher')
                 ->dispatch(PhpGuardEvents::POST_EVALUATE,new EvaluateEvent($event));
-            $this->output->write($this->getPrompt());
+            $this->setStreamBlocking();
         }
+    }
+
+    private function unsetStreamBlocking()
+    {
+        // normalize console behavior first
+        stream_set_blocking(STDIN,1);
+        if($this->hasReadline){
+            readline_callback_handler_remove();
+        }
+    }
+
+    private function setStreamBlocking()
+    {
+        // bring back shell behavior
+        stream_set_blocking(STDIN,0);
+        $this->installReadlineCallback();
     }
 
     public function readlineCallback($return)
@@ -126,8 +144,16 @@ class Shell extends ContainerAware
             $this->exitShell();
         }else{
             $this->doRunCommand($return);
-            readline_callback_handler_install($this->getPrompt(),array($this,'readlineCallback'));
+            $this->installReadlineCallback();
         }
+    }
+
+    private function installReadlineCallback()
+    {
+        if(!$this->hasReadline){
+            return;
+        }
+        readline_callback_handler_install($this->getPrompt(),array($this,'readlineCallback'));
     }
 
     public function isRunning()
@@ -137,10 +163,12 @@ class Shell extends ContainerAware
 
     private function doRunCommand($command)
     {
+        $this->unsetStreamBlocking();
         readline_add_history($command);
         readline_write_history($this->history);
         $input = new StringInput($command);
         return $this->getApplication()->run($input, $this->output);
+        $this->setStreamBlocking();
     }
 
     /**
@@ -157,7 +185,7 @@ Welcome to the <info>PhpGuard</info> (<comment>{$this->application->getVersion()
 At the prompt, type <comment>help</comment> for some help,
 or <comment>list</comment> to get a list of available commands.
 
-To exit the shell, type <comment>^D</comment>.
+To exit the shell, type <comment>quit</comment>.
 To start monitoring, type <comment>Enter</comment>
 
 EOF;
@@ -218,29 +246,6 @@ EOF;
         }
 
         return $list;
-    }
-
-    private function setupReadline()
-    {
-
-    }
-
-    /**
-     * Reads a single line from standard input.
-     *
-     * @return string The single line from standard input
-     */
-    private function readline()
-    {
-        if ($this->hasReadline) {
-            $line = readline($this->getPrompt());
-        } else {
-            $this->output->write($this->getPrompt());
-            $line = fgets(STDIN, 1024);
-            $line = (!$line && strlen($line) == 0) ? false : rtrim($line);
-        }
-
-        return $line;
     }
 
     public function getProcessIsolation()

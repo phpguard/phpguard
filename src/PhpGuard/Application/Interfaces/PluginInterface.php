@@ -29,4 +29,6 @@ interface PluginInterface
     public function setDefaultOptions(OptionsResolverInterface $resolver);
 
     public function getMatchedFiles(EvaluateEvent $event);
+
+    public function configure();
 }

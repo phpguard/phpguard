@@ -42,8 +42,8 @@ class Application extends BaseApplication
 
     public function __construct()
     {
-        $this->initialize();
         parent::__construct('phpguard',PhpGuard::VERSION);
+        $this->initialize();
     }
 
     public function run(InputInterface $input = null, OutputInterface $output = null)
@@ -58,6 +58,7 @@ class Application extends BaseApplication
             return;
         }
         $container = new Container();
+        $container->set('phpguard.ui.application',$this);
         $guard = new PhpGuard();
         $guard->setContainer($container);
         $guard->setupServices();
@@ -79,7 +80,6 @@ class Application extends BaseApplication
         $this->setDispatcher($container->get('phpguard.dispatcher'));
         $container->set('phpguard.ui.input',$input);
         $container->set('phpguard.ui.output',$output);
-        $container->set('phpguard.ui.application',$this);
 
         $command = $this->getCommandName($input);
         if($command==''){

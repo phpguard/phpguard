@@ -12,6 +12,7 @@ namespace PhpGuard\Application\Listener;
  */
 
 use PhpGuard\Application\ContainerAware;
+use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -61,7 +62,15 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     public function postLoad(GenericEvent $event)
     {
         /* @var PhpGuard $guard */
+        /* @var PluginInterface $plugin */
+
         $guard = $event->getSubject();
         $guard->setupListen();
+
+
+        $plugins = $guard->getContainer()->getByPrefix('phpguard.plugins');
+        foreach($plugins as $plugin){
+            $plugin->configure();
+        }
     }
 }
