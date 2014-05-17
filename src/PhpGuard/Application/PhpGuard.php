@@ -140,8 +140,11 @@ class PhpGuard
         $dispatcher = $this->container->get('phpguard.dispatcher');
         $dispatcher->dispatch(PhpGuardEvents::CONFIG_PRE_LOAD,$event);
 
+        if(!is_file($configFile=getcwd().'/phpguard.yml')){
+            $configFile = getcwd().'/phpguard.yml.dist';
+        }
         $this->container->get('phpguard.config')
-            ->compileFile(getcwd().'/phpguard.yml')
+            ->compileFile($configFile)
         ;
         $dispatcher->dispatch(PhpGuardEvents::CONFIG_POST_LOAD,$event);
     }
