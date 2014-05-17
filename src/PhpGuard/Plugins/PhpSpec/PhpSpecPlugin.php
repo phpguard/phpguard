@@ -14,10 +14,20 @@ namespace PhpGuard\Plugins\PhpSpec;
 
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Listen\Event\ChangeSetEvent;
+use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\Process\Process;
 
 class PhpSpecPlugin extends Plugin
 {
+    public function configure()
+    {
+        /* @var \PhpGuard\Application\Console\Application $application */
+        $container = $this->container;
+        $application = $container->get('phpguard.ui.application');
+        $application->add(new DescribeCommand());
+    }
+
     public function getName()
     {
         return 'phpspec';
@@ -57,7 +67,7 @@ class PhpSpecPlugin extends Plugin
     private function getPhpSpecCommand()
     {
         $options = array(
-            '--no-interaction'
+            //'--no-interaction'
         );
 
         if($this->options['ansi']){
