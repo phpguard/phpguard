@@ -11,23 +11,21 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Listen\Adapter\InotifyAdapter;
+use PhpGuard\Listen\Events;
+use PhpGuard\Listen\Event\ChangeSetEvent;
+use PhpGuard\Listen\Listen;
+
 use Monolog\Logger;
-use PhpGuard\Application\Console\LogHandler as LogerHandler;
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Event\EvaluateEvent;
-use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Interfaces\ContainerInterface;
-use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\Listener\ConfigurationListener;
-use PhpGuard\Listen\Adapter\Inotify\InotifyAdapter;
-use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Application\Listener\ChangesetListener;
-use PhpGuard\Listen\Events;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
-use \PhpGuard\Listen\Listen;
 use PhpGuard\Plugins\PHPUnit\PHPUnitPlugin;
+
 use Psr\Log\LogLevel;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\OptionsResolver\Options;
@@ -85,7 +83,7 @@ class PhpGuard
 
         $container->setShared('phpguard.logger.handler',function($c){
             $handler = new Console\LogHandler($c->getParameter('phpguard.log_level'));
-            $handler->setLevel(LogLevel::DEBUG);
+            $handler->setLevel(LogLevel::INFO);
             return $handler;
         });
 
@@ -151,7 +149,7 @@ class PhpGuard
 
     public function start()
     {
-        /* @var \PhpGuard\Listen\Listener */
+        /* @var \PhpGuard\Listen\Listener $listener */
         $listener = $this->container->get('phpguard.listen.listener');
 
         foreach($this->options['ignores'] as $ignored){
@@ -164,8 +162,11 @@ class PhpGuard
 
     public function listen(ChangeSetEvent $event)
     {
-        $this->getContainer()->get('phpguard.dispatcher')
-            ->dispatch(PhpGuardEvents::POST_EVALUATE,new EvaluateEvent($event));
+        $files = $event->getFiles();
+        if(!empty($files)){
+            $this->getContainer()->get('phpguard.dispatcher')
+                ->dispatch(PhpGuardEvents::POST_EVALUATE,new EvaluateEvent($event));
+        }
     }
 
     public function setOptions(array $options=array())

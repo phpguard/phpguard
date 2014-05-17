@@ -54,6 +54,9 @@ class Application extends BaseApplication
 
     private function initialize()
     {
+        if($this->initialized){
+            return;
+        }
         $container = new Container();
         $guard = new PhpGuard();
         $guard->setContainer($container);
@@ -67,7 +70,7 @@ class Application extends BaseApplication
 
     private function loadCommands()
     {
-        $this->add(new StartCommand());
+        //$this->add(new StartCommand());
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)
@@ -77,6 +80,16 @@ class Application extends BaseApplication
         $container->set('phpguard.ui.input',$input);
         $container->set('phpguard.ui.output',$output);
         $container->set('phpguard.ui.application',$this);
+
+        $command = $this->getCommandName($input);
+        if($command==''){
+            /* @var Shell $shell */
+            $shell = $container->get('phpguard.ui.shell');
+            if(!$shell->isRunning()){
+                return $shell->run();
+            }
+            return 0;
+        }
         return parent::doRun($input, $output);
     }
 

@@ -24,7 +24,7 @@ class LogHandler extends AbstractProcessingHandler implements ContainerAwareInte
 {
     private $container;
 
-    public function __construct($level = LogLevel::DEBUG,$bubble=true)
+    public function __construct($level = LogLevel::INFO,$bubble=true)
     {
         parent::__construct($level,$bubble);
     }
@@ -55,7 +55,6 @@ class LogHandler extends AbstractProcessingHandler implements ContainerAwareInte
         }
         $output = $this->container->get('phpguard.ui.output');
         $time = $record['datetime'];
-        $output->writeln(sprintf('<info>[%s][%s.%s]</info> %s',$time->format('H:i:s'),$record['channel'],$record['level_name'],$message));
-
+        $output->writeln(sprintf('<info>[%s][%s]</info> %s',$time->format('H:i:s'),$record['level_name'],$message));
     }
 }

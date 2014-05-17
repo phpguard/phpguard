@@ -12,9 +12,13 @@ namespace PhpGuard\Application\Console;
  */
 
 use PhpGuard\Application\ContainerAware;
+use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerAwareInterface;
 use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\PhpGuardEvents;
+use PhpGuard\Listen\Event\ChangeSetEvent;
+use PhpGuard\Listen\Listen;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\ProcessBuilder;
@@ -37,6 +41,8 @@ class Shell extends ContainerAware
     private $hasReadline;
     private $processIsolation = false;
 
+    private $running = false;
+
     /**
      * @param ContainerInterface $container
      */
@@ -58,16 +64,17 @@ class Shell extends ContainerAware
         $this->application->setAutoExit(false);
         $this->application->setCatchExceptions(true);
 
+        $this->output->writeln($this->getHeader());
+        $php = null;
+
         if ($this->hasReadline) {
             readline_read_history($this->history);
             readline_completion_function(array($this, 'autocompleter'));
             readline_callback_handler_install($this->getPrompt(),array($this,'readlineCallback'));
         }
-
-        $this->output->writeln($this->getHeader());
-        $php = null;
-
-        while ($this->prompting) {
+        $this->running = true;
+        stream_set_blocking(STDIN,0);
+        while ($this->running) {
             $r = array(STDIN);
             $w = array();
             $e = array();
@@ -76,26 +83,62 @@ class Shell extends ContainerAware
                 // read a character, will call the callback when a newline is entered
                 if($this->hasReadline){
                     readline_callback_read_char();
+                }else{
+                    $this->output->write($this->getPrompt());
+                    $line = fgets(STDIN, 1024);
+                    $line = (!$line && strlen($line) == 0) ? false : rtrim($line);
+                    if(false==$line){
+                        $this->doRunCommand($line);
+                    }
                 }
             }else{
-                //$this->getOutput()->writeln('TIMEOUT');
+                //$this->container->get('phpguard')->evaluate();
+                $this->evaluate();
             }
+        }
+    }
+
+    public function evaluate()
+    {
+        // TODO: should place this somewhere else!!!!
+        /* @var \PhpGuard\Listen\Listener $listener */
+        $listener = $this->container->get('phpguard.listen.listener');
+        if(!$listener->getAdapter()){
+            $listener->setAdapter(Listen::getDefaultAdapter());
+        }
+        $listener->getAdapter()->evaluate();
+        $changeset = $listener->getAdapter()->getChangeSet();
+
+        if(!empty($changeset)){
+            $this->output->writeln("");
+            $this->output->writeln('<info>Start to running commands</info>');
+            $event = new ChangeSetEvent($listener,$changeset);
+            $this->container->get('phpguard.dispatcher')
+                ->dispatch(PhpGuardEvents::POST_EVALUATE,new EvaluateEvent($event));
+            $this->output->write($this->getPrompt());
         }
     }
 
     public function readlineCallback($return)
     {
-        if(false===$return){
-            readline_callback_handler_remove();
-            $this->prompting = false;
+        if(false==trim($return)){
+            $this->running = false;
+            $this->exitShell();
         }else{
             $this->doRunCommand($return);
             readline_callback_handler_install($this->getPrompt(),array($this,'readlineCallback'));
         }
     }
 
+    public function isRunning()
+    {
+        return $this->running;
+    }
+
     private function doRunCommand($command)
     {
+        readline_add_history($command);
+        readline_write_history($this->history);
         $input = new StringInput($command);
         return $this->getApplication()->run($input, $this->output);
     }
@@ -212,5 +255,11 @@ EOF;
         if ($this->processIsolation && !class_exists('Symfony\\Component\\Process\\Process')) {
             throw new \RuntimeException('Unable to isolate processes as the Symfony Process Component is not installed.');
         }
+    }
+
+    public function exitShell()
+    {
+        $this->output->writeln('');
+        $this->output->writeln('Exit PhpGuard. bye... bye...!');
     }
 }
