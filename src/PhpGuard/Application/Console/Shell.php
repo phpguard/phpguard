@@ -13,16 +13,12 @@ namespace PhpGuard\Application\Console;
 
 use PhpGuard\Application\ContainerAware;
 use PhpGuard\Application\Event\EvaluateEvent;
-use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\Interfaces\ContainerAwareInterface;
+use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
 use Symfony\Component\Console\Input\StringInput;
-use Symfony\Component\Process\PhpExecutableFinder;
-use Symfony\Component\Process\ProcessBuilder;
-use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * A Shell wraps an PhpGuard to add shell capabilities to it.
@@ -118,6 +114,7 @@ class Shell extends ContainerAware
             $this->container->get('phpguard.dispatcher')
                 ->dispatch(PhpGuardEvents::POST_EVALUATE,new EvaluateEvent($event));
             $this->setStreamBlocking();
+            $this->installReadlineCallback();
         }
     }
 
@@ -134,26 +131,20 @@ class Shell extends ContainerAware
     {
         // bring back shell behavior
         stream_set_blocking(STDIN,0);
-        $this->installReadlineCallback();
+        //$this->installReadlineCallback();
     }
 
     public function readlineCallback($return)
     {
-        if(false==trim($return)){
-            $this->running = false;
-            $this->exitShell();
-        }else{
-            $this->doRunCommand($return);
-            $this->installReadlineCallback();
-        }
+        $this->doRunCommand($return);
+        $this->installReadlineCallback();
     }
 
     private function installReadlineCallback()
     {
-        if(!$this->hasReadline){
-            return;
+        if($this->hasReadline){
+            readline_callback_handler_install($this->getPrompt(),array($this,'readlineCallback'));
         }
-        readline_callback_handler_install($this->getPrompt(),array($this,'readlineCallback'));
     }
 
     public function isRunning()
@@ -163,12 +154,28 @@ class Shell extends ContainerAware
 
     private function doRunCommand($command)
     {
-        $this->unsetStreamBlocking();
-        readline_add_history($command);
-        readline_write_history($this->history);
-        $input = new StringInput($command);
-        return $this->getApplication()->run($input, $this->output);
-        $this->setStreamBlocking();
+        $command = trim($command);
+        if($command=='quit'){
+            $this->exitShell();
+        }
+
+        if($command=='' || $command=='run-all'){
+            $this->unsetStreamBlocking();
+            /* @var PluginInterface $plugin */
+            $plugins = $this->container->getByPrefix('phpguard.plugins');
+            foreach($plugins as $plugin){
+                $plugin->runAll();
+            }
+            $this->setStreamBlocking();
+        }else{
+            $this->unsetStreamBlocking();
+            readline_add_history($command);
+            readline_write_history($this->history);
+            $input = new StringInput($command);
+            $retVal = $this->getApplication()->run($input, $this->output);
+            $this->setStreamBlocking();
+            return $retVal;
+        }
     }
 
     /**
@@ -186,7 +193,7 @@ At the prompt, type <comment>help</comment> for some help,
 or <comment>list</comment> to get a list of available commands.
 
 To exit the shell, type <comment>quit</comment>.
-To start monitoring, type <comment>Enter</comment>
+To run all commands, type <comment>Control+D</comment> or <comment>run-all</comment>
 
 EOF;
     }
@@ -199,7 +206,7 @@ EOF;
     protected function getPrompt()
     {
         // using the formatter here is required when using readline
-        return $this->output->getFormatter()->format($this->application->getName().' > ');
+        return $this->output->getFormatter()->format("\n".$this->application->getName().'> ');
     }
 
     protected function getOutput()
@@ -227,10 +234,12 @@ EOF;
         if ($info['point'] !== $info['end']) {
             return true;
         }
-
         // task name?
         if (false === strpos($text, ' ') || !$text) {
-            return array_keys($this->application->all());
+            $commands = array_keys($this->application->all());
+            $commands[] = 'quit';
+            $commands[] = 'run-all';
+            return $commands;
         }
 
         // options and arguments?
@@ -242,7 +251,10 @@ EOF;
 
         $list = array('--help');
         foreach ($command->getDefinition()->getOptions() as $option) {
-            $list[] = '--'.$option->getName();
+            $opt = '--'.$option->getName();
+            if(!in_array($opt,$list)){
+                $list[] = $opt;
+            }
         }
 
         return $list;
@@ -265,6 +277,7 @@ EOF;
     public function exitShell()
     {
         $this->output->writeln('');
-        $this->output->writeln('Exit PhpGuard. bye... bye...!');
+        $this->output->writeln('Exit PhpGuard. <comment>bye... bye...!</comment>');
+        exit(0);
     }
 }
