@@ -11,7 +11,9 @@ before_script:
   - composer require --dev "satooshi/php-coveralls ~0.6"
 
 script:
-  - ./vendor/bin/phpunit --coverage-text --coverage-clover=build/logs/clover.xml
+  - ./vendor/bin/phpunit --coverage-clover=build/logs/clover.xml
 
 after_script:
   - php ./vendor/bin/coveralls -v
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover ./build/logs/clover.xml

@@ -10,3 +10,4 @@ tools:
   php_analyzer:
     filter:
       excluded-paths: [ spec/*, vendor/*, tests/* ]
+  external_code_coverage: true
