@@ -35,7 +35,8 @@ class PhpSpecPlugin extends Plugin
 
     public function runAll()
     {
-
+        $command = $this->getPhpSpecCommand();
+        passthru($command);
     }
 
     public function run(array $paths = array())

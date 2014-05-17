@@ -45,10 +45,18 @@ class ConfigurationListenerSpec extends ObjectBehavior
 
     function it_should_post_load_configuration_properly(
         GenericEvent $event,
-        PhpGuard $guard
+        PhpGuard $guard,
+        ContainerInterface $container
     )
     {
         $guard->setupListen()->shouldBeCalled();
+        $guard->getContainer()->shouldBeCalled()
+            ->willReturn($container)
+        ;
+        $container->getByPrefix('phpguard.plugins')
+            ->shouldBeCalled()
+            ->willReturn(array())
+        ;
         $this->postLoad($event);
     }
 }
