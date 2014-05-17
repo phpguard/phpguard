@@ -12,10 +12,14 @@
 namespace PhpGuard\Application\Tests;
 
 
-class PhpGuardTest extends FunctionalTestCase
-{
-    public function testShouldFooBar()
-    {
+use PhpGuard\Application\Console\Shell;
 
+class TestShell extends Shell
+{
+    public function run()
+    {
+        $this->getOutput()->writeln('Shell is running');
+        $this->getOutput()->writeln($this->getHeader());
+        return 0;
     }
 }

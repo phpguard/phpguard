@@ -18,10 +18,10 @@ class ApplicationTest extends FunctionalTestCase
     public function testShouldStartTest()
     {
         $tester = $this->getApplicationTester();
-        $exit = $tester->run(array('start'));
+        $exit = $tester->run(array());
         $display = $tester->getDisplay(true);
         $this->assertEquals(0,$exit);
-        $this->assertContains(getcwd(),$display);
+        $this->assertContains('Shell is running',$display);
     }
 }
  
