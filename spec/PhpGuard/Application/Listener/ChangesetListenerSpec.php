@@ -18,7 +18,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         EvaluateEvent $evaluateEvent
     )
     {
-        $container->getByPrefix('guard.plugins')
+        $container->getByPrefix('phpguard.plugins')
             ->willReturn(array($plugin));
 
         $this->setContainer($container);

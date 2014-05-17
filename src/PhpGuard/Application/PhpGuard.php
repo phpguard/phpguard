@@ -37,7 +37,7 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
  * Class PhpGuard
  *
  */
-class Guard
+class PhpGuard
 {
     const VERSION = '1.0.0-dev';
 
@@ -82,46 +82,46 @@ class Guard
 
     public function setupServices(ContainerInterface $container)
     {
-        $container->set('guard',$this);
+        $container->set('phpguard',$this);
 
-        $container->setShared('guard.config',function(){
+        $container->setShared('phpguard.config',function(){
             return new Configuration();
         });
 
-        $container->set('guard.ui.output',new ConsoleOutput());
+        $container->set('phpguard.ui.output',new ConsoleOutput());
 
-        $container->setShared('guard.dispatcher', function ($c) {
+        $container->setShared('phpguard.dispatcher', function ($c) {
             $dispatcher = new EventDispatcher;
 
             array_map(
                 array($dispatcher, 'addSubscriber'),
-                $c->getByPrefix('guard.dispatcher.listeners')
+                $c->getByPrefix('phpguard.dispatcher.listeners')
             );
 
             return $dispatcher;
         });
 
-        $container->setShared('guard.logger.handler',function($c){
-            $handler = new Console\LogHandler($c->getParameter('guard.log_level'));
+        $container->setShared('phpguard.logger.handler',function($c){
+            $handler = new Console\LogHandler($c->getParameter('phpguard.log_level'));
             $handler->setLevel(LogLevel::DEBUG);
             return $handler;
         });
 
-        $container->setShared('guard.logger',function($c){
-            $logger = new Logger('Guard');
-            $logger->pushHandler($c->get('guard.logger.handler'));
+        $container->setShared('phpguard.logger',function($c){
+            $logger = new Logger('PhpGuard');
+            $logger->pushHandler($c->get('phpguard.logger.handler'));
             return $logger;
         });
 
-        $container->setShared('guard.dispatcher.listeners.config',function($c){
+        $container->setShared('phpguard.dispatcher.listeners.config',function($c){
             return new ConfigurationListener();
         });
 
-        $container->setShared('guard.dispatcher.listeners.changeset',function($c){
+        $container->setShared('phpguard.dispatcher.listeners.changeset',function($c){
             return new ChangesetListener();
         });
 
-        $container->setShared('guard.ui.shell',function($c){
+        $container->setShared('phpguard.ui.shell',function($c){
             $shell = new Shell($c);
             return $shell;
         });
@@ -131,15 +131,15 @@ class Guard
     public function setupListen()
     {
         $container = $this->container;
-        $container->setShared('guard.listen.adapter',function($c){
+        $container->setShared('phpguard.listen.adapter',function($c){
             return Listen::getDefaultAdapter();
         });
 
-        $container->setShared('guard.listen.listener',function($c){
+        $container->setShared('phpguard.listen.listener',function($c){
             $listener = Listen::to(getcwd());
             $listener
-                //->setLogger($c->get('guard.logger'))
-                ->callback(array($c->get('guard'),'listen'))
+                //->setLogger($c->get('phpguard.logger'))
+                ->callback(array($c->get('phpguard'),'listen'))
             ;
             return $listener;
         });
@@ -147,10 +147,10 @@ class Guard
 
     public function loadPlugins()
     {
-        $this->container->setShared('guard.plugins.phpspec',function(){
+        $this->container->setShared('phpguard.plugins.phpspec',function(){
             return new PhpSpecPlugin();
         });
-        $this->container->setShared('guard.plugins.phpunit',function(){
+        $this->container->setShared('phpguard.plugins.phpunit',function(){
             return new PHPUnitPlugin();
         });
     }
@@ -158,10 +158,10 @@ class Guard
     public function loadConfiguration()
     {
         $event = new GenericEvent($this);
-        $dispatcher = $this->container->get('guard.dispatcher');
+        $dispatcher = $this->container->get('phpguard.dispatcher');
         $dispatcher->dispatch(PhpGuardEvents::CONFIG_PRE_LOAD,$event);
 
-        $this->container->get('guard.config')
+        $this->container->get('phpguard.config')
             ->compileFile(getcwd().'/phpguard.yml')
         ;
         $dispatcher->dispatch(PhpGuardEvents::CONFIG_POST_LOAD,$event);
@@ -170,7 +170,7 @@ class Guard
     public function start()
     {
         /* @var \PhpGuard\Listen\Listener */
-        $listener = $this->container->get('guard.listen.listener');
+        $listener = $this->container->get('phpguard.listen.listener');
         if(isset($this->options['ignores'])){
             foreach($this->options['ignores'] as $ignored){
                 $listener->ignores($ignored);
@@ -183,7 +183,7 @@ class Guard
 
     public function listen(ChangeSetEvent $event)
     {
-        $this->getContainer()->get('guard.dispatcher')
+        $this->getContainer()->get('phpguard.dispatcher')
             ->dispatch(PhpGuardEvents::POST_EVALUATE,new EvaluateEvent($event));
     }
 
@@ -213,7 +213,7 @@ class Guard
     public function log($message, $context=array(),$level = LogLevel::INFO)
     {
         /* @var \Psr\Log\LoggerInterface $logger */
-        $logger = $this->container->get('guard.logger');
+        $logger = $this->container->get('phpguard.logger');
         $logger->log($level,$message,$context);
     }
 }

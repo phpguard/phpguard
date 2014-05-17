@@ -34,7 +34,7 @@ class StartCommand extends Command
     {
         $container = $this->getApplication()->getContainer();
 
-        $container->get('guard')->start();
+        $container->get('phpguard')->start();
     }
 
 }

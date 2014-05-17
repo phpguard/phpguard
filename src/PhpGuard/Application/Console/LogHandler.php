@@ -53,7 +53,7 @@ class LogHandler extends AbstractProcessingHandler implements ContainerAwareInte
             }
             $message = str_replace('{'.$key.'}',$value,$message);
         }
-        $output = $this->container->get('guard.ui.output');
+        $output = $this->container->get('phpguard.ui.output');
         $time = $record['datetime'];
         $output->writeln(sprintf('<info>[%s][%s.%s]</info> %s',$time->format('H:i:s'),$record['channel'],$record['level_name'],$message));
 

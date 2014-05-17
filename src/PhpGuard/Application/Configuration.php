@@ -49,14 +49,14 @@ class Configuration extends ContainerAware
     private function parseGuardSection($definitions)
     {
         $container = $this->container;
-        $guard = $container->get('guard');
+        $guard = $container->get('phpguard');
         $guard->setOptions($definitions);
     }
 
     private function parsePluginSection($name,$definitions)
     {
         $container = $this->container;
-        $id = 'guard.plugins.'.$name;
+        $id = 'phpguard.plugins.'.$name;
 
         if(!$container->has($id)){
             throw new ConfigurationException(sprintf(

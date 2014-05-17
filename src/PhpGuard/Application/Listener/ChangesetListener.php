@@ -56,7 +56,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         /* @var PluginInterface $plugin */
         $container = $this->container;
 
-        foreach($container->getByPrefix('guard.plugins') as $plugin){
+        foreach($container->getByPrefix('phpguard.plugins') as $plugin){
             $paths = $plugin->getMatchedFiles($event);
             if(count($paths) > 0){
                 $plugin->run($paths);

@@ -2,7 +2,7 @@
 
 namespace spec\PhpGuard\Application\Listener;
 
-use PhpGuard\Application\Guard;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpSpec\ObjectBehavior;
@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 
 class ConfigurationListenerSpec extends ObjectBehavior
 {
-    function let(GenericEvent $event,Guard $guard)
+    function let(GenericEvent $event,PhpGuard $guard)
     {
         $event->getSubject()->willReturn($guard);
     }
@@ -33,7 +33,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
 
     function it_should_pre_load_configuration_properly(
         GenericEvent $event,
-        Guard $guard
+        PhpGuard $guard
     )
     {
         $event->getSubject()->willReturn($guard);
@@ -45,7 +45,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
 
     function it_should_post_load_configuration_properly(
         GenericEvent $event,
-        Guard $guard
+        PhpGuard $guard
     )
     {
         $guard->setupListen()->shouldBeCalled();

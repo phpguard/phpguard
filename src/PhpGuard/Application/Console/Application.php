@@ -13,7 +13,7 @@ namespace PhpGuard\Application\Console;
 
 use PhpGuard\Application\Console\Command\StartCommand;
 use PhpGuard\Application\Container;
-use PhpGuard\Application\Guard;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Application extends BaseApplication
 {
     /**
-     * @var Guard
+     * @var PhpGuard
      */
     private $guard;
 
@@ -43,7 +43,7 @@ class Application extends BaseApplication
     public function __construct()
     {
         $this->initialize();
-        parent::__construct('phpguard',Guard::VERSION);
+        parent::__construct('phpguard',PhpGuard::VERSION);
     }
 
     public function run(InputInterface $input = null, OutputInterface $output = null)
@@ -55,7 +55,7 @@ class Application extends BaseApplication
     private function initialize()
     {
         $container = new Container();
-        $guard = new Guard();
+        $guard = new PhpGuard();
         $guard->setupServices($container);
         $guard->loadConfiguration();
 
@@ -72,10 +72,10 @@ class Application extends BaseApplication
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $container = $this->container;
-        $this->setDispatcher($container->get('guard.dispatcher'));
-        $container->set('guard.ui.input',$input);
-        $container->set('guard.ui.output',$output);
-        $container->set('guard.ui.application',$this);
+        $this->setDispatcher($container->get('phpguard.dispatcher'));
+        $container->set('phpguard.ui.input',$input);
+        $container->set('phpguard.ui.output',$output);
+        $container->set('phpguard.ui.application',$this);
         return parent::doRun($input, $output);
     }
 

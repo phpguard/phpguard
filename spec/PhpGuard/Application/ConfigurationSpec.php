@@ -4,7 +4,7 @@ namespace spec\PhpGuard\Application;
 
 require_once __DIR__.'/MockFileSystem.php';
 
-use PhpGuard\Application\Guard;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpSpec\ObjectBehavior;
@@ -14,11 +14,11 @@ use spec\PhpGuard\Application\MockFileSystem as mfs;
 
 class ConfigurationSpec extends ObjectBehavior
 {
-    function let(ContainerInterface $container,Guard $guard, PluginInterface $plugin)
+    function let(ContainerInterface $container,PhpGuard $guard, PluginInterface $plugin)
     {
         mfs::cleanDir(mfs::$tmpDir);
         mfs::mkdir(mfs::$tmpDir);
-        $container->get('guard')
+        $container->get('phpguard')
             ->willReturn($guard)
         ;
         $this->setContainer($container);
@@ -36,7 +36,7 @@ class ConfigurationSpec extends ObjectBehavior
             ->duringCompileFile('foo.yml');
     }
 
-    function it_should_process_global_section(ContainerInterface $container,Guard $guard)
+    function it_should_process_global_section(ContainerInterface $container,PhpGuard $guard)
     {
         $guard->setOptions(array(
                 'ignores' => 'app/cache'
@@ -53,10 +53,10 @@ EOF;
 
     function it_should_process_plugin_section(ContainerInterface $container, PluginInterface $pspec, PluginInterface $plugin)
     {
-        $container->has('guard.plugins.phpspec')
+        $container->has('phpguard.plugins.phpspec')
             ->willReturn(true)
         ;
-        $container->get('guard.plugins.phpspec')
+        $container->get('phpguard.plugins.phpspec')
             ->willReturn($plugin)
         ;
 
@@ -91,7 +91,7 @@ EOF;
         ContainerInterface $container
     )
     {
-        $container->has('guard.plugins.some')
+        $container->has('phpguard.plugins.some')
             ->willReturn(false);
 
         $text = <<<EOF

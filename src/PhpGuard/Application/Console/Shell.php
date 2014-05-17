@@ -12,7 +12,7 @@ namespace PhpGuard\Application\Console;
  */
 
 use PhpGuard\Application\ContainerAware;
-use PhpGuard\Application\Guard;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerAwareInterface;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use Symfony\Component\Console\Input\StringInput;
@@ -43,9 +43,9 @@ class Shell extends ContainerAware
     public function __construct(ContainerInterface $container)
     {
         $this->hasReadline = function_exists('readline');
-        $this->application = $container->get('guard.ui.application');
+        $this->application = $container->get('phpguard.ui.application');
         $this->history = getenv('HOME').'/.history_phpguard';
-        $this->output = $container->get('guard.ui.output');
+        $this->output = $container->get('phpguard.ui.output');
     }
 
     private $prompting = true;

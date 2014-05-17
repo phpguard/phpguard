@@ -7,10 +7,10 @@ use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
-class GuardSpec extends ObjectBehavior
+class PhpGuardSpec extends ObjectBehavior
 {
     function it_is_initializable()
     {
-        $this->shouldHaveType('PhpGuard\Application\Guard');
+        $this->shouldHaveType('PhpGuard\Application\PhpGuard');
     }
 }
