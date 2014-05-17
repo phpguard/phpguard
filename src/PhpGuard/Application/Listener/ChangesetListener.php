@@ -10,13 +10,11 @@ namespace PhpGuard\Application\Listener;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 use PhpGuard\Application\ContainerAware;
-use PhpGuard\Application\Guard;
 use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\PhpGuardEvents;
-use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
-use PhpGuard\Listen\Listener;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 
@@ -59,7 +57,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $container = $this->container;
 
         foreach($container->getByPrefix('guard.plugins') as $plugin){
-            $paths = $plugin->getMatchedFiles($event->getChangeSet());
+            $paths = $plugin->getMatchedFiles($event);
             if(count($paths) > 0){
                 $plugin->run($paths);
             }

@@ -5,6 +5,7 @@ namespace spec\PhpGuard\Application\Listener;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Interfaces\PluginInterface;
+use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -14,16 +15,12 @@ class ChangesetListenerSpec extends ObjectBehavior
     function let(
         ContainerInterface $container,
         PluginInterface $plugin,
-        EvaluateEvent $evaluateEvent,
-        ChangeSetEvent $changeSetEvent
+        EvaluateEvent $evaluateEvent
     )
     {
         $container->getByPrefix('guard.plugins')
             ->willReturn(array($plugin));
 
-        $evaluateEvent->getChangeSet()
-            ->willReturn($changeSetEvent)
-        ;
         $this->setContainer($container);
     }
 
@@ -32,13 +29,17 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->shouldHaveType('PhpGuard\Application\Listener\ChangesetListener');
     }
 
+    function it_should_subscribe_postEvaluate_event()
+    {
+        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::POST_EVALUATE);
+    }
+
     function it_should_run_plugins_when_the_paths_is_matched(
         EvaluateEvent $evaluateEvent,
-        ChangeSetEvent $changeSetEvent,
         PluginInterface $plugin
     )
     {
-        $plugin->getMatchedFiles($changeSetEvent)
+        $plugin->getMatchedFiles($evaluateEvent)
             ->shouldBeCalled()
             ->willReturn(array('some_path'))
         ;
@@ -48,9 +49,9 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->postEvaluate($evaluateEvent);
     }
 
-    function it_should_not_run_plugins_when_the_paths_is_no_match($plugin,$evaluateEvent,$changeSetEvent)
+    function it_should_not_run_plugins_when_the_paths_is_no_match($plugin,$evaluateEvent)
     {
-        $plugin->getMatchedFiles($changeSetEvent)
+        $plugin->getMatchedFiles($evaluateEvent)
             ->shouldBeCalled()
             ->willReturn(array())
         ;

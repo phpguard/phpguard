@@ -46,10 +46,10 @@ class Watcher
         }
 
         if($file instanceof FileResource){
-            $file = $file->getResource();
+            $file = (string)$file->getResource();
         }
 
-        if($file instanceof SplFileInfo){
+        if(!$file instanceof SplFileInfo){
             $file = PathUtil::createSplFileInfo(getcwd(),(string)$file);
         }
 
@@ -62,6 +62,7 @@ class Watcher
             return true;
         }
 
+        return false;
     }
 
     public function setDefaultOptions(OptionsResolverInterface  $resolver)

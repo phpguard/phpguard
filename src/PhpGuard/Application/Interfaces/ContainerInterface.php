@@ -22,6 +22,8 @@ interface ContainerInterface
 
     public function set($id,$service);
 
+    public function setShared($id,$callable);
+
     public function get($id);
 
     public function has($id);

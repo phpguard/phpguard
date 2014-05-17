@@ -83,7 +83,8 @@ class Guard
     public function setupServices(ContainerInterface $container)
     {
         $container->set('guard',$this);
-        $container->set('guard.config',function(){
+
+        $container->setShared('guard.config',function(){
             return new Configuration();
         });
 
@@ -112,11 +113,11 @@ class Guard
             return $logger;
         });
 
-        $container->set('guard.dispatcher.listeners.config',function($c){
+        $container->setShared('guard.dispatcher.listeners.config',function($c){
             return new ConfigurationListener();
         });
 
-        $container->set('guard.dispatcher.listeners.changeset',function($c){
+        $container->setShared('guard.dispatcher.listeners.changeset',function($c){
             return new ChangesetListener();
         });
 
@@ -127,8 +128,9 @@ class Guard
         $this->container = $container;
     }
 
-    public function setupListen(ContainerInterface $container)
+    public function setupListen()
     {
+        $container = $this->container;
         $container->setShared('guard.listen.adapter',function($c){
             return Listen::getDefaultAdapter();
         });

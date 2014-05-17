@@ -11,7 +11,7 @@
 namespace PhpGuard\Application\Interfaces;
 
 use PhpGuard\Application\Watcher;
-use PhpGuard\Listen\Event\ChangeSetEvent;
+use PhpGuard\Application\Event\EvaluateEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 interface PluginInterface
@@ -28,5 +28,5 @@ interface PluginInterface
 
     public function setDefaultOptions(OptionsResolverInterface $resolver);
 
-    public function getMatchedFiles(ChangeSetEvent $event);
+    public function getMatchedFiles(EvaluateEvent $event);
 }

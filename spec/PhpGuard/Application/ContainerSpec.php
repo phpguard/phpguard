@@ -57,6 +57,7 @@ class ContainerSpec extends ObjectBehavior
         $this->set('collection2.serv3', $service3);
 
         $this->getByPrefix('collection1')->shouldReturn(array($service1, $service2));
+        $this->getByPrefix('none')->shouldReturn(array());
     }
 
     function it_should_tell_if_service_registered_or_not($service)

@@ -2,26 +2,25 @@
 
 namespace spec\PhpGuard\Application;
 
+require_once __DIR__.'/MockFileSystem.php';
+
 use PhpGuard\Application\Guard;
-use PhpGuard\Application\Container;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Interfaces\PluginInterface;
-use PhpGuard\Application\Watcher;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
+
+use spec\PhpGuard\Application\MockFileSystem as mfs;
 
 class ConfigurationSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,Guard $guard, PluginInterface $plugin)
     {
+        mfs::cleanDir(mfs::$tmpDir);
+        mfs::mkdir(mfs::$tmpDir);
         $container->get('guard')
             ->willReturn($guard)
         ;
-        $container->has(Argument::any())
-            ->willReturn(true)
-        ;
-
-
         $this->setContainer($container);
     }
 
@@ -82,7 +81,27 @@ phpspec:
         - { pattern: "#^src\/.*\.php$#" }
 
 EOF;
+        touch($file = mfs::$tmpDir.'/test.yml');
+        file_put_contents($file,$text,LOCK_EX);
 
-        $this->compile($text);
+        $this->compileFile($file);
+    }
+
+    function it_throws_when_plugin_not_exists(
+        ContainerInterface $container
+    )
+    {
+        $container->has('guard.plugins.some')
+            ->willReturn(false);
+
+        $text = <<<EOF
+some:
+    watch:
+        - { pattern: "#^spec\/.*\.php" }
+EOF;
+
+        $this->shouldThrow('InvalidArgumentException')
+            ->duringCompile($text)
+        ;
     }
 }

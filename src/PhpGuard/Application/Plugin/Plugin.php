@@ -12,7 +12,7 @@ namespace PhpGuard\Application\Plugin;
  */
 use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\Watcher;
-use PhpGuard\Listen\Event\ChangeSetEvent;
+use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Listen\Util\PathUtil;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -46,11 +46,10 @@ abstract class Plugin implements PluginInterface,LoggerAwareInterface
     }
 
     /**
-     * @param ChangeSetEvent $event
-     *
-     * @return array|bool
+     * @param   EvaluateEvent $event
+     * @return  array
      */
-    public function getMatchedFiles(ChangeSetEvent $event)
+    public function getMatchedFiles(EvaluateEvent $event)
     {
         $filtered = array();
         $files = $event->getFiles();

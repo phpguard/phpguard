@@ -4,8 +4,7 @@ namespace spec\PhpGuard\Application\Plugin;
 
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
-use PhpGuard\Listen\Event\ChangeSetEvent;
-use PhpGuard\Listen\Util\PathUtil;
+use PhpGuard\Application\Event\EvaluateEvent;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
@@ -18,17 +17,14 @@ class MockPlugin extends Plugin
 
     public function getName()
     {
-        // TODO: Implement getName() method.
     }
 
     public function runAll()
     {
-        // TODO: Implement runAll() method.
     }
 
     public function run(array $paths = array())
     {
-        // TODO: Implement run() method.
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
@@ -79,7 +75,7 @@ class PluginSpec extends ObjectBehavior
     }
 
     function its_getMatchedFiles_returns_an_array_of_matched_file(
-        ChangeSetEvent $event,
+        EvaluateEvent $event,
         Watcher $watcher
     )
     {
@@ -94,7 +90,7 @@ class PluginSpec extends ObjectBehavior
     }
 
     function its_getMatchedFiles_returns_an_empty_array_if_there_are_not_matched_files(
-        ChangeSetEvent $event,
+        EvaluateEvent $event,
         Watcher $watcher
     )
     {
@@ -110,7 +106,7 @@ class PluginSpec extends ObjectBehavior
     }
 
     function its_getMatchedFiles_convert_paths_into_SplFileInfo(
-        ChangeSetEvent $event,
+        EvaluateEvent $event,
         Watcher $watcher
     )
     {

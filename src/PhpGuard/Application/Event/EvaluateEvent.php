@@ -37,4 +37,28 @@ class EvaluateEvent extends Event
     {
         return $this->changeSet;
     }
+
+    /**
+     * @return array
+     */
+    public function getFiles()
+    {
+        return $this->changeSet->getFiles();
+    }
+
+    /**
+     * @return array
+     */
+    public function getEvents()
+    {
+        return $this->changeSet->getEvents();
+    }
+
+    /**
+     * @return \PhpGuard\Listen\Listener
+     */
+    public function getListener()
+    {
+        return $this->changeSet->getListener();
+    }
 }
