@@ -14,6 +14,9 @@ namespace PhpGuard\Application\Exception;
 
 class ConfigurationException extends \InvalidArgumentException
 {
+    /**
+     * @param string $message
+     */
     public function __construct($message)
     {
         parent::__construct($message);

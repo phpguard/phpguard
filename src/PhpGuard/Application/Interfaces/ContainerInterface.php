@@ -61,7 +61,7 @@ interface ContainerInterface
     public function get($id);
 
     /**
-     * @param $id
+     * @param string $id
      *
      * @return bool True if service registered
      */

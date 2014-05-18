@@ -13,7 +13,6 @@ namespace PhpGuard\Application;
 
 use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Interfaces\PluginInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Yaml\Yaml;
 
 /**

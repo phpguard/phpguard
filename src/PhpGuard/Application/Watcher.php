@@ -11,8 +11,6 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Application\Interfaces\PluginInterface;
-use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Resource\FileResource;
 use PhpGuard\Listen\Util\PathUtil;
 use Symfony\Component\Finder\SplFileInfo;

@@ -11,7 +11,6 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 use PhpGuard\Application\Interfaces\ContainerInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
 /**
  * Class Container
@@ -129,7 +128,7 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param $id
+     * @param string $id
      *
      * @return array
      */

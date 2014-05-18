@@ -14,5 +14,8 @@ namespace PhpGuard\Application\Interfaces;
 
 interface ContainerAwareInterface
 {
+    /**
+     * @return void
+     */
     public function setContainer(ContainerInterface $container);
 } 

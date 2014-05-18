@@ -11,7 +11,6 @@ namespace PhpGuard\Plugins\PHPUnit;
  * file that was distributed with this source code.
  */
 use PhpGuard\Application\Plugin\Plugin;
-use PhpGuard\Listen\Event\ChangeSetEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
