@@ -91,12 +91,20 @@ class Runner
         return $this->output;
     }
 
+    /**
+     * @return bool
+     * @codeCoverageIgnore
+     */
     public function run()
     {
         $command = $this->command;
         if(is_file($executable='./vendor/bin/'.$command)){
             $command = $executable;
         }
+        elseif(is_file($executable='/bin/'.$command)){
+            $command = $executable;
+        }
+
         $arguments = $command.' '.implode(' ',$this->arguments);
         $writer = $this->output;
         $process = new Process($arguments);
@@ -111,10 +119,5 @@ class Runner
             $writer->write($process->getErrorOutput());
             return false;
         }
-    }
-
-    public function success($callable)
-    {
-        $this->success = $callable;
     }
 }
