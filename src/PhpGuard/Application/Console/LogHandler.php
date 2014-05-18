@@ -14,6 +14,7 @@ namespace PhpGuard\Application\Console;
 use Monolog\Handler\AbstractProcessingHandler;
 use PhpGuard\Application\Interfaces\ContainerAwareInterface;
 use PhpGuard\Application\Interfaces\ContainerInterface;
+use Psr\Log\LogLevel;
 
 /**
  * Class LogHandler
@@ -42,17 +43,17 @@ class LogHandler extends AbstractProcessingHandler implements ContainerAwareInte
         $context = $record['context'];
         $message = (string)$record['message'];
         foreach($context as $key=>$value){
-            if(is_array($value)){
+            if(is_array($value) || is_object($value)){
                 continue;
             }
             $message = str_replace('{'.$key.'}',$value,$message);
         }
 
         $time = $record['datetime'];
-        $format = '<info>[%s][%s]</info> %s';
+        $format = '<info>[%s][%s] %s</info>';
 
-        if($record['level_name']=='ERROR'){
-            $format = '<log-error>[%s][%s] %s </log-error>';
+        if($record['level']==LogLevel::ERROR){
+            $format = '<log-error>[%s][%s] %s</log-error>';
         }
 
         $output->writeln(sprintf($format,$time->format('H:i:s'),$record['level_name'],$message));
