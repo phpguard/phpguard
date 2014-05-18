@@ -114,9 +114,10 @@ class PhpGuard
             foreach($options['ignores'] as $ignored){
                 $listener->ignores($ignored);
             }
-            $listener->latency($options['latency']);
 
-            $listener->callback(array($this,'listen'));
+            $phpguard = $c->get('phpguard');
+            $listener->latency($options['latency']);
+            $listener->callback(array($phpguard,'listen'));
             return $listener;
         });
     }
