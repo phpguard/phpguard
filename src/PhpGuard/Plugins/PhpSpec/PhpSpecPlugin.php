@@ -11,10 +11,8 @@
 
 namespace PhpGuard\Plugins\PhpSpec;
 
-
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
-use Psr\Log\LogLevel;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class PhpSpecPlugin extends Plugin
@@ -36,7 +34,6 @@ class PhpSpecPlugin extends Plugin
 
     public function runAll()
     {
-
         $options = $this->options['run_all'];
         $options = array_merge($this->options,$options);
         $arguments = $this->buildArguments($options);
@@ -46,7 +43,7 @@ class PhpSpecPlugin extends Plugin
         if($return){
             $this->log('All spec pass');
         }else{
-            $this->log('PhpSpec Run All failed',array(),LogLevel::ERROR);
+            $this->log('<log-error>PhpSpec Run All failed</log-error>');
         }
     }
 
@@ -55,10 +52,13 @@ class PhpSpecPlugin extends Plugin
         $success = true;
         foreach($paths as $file)
         {
-            $this->log(
-                'Start to run <comment>phpspec</comment> for <comment>{file}</comment>',
-                array('file'=>$file->getRelativePathName())
-            );
+            $this->log(sprintf(
+                'Run specs for <comment>%s</comment>',
+                $file->getRelativePathname()
+            ));
+
+
+
             $arguments = $this->buildArguments($this->options);
             $arguments[] = $file->getRelativePathName();
             $runner = $this->createRunner('phpspec',$arguments);
@@ -67,14 +67,14 @@ class PhpSpecPlugin extends Plugin
                 $success = false;
             }
         }
-        if(true===$success){
-            $this->log('Spec Success');
+        if($success){
+            $this->log('Run spec success');
             if($this->options['all_after_pass']){
                 $this->log('Run all specs after pass');
                 $this->runAll();
             }
         }else{
-            $this->log('PhpSpec command failed',array(),LogLevel::ERROR);
+            $this->log('<log-error>Run spec failed</log-error>');
         }
     }
 

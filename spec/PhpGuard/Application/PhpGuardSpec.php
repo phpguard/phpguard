@@ -7,8 +7,8 @@ use PhpGuard\Application\PhpGuard;
 use PhpGuard\Listen\Listener;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class MockPhpGuard extends PhpGuard
 {
@@ -23,12 +23,16 @@ class MockPhpGuard extends PhpGuard
 
 class PhpGuardSpec extends ObjectBehavior
 {
-    function let(ContainerInterface $container,LoggerInterface $logger)
+    function let(ContainerInterface $container,ConsoleOutput $output, OutputFormatter $formatter)
     {
+        $container->get('phpguard.ui.output')
+            ->willReturn($output);
+        $output->getVerbosity()
+            ->willReturn(ConsoleOutput::VERBOSITY_NORMAL);
+
         $this->setContainer($container);
+
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPhpGuard');
-        $container->get('phpguard.logger')
-            ->willReturn($logger);
     }
 
     function it_is_initializable()
@@ -45,7 +49,7 @@ class PhpGuardSpec extends ObjectBehavior
         $options->shouldHaveKey('latency');
     }
 
-    function it_should_start_listen_properly(Listener $listener,ContainerInterface $container)
+    function it_should_start_listen_properly(Listener $listener,ContainerInterface $container,ConsoleOutput $output)
     {
         $container->get('phpguard.listen.listener')
             ->willReturn($listener);
@@ -55,6 +59,8 @@ class PhpGuardSpec extends ObjectBehavior
         ));
 
         $listener->start()
+            ->shouldBeCalled();
+        $output->writeln(Argument::cetera())
             ->shouldBeCalled();
         $this->start();
     }

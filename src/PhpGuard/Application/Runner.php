@@ -106,17 +106,12 @@ class Runner
         }
 
         $arguments = $command.' '.implode(' ',$this->arguments);
-        $writer = $this->output;
-        $process = new Process($arguments);
 
-        $process->run(function($type,$output) use($writer){
-            $writer->write($output);
-        });
+        passthru($arguments,$return);
 
-        if($process->isSuccessful()){
+        if($return===0){
             return true;
         }else{
-            $writer->write($process->getErrorOutput());
             return false;
         }
     }

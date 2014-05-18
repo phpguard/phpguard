@@ -8,8 +8,6 @@ use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -49,27 +47,6 @@ class PluginSpec extends ObjectBehavior
     function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Plugin\Plugin');
-    }
-
-    function it_should_implement_the_PSR_LoggerAwareInterface()
-    {
-        $this->shouldImplement('Psr\\Log\\LoggerAwareInterface');
-    }
-
-    function it_should_log_message(LoggerInterface $logger)
-    {
-        $logger->log(LogLevel::INFO,'some',array())
-            ->shouldBeCalled()
-        ;
-
-        $this->setLogger($logger);
-        $this->log('some');
-
-        $logger->log(LogLevel::DEBUG,'some',array())
-            ->shouldBeCalled()
-        ;
-
-        $this->log('some',array(),LogLevel::DEBUG);
     }
 
     function it_should_add_watcher($watcher)

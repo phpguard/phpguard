@@ -82,6 +82,7 @@ class Application extends BaseApplication
         $container->set('phpguard.ui.input',$input);
         $container->set('phpguard.ui.output',$output);
 
+
         $command = $this->getCommandName($input);
         if($command==''){
             /* @var Shell $shell */
@@ -100,7 +101,6 @@ class Application extends BaseApplication
 
         $formatter = $output->getFormatter();
         $formatter->setStyle('log-error',new OutputFormatterStyle('red'));
-
     }
 
 

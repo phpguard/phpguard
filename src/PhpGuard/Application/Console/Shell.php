@@ -83,7 +83,7 @@ class Shell extends ContainerAware
             $r = array(STDIN);
             $w = array();
             $e = array();
-            $n = @stream_select($r,$w,$e,2);
+            $n = stream_select($r,$w,$e,2);
             if ($n && in_array(STDIN, $r)) {
                 // read a character, will call the callback when a newline is entered
                 if($this->hasReadline){
@@ -112,8 +112,6 @@ class Shell extends ContainerAware
     public function preRunCommand()
     {
         $this->getOutput()->writeln("");
-        $this->container->get('phpguard')
-            ->log('<info>Start to run commands</info>');
         $this->unsetStreamBlocking();
     }
 
@@ -140,6 +138,7 @@ class Shell extends ContainerAware
 
     public function readlineCallback($return)
     {
+        $return = trim($return);
         $this->doRunCommand($return);
         $this->installReadlineCallback();
     }
@@ -164,22 +163,29 @@ class Shell extends ContainerAware
         }
 
         if($command=='' || $command=='run-all'){
-            $this->unsetStreamBlocking();
-            /* @var PluginInterface $plugin */
-            $plugins = $this->container->getByPrefix('phpguard.plugins');
-            foreach($plugins as $plugin){
-                $plugin->runAll();
-            }
-            $this->setStreamBlocking();
+            $this->doRunAll();
         }else{
             $this->unsetStreamBlocking();
-            readline_add_history($command);
+            readline_add_history(trim($command));
             readline_write_history($this->history);
             $input = new StringInput($command);
             $retVal = $this->getApplication()->run($input, $this->output);
             $this->setStreamBlocking();
             return $retVal;
         }
+    }
+
+    private function doRunAll()
+    {
+        $this->unsetStreamBlocking();
+        /* @var PluginInterface $plugin */
+        $plugins = $this->container->getByPrefix('phpguard.plugins');
+        foreach($plugins as $plugin){
+            $plugin->runAll();
+        }
+        $this->setStreamBlocking();
+        readline_add_history('run-all');
+        readline_write_history($this->history);
     }
 
     /**
@@ -210,7 +216,7 @@ EOF;
     protected function getPrompt()
     {
         // using the formatter here is required when using readline
-        return $this->output->getFormatter()->format("\n".$this->application->getName().'> ');
+        return $this->output->getFormatter()->format("\n".$this->application->getName().'>> ');
     }
 
     protected function getOutput()

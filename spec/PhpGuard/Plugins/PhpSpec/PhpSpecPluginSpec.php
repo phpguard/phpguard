@@ -3,24 +3,21 @@
 namespace spec\PhpGuard\Plugins\PhpSpec;
 
 require_once __DIR__.'/MockPhpSpecPlugin.php';
+
 use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Runner;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 
 class PhpSpecPluginSpec extends ObjectBehavior
 {
-    function let(ContainerInterface $container, Runner $runner,LoggerInterface $logger,OutputInterface $output)
+    function let(ContainerInterface $container, Runner $runner,PhpGuard $phpGuard)
     {
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPhpSpecPlugin');
         $this->setRunner($runner);
-        $this->setLogger($logger);
 
         // initialize default options
         $this->setOptions(array());
@@ -29,8 +26,9 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $runner->setArguments(Argument::any())
             ->willReturn(true);
 
-        $container->get('phpguard.ui.output')
-            ->willReturn($output);
+        $container->get('phpguard')
+            ->willReturn($phpGuard);
+
         $this->setContainer($container);
     }
 
@@ -45,7 +43,7 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $this->shouldHaveType('PhpGuard\\Application\\Plugin\\Plugin');
     }
 
-    function it_should_set_default_options_properly(OptionsResolverInterface $resolver)
+    function it_should_set_default_options_properly()
     {
         $this->setOptions(array());
 
@@ -56,7 +54,7 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $options->shouldHaveKey('all_after_pass');
     }
 
-    function it_should_run_properly(Runner $runner,LoggerInterface $logger)
+    function it_should_run_properly(Runner $runner,PhpGuard $phpGuard)
     {
         $this->setOptions(array(
             'format' => 'dot'
@@ -73,7 +71,7 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $this->run(array($spl));
     }
 
-    function it_should_run_all_after_pass(Runner $runner,LoggerInterface $logger)
+    function it_should_run_all_after_pass(Runner $runner,PhpGuard $phpGuard)
     {
         $this->setOptions(array(
             'all_after_pass' => true,
@@ -93,27 +91,23 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $runner->setArguments(Argument::containing('--format=progress'))
             ->shouldBeCalled()
         ;
+
         $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
 
-        $logger->log(LogLevel::INFO,Argument::cetera())
-            ->shouldBeCalled();
+
         $this->run(array($spl));
     }
 
-    function it_should_log_error_when_failed_to_run(Runner $runner,LoggerInterface $logger)
+    function it_should_log_error_when_failed_to_run(Runner $runner,PhpGuard $phpGuard)
     {
         $runner->run()
             ->willReturn(false);
-        $logger->log(LogLevel::INFO,Argument::cetera())
-            ->shouldBeCalled();
-        $logger->log(LogLevel::ERROR,Argument::any(),Argument::any())
-            ->shouldBeCalled();
 
         $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
         $this->run(array($spl));
     }
 
-    function it_should_run_all_properly(Runner $runner,LoggerInterface $logger)
+    function it_should_run_all_properly(Runner $runner,PhpGuard $phpGuard)
     {
         $runner->run()
             ->shouldBeCalled()
@@ -126,18 +120,16 @@ class PhpSpecPluginSpec extends ObjectBehavior
         ));
         $runner->setArguments(Argument::containing('--format=dot'))
             ->shouldBeCalled();
+
+
         $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
         $this->runAll(array($spl));
     }
 
-    function it_should_log_error_when_failed_to_run_all(Runner $runner,LoggerInterface $logger)
+    function it_should_log_error_when_failed_to_run_all(Runner $runner,PhpGuard $phpGuard)
     {
         $runner->run()
             ->willReturn(false);
-        $logger->log(LogLevel::INFO,Argument::cetera())
-            ->shouldBeCalled();
-        $logger->log(LogLevel::ERROR,Argument::any(),Argument::any())
-            ->shouldBeCalled();
 
         $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
         $this->runAll(array($spl));

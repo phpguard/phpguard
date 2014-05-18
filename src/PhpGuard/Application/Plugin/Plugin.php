@@ -12,6 +12,7 @@ namespace PhpGuard\Application\Plugin;
  */
 use PhpGuard\Application\ContainerAware;
 use PhpGuard\Application\Interfaces\PluginInterface;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Runner;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
@@ -19,6 +20,7 @@ use PhpGuard\Listen\Util\PathUtil;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -26,7 +28,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  * Class Plugin
  *
  */
-abstract class Plugin extends ContainerAware implements PluginInterface,LoggerAwareInterface
+abstract class Plugin extends ContainerAware implements PluginInterface
 {
     protected $watchers = array();
 
@@ -82,14 +84,12 @@ abstract class Plugin extends ContainerAware implements PluginInterface,LoggerAw
         return $this->options;
     }
 
-    public function setLogger(LoggerInterface $logger)
+    public function log($message,$level=OutputInterface::VERBOSITY_NORMAL)
     {
-        $this->logger = $logger;
-    }
-
-    public function log($message,$context = array(),$level=LogLevel::INFO)
-    {
-        $this->logger->log($level,$message,$context);
+        $channel = strtoupper($this->getName());
+        /* @var \PhpGuard\Application\PhpGuard $phpguard */
+        $phpguard = $this->container->get('phpguard');
+        $phpguard->log($message,$channel,$level);
     }
 
     /**

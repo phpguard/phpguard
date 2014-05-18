@@ -21,8 +21,7 @@ use PhpGuard\Application\Listener\ConfigurationListener;
 use PhpGuard\Application\Listener\ChangesetListener;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
 use PhpGuard\Plugins\PHPUnit\PHPUnitPlugin;
-use Psr\Log\LogLevel;
-use Monolog\Logger;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\OptionsResolver\Options;
@@ -78,7 +77,7 @@ class PhpGuard
             return $dispatcher;
         });
 
-        $container->setShared('phpguard.logger.handler',function($c){
+        /*$container->setShared('phpguard.logger.handler',function($c){
             $handler = new Console\LogHandler($c->getParameter('phpguard.log_level'));
             $handler->setLevel(LogLevel::INFO);
             return $handler;
@@ -88,7 +87,7 @@ class PhpGuard
             $logger = new Logger('PhpGuard');
             $logger->pushHandler($c->get('phpguard.logger.handler'));
             return $logger;
-        });
+        });*/
 
         $container->setShared('phpguard.dispatcher.listeners.config',function($c){
             return new ConfigurationListener();
@@ -152,7 +151,7 @@ class PhpGuard
         /* @var \PhpGuard\Listen\Listener $listener */
         $listener = $this->container->get('phpguard.listen.listener');
 
-        $this->log('<info>Starting to watch at <comment>{path}</comment></info>',array('path'=>getcwd()));
+        $this->log('Starting to watch at <comment>'.getcwd().'</comment>');
         $listener->start();
     }
 
@@ -160,6 +159,7 @@ class PhpGuard
     {
         $files = $event->getFiles();
         if(!empty($files)){
+            $this->log();
             $dispatcher = $this->container->get('phpguard.dispatcher');
             $evaluateEvent = new EvaluateEvent($event);
             $dispatcher->dispatch(
@@ -208,12 +208,24 @@ class PhpGuard
         ));
     }
 
-    public function log($message, $context=array(),$level = LogLevel::INFO)
+    public function log($message=null,$channel='PhpGuard', $level=OutputInterface::VERBOSITY_NORMAL)
     {
-        /* @var \Psr\Log\LoggerInterface $logger */
-        $logger = $this->container->get('phpguard.logger');
-        if($logger){
-            $logger->log($level,$message,$context);
+        /* @var \Symfony\Component\Console\Output\OutputInterface $output */
+        $output = $this->container->get('phpguard.ui.output');
+        if(is_null($message)){
+            $output->writeln("");
+            return;
         }
+
+        if($level > $output->getVerbosity()){
+            return;
+        }
+
+        $time = new \DateTime();
+        $format = "[%s][%s] %s";
+
+        $message = sprintf($format,$time->format('H:i:s'),$channel,$message);
+
+        $output->writeln('<info>'.$message.'</info>');
     }
 }
