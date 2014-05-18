@@ -47,12 +47,6 @@ class Application extends BaseApplication
         $this->initialize();
     }
 
-    public function run(InputInterface $input = null, OutputInterface $output = null)
-    {
-        $this->loadCommands();
-        return parent::run($input, $output);
-    }
-
     private function initialize()
     {
         if($this->initialized){
@@ -68,11 +62,6 @@ class Application extends BaseApplication
         $this->guard = $guard;
         $this->container = $container;
         $this->initialized = true;
-    }
-
-    private function loadCommands()
-    {
-        //$this->add(new StartCommand());
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)

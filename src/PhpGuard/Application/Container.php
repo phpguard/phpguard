@@ -26,21 +26,46 @@ class Container implements ContainerInterface
 
     private $prefixed = array();
 
+    /**
+     * @param string $name
+     * @param mixed  $value
+     *
+     * @return $this
+     */
     public function setParameter($name,$value)
     {
         $this->parameters[$name] = $value;
+        return $this;
     }
 
+    /**
+     * @param string $name
+     * @param mixed|null   $default
+     *
+     * @return mixed|null
+     */
     public function getParameter($name,$default=null)
     {
         return isset($this->parameters[$name]) ? $this->parameters[$name]:$default;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
     public function hasParameter($name)
     {
         return array_key_exists($name,$this->parameters);
     }
 
+    /**
+     * @param string $id
+     * @param mixed  $service
+     *
+     * @return $this
+     * @throws \InvalidArgumentException
+     */
     public function set($id, $service)
     {
         if(!is_object($service)){
@@ -59,8 +84,16 @@ class Container implements ContainerInterface
         }
 
         $this->services[$id] = $service;
+
+        return $this;
     }
 
+    /**
+     * @param string $id
+     *
+     * @return mixed
+     * @throws \InvalidArgumentException
+     */
     public function get($id)
     {
         if(!array_key_exists($id,$this->services)){
@@ -85,17 +118,20 @@ class Container implements ContainerInterface
         return $value;
     }
 
+    /**
+     * @param $id
+     *
+     * @return bool
+     */
     public function has($id)
     {
         return array_key_exists($id,$this->services);
     }
 
     /**
-     * Retrieves the prefix and sid of a given service
+     * @param $id
      *
-     * @param   string $id
-     * @return  array
-     * @credits PhpSpec\ServiceContainer
+     * @return array
      */
     private function getPrefixAndSid($id)
     {
@@ -110,8 +146,6 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Retrieves a list of services of a given prefix
-     *
      * @param string $prefix
      *
      * @return array
@@ -131,14 +165,11 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Sets a object or a callback for the object creation. The same object will
-     * be returned every time
+     * @param string   $id
+     * @param callable $callable
      *
-     * @param   string   $id
-     * @param   callable $callable
-     *
-     * @throws \InvalidArgumentException if service is not an object or callback
-     * @credits PhpSpec\ServiceContainer
+     * @return $this
+     * @throws \InvalidArgumentException
      */
     public function setShared($id, $callable)
     {
@@ -157,6 +188,6 @@ class Container implements ContainerInterface
 
             return $instance;
         });
+        return $this;
     }
-
 }
