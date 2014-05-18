@@ -17,9 +17,7 @@ use PhpGuard\Application\Runner;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Listen\Util\PathUtil;
-use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -84,6 +82,9 @@ abstract class Plugin extends ContainerAware implements PluginInterface
         return $this->options;
     }
 
+    /**
+     * @param string $message
+     */
     public function log($message,$level=OutputInterface::VERBOSITY_NORMAL)
     {
         $channel = strtoupper($this->getName());
@@ -109,7 +110,7 @@ abstract class Plugin extends ContainerAware implements PluginInterface
 
     /**
      * @param $file
-     * @return bool|SplFileInfo
+     * @return string
      * @author Anthonius Munthi <me@itstoni.com>
      */
     private function matchFile($file)

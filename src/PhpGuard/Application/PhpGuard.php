@@ -11,7 +11,6 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Listen\Events;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
 use PhpGuard\Application\Console\Shell;
@@ -209,6 +208,9 @@ class PhpGuard
         ));
     }
 
+    /**
+     * @param string $message
+     */
     public function log($message=null,$channel='PhpGuard', $level=OutputInterface::VERBOSITY_NORMAL)
     {
         /* @var \Symfony\Component\Console\Output\OutputInterface $output */

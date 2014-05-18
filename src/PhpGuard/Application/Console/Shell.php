@@ -12,12 +12,8 @@ namespace PhpGuard\Application\Console;
  */
 
 use PhpGuard\Application\ContainerAware;
-use PhpGuard\Application\Event\EvaluateEvent;
-use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuardEvents;
-use PhpGuard\Listen\Event\ChangeSetEvent;
-use PhpGuard\Listen\Listen;
 use Symfony\Component\Console\Input\StringInput;
 
 /**
@@ -154,6 +150,9 @@ class Shell extends ContainerAware
         return $this->running;
     }
 
+    /**
+     * @param false|string $command
+     */
     private function doRunCommand($command)
     {
         $command = trim($command);
@@ -231,7 +230,6 @@ EOF;
     /**
      * Tries to return autocompletion for the current entered text.
      *
-     * @param string $text The last segment of the entered text
      *
      * @return bool|array    A list of guessed strings or true
      */

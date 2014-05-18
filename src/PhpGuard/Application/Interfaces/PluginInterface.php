@@ -16,19 +16,31 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 interface PluginInterface
 {
+    /**
+     * @return string
+     */
     public function getName();
 
+    /**
+     * @return void
+     */
     public function addWatcher(Watcher $watcher);
 
     public function runAll();
 
     public function run(array $paths = array());
 
+    /**
+     * @return \PhpGuard\Application\Plugin\Plugin
+     */
     public function setOptions(array $options = array());
 
     public function setDefaultOptions(OptionsResolverInterface $resolver);
 
     public function getMatchedFiles(EvaluateEvent $event);
 
+    /**
+     * @return void
+     */
     public function configure();
 }

@@ -11,8 +11,6 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessBuilder;
 
 /**
  * Class Runner

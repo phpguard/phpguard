@@ -13,7 +13,6 @@ namespace PhpGuard\Plugins\PhpSpec\Command;
 
 
 use PhpGuard\Application\Console\Command;
-use PhpSpec\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use PhpSpec\Console\Command\DescribeCommand as BaseCommand;

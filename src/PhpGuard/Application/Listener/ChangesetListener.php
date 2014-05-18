@@ -12,7 +12,6 @@ namespace PhpGuard\Application\Listener;
  */
 
 use PhpGuard\Application\ContainerAware;
-use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Application\Event\EvaluateEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
