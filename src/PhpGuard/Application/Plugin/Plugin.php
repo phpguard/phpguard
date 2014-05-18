@@ -12,6 +12,7 @@ namespace PhpGuard\Application\Plugin;
  */
 use PhpGuard\Application\ContainerAware;
 use PhpGuard\Application\Interfaces\PluginInterface;
+use PhpGuard\Application\Runner;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Listen\Util\PathUtil;
@@ -89,6 +90,21 @@ abstract class Plugin extends ContainerAware implements PluginInterface,LoggerAw
     public function log($message,$context = array(),$level=LogLevel::INFO)
     {
         $this->logger->log($level,$message,$context);
+    }
+
+    /**
+     * @param   string    $command
+     * @param   array     $arguments
+     * @return  Runner
+     */
+    public function createRunner($command,array $arguments = array())
+    {
+        $runner = new Runner();
+        $runner->setCommand($command);
+        $runner->setArguments($arguments);
+        $runner->setOutput($this->container->get('phpguard.ui.output'));
+
+        return $runner;
     }
 
     private function matchFile($file)

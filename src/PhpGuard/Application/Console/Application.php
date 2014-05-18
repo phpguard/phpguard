@@ -16,6 +16,7 @@ use PhpGuard\Application\Container;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use Symfony\Component\Console\Application as BaseApplication;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -92,6 +93,16 @@ class Application extends BaseApplication
         }
         return parent::doRun($input, $output);
     }
+
+    protected function configureIO(InputInterface $input, OutputInterface $output)
+    {
+        parent::configureIO($input, $output);
+
+        $formatter = $output->getFormatter();
+        $formatter->setStyle('log-error',new OutputFormatterStyle('red'));
+
+    }
+
 
     public function setContainer(ContainerInterface $container)
     {

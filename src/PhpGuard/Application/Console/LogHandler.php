@@ -14,7 +14,6 @@ namespace PhpGuard\Application\Console;
 use Monolog\Handler\AbstractProcessingHandler;
 use PhpGuard\Application\Interfaces\ContainerAwareInterface;
 use PhpGuard\Application\Interfaces\ContainerInterface;
-use Psr\Log\LogLevel;
 
 /**
  * Class LogHandler
@@ -23,11 +22,6 @@ use Psr\Log\LogLevel;
 class LogHandler extends AbstractProcessingHandler implements ContainerAwareInterface
 {
     private $container;
-
-    public function __construct($level = LogLevel::INFO,$bubble=true)
-    {
-        parent::__construct($level,$bubble);
-    }
 
     public function setContainer(ContainerInterface $container)
     {
@@ -42,9 +36,9 @@ class LogHandler extends AbstractProcessingHandler implements ContainerAwareInte
      */
     protected function write(array $record)
     {
-        if($record['level_name']!='INFO'){
-            return;
-        }
+        /* @var \Symfony\Component\Console\Output\OutputInterface $output */
+        $output = $this->container->get('phpguard.ui.output');
+
         $context = $record['context'];
         $message = (string)$record['message'];
         foreach($context as $key=>$value){
@@ -53,8 +47,14 @@ class LogHandler extends AbstractProcessingHandler implements ContainerAwareInte
             }
             $message = str_replace('{'.$key.'}',$value,$message);
         }
-        $output = $this->container->get('phpguard.ui.output');
+
         $time = $record['datetime'];
-        $output->writeln(sprintf('<info>[%s][%s]</info> %s',$time->format('H:i:s'),$record['level_name'],$message));
+        $format = '<info>[%s][%s]</info> %s';
+
+        if($record['level_name']=='ERROR'){
+            $format = '<log-error>[%s][%s] %s </log-error>';
+        }
+
+        $output->writeln(sprintf($format,$time->format('H:i:s'),$record['level_name'],$message));
     }
 }
