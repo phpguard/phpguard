@@ -33,12 +33,12 @@ class DescribeCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $command = './vendor/bin/phpspec desc --ansi '.$input->getArgument('class');
-        passthru($command);
-    }
-
-    private function fromPhpSpec()
-    {
-
+        $phpspec = $this->container->get('phpguard.plugins.phpspec');
+        $runner = $phpspec->createRunner('phpspec',array(
+            'desc',
+            '--ansi',
+            $input->getArgument('class')
+        ));
+        $runner->run();
     }
 }

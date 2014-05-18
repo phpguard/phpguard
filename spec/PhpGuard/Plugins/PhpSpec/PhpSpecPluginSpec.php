@@ -2,10 +2,10 @@
 
 namespace spec\PhpGuard\Plugins\PhpSpec;
 
+require_once __DIR__.'/MockPhpSpecPlugin.php';
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Runner;
 use PhpGuard\Listen\Util\PathUtil;
-use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
@@ -13,25 +13,6 @@ use Psr\Log\LogLevel;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
-class MockPhpSpecPlugin extends PhpSpecPlugin
-{
-    /**
-     * @var Runner
-     */
-    protected $runner;
-
-    public function setRunner(Runner $runner)
-    {
-        $this->runner = $runner;
-    }
-
-    public function createRunner($command,array $arguments=array())
-    {
-        $this->runner->setCommand($command);
-        $this->runner->setArguments($arguments);
-        return $this->runner;
-    }
-}
 
 class PhpSpecPluginSpec extends ObjectBehavior
 {

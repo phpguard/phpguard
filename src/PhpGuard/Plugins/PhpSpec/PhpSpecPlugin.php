@@ -13,12 +13,9 @@ namespace PhpGuard\Plugins\PhpSpec;
 
 
 use PhpGuard\Application\Plugin\Plugin;
-use PhpGuard\Application\Runner;
-use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
 use Psr\Log\LogLevel;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Symfony\Component\Process\Process;
 
 class PhpSpecPlugin extends Plugin
 {
