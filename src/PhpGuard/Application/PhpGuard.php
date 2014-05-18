@@ -11,12 +11,9 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Listen\Adapter\InotifyAdapter;
 use PhpGuard\Listen\Events;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
-
-use Monolog\Logger;
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Interfaces\ContainerInterface;
@@ -24,8 +21,8 @@ use PhpGuard\Application\Listener\ConfigurationListener;
 use PhpGuard\Application\Listener\ChangesetListener;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
 use PhpGuard\Plugins\PHPUnit\PHPUnitPlugin;
-
 use Psr\Log\LogLevel;
+use Monolog\Logger;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\OptionsResolver\Options;
@@ -114,10 +111,13 @@ class PhpGuard
 
         $container->setShared('phpguard.listen.listener',function($c){
             $listener = Listen::to(getcwd());
-            $listener
-                //->setLogger($c->get('phpguard.logger'))
-                ->callback(array($c->get('phpguard'),'listen'))
-            ;
+            $options = $c->get('phpguard')->getOptions();
+            foreach($options['ignores'] as $ignored){
+                $listener->ignores($ignored);
+            }
+            $listener->latency($options['latency']);
+
+            $listener->callback(array($this,'listen'));
             return $listener;
         });
     }
@@ -152,10 +152,6 @@ class PhpGuard
         /* @var \PhpGuard\Listen\Listener $listener */
         $listener = $this->container->get('phpguard.listen.listener');
 
-        foreach($this->options['ignores'] as $ignored){
-            $listener->ignores($ignored);
-        }
-
         $this->log('<info>Starting to watch at <comment>{path}</comment></info>',array('path'=>getcwd()));
         $listener->start();
     }
@@ -164,8 +160,22 @@ class PhpGuard
     {
         $files = $event->getFiles();
         if(!empty($files)){
-            $this->getContainer()->get('phpguard.dispatcher')
-                ->dispatch(PhpGuardEvents::POST_EVALUATE,new EvaluateEvent($event));
+            $dispatcher = $this->container->get('phpguard.dispatcher');
+            $evaluateEvent = new EvaluateEvent($event);
+            $dispatcher->dispatch(
+                PhpGuardEvents::PRE_RUN_COMMANDS,
+                $evaluateEvent
+            );
+
+            $dispatcher->dispatch(
+                PhpGuardEvents::POST_EVALUATE,
+                $evaluateEvent
+            );
+
+            $dispatcher->dispatch(
+                PhpGuardEvents::POST_RUN_COMMANDS,
+                $evaluateEvent
+            );
         }
     }
 
@@ -185,6 +195,7 @@ class PhpGuard
     {
         $resolver->setDefaults(array(
             'ignores' => array(),
+            'latency' => 1000000,
         ));
 
         $resolver->setNormalizers(array(

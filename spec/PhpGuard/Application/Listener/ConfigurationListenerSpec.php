@@ -40,6 +40,8 @@ class ConfigurationListenerSpec extends ObjectBehavior
 
         $guard->loadPlugins()
             ->shouldBeCalled();
+        $guard->setOptions(array())
+            ->shouldBeCalled();
         $this->preLoad($event);
     }
 
@@ -57,6 +59,8 @@ class ConfigurationListenerSpec extends ObjectBehavior
             ->shouldBeCalled()
             ->willReturn(array())
         ;
+
+
         $this->postLoad($event);
     }
 }

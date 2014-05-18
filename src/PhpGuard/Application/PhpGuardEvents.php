@@ -18,4 +18,7 @@ final class PhpGuardEvents
     const CONFIG_POST_LOAD  = 'postLoadConfiguration';
 
     const POST_EVALUATE = 'postEvaluateFilesystem';
+
+    const PRE_RUN_COMMANDS = 'preRunCommands';
+    const POST_RUN_COMMANDS = 'postRunCommands';
 }

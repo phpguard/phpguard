@@ -36,12 +36,13 @@ class PhpGuardSpec extends ObjectBehavior
         $this->shouldHaveType('PhpGuard\Application\PhpGuard');
     }
 
-    function it_should_set_default_options(OptionsResolverInterface $resolver)
+    function it_should_set_default_options()
     {
         $this->setOptions(array());
         $options = $this->getOptions();
 
         $options->shouldHaveKey('ignores');
+        $options->shouldHaveKey('latency');
     }
 
     function it_should_start_listen_properly(Listener $listener,ContainerInterface $container)
@@ -55,9 +56,6 @@ class PhpGuardSpec extends ObjectBehavior
 
         $listener->start()
             ->shouldBeCalled();
-        $listener->ignores(Argument::any())
-            ->shouldBeCalled();
-
         $this->start();
     }
 }

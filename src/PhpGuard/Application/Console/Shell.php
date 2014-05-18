@@ -50,13 +50,22 @@ class Shell extends ContainerAware
         $this->output = $container->get('phpguard.ui.output');
     }
 
-    private $prompting = true;
-
     /**
      * Runs the shell.
      */
     public function run()
     {
+        $container = $this->container;
+        $dispatcher = $container->get('phpguard.dispatcher');
+        $dispatcher->addListener(
+            PhpGuardEvents::PRE_RUN_COMMANDS,
+            array($this,'preRunCommand')
+        );
+        $dispatcher->addListener(
+            PhpGuardEvents::POST_RUN_COMMANDS,
+            array($this,'postRunCommand')
+        );
+
         $this->application->setAutoExit(false);
         $this->application->setCatchExceptions(true);
 
@@ -88,7 +97,6 @@ class Shell extends ContainerAware
                     }
                 }
             }else{
-                //$this->container->get('phpguard')->evaluate();
                 $this->evaluate();
             }
         }
@@ -96,26 +104,23 @@ class Shell extends ContainerAware
 
     public function evaluate()
     {
-        // TODO: should place this somewhere else!!!!
         /* @var \PhpGuard\Listen\Listener $listener */
         $listener = $this->container->get('phpguard.listen.listener');
-        if(!$listener->getAdapter()){
-            $listener->setAdapter(Listen::getDefaultAdapter());
-        }
-        $listener->getAdapter()->evaluate();
-        $changeset = $listener->getAdapter()->getChangeSet();
+        $listener->evaluate();
+    }
 
-        if(!empty($changeset)){
-            $this->output->writeln("");
-            $this->output->writeln('<info>Start to running commands</info>');
+    public function preRunCommand()
+    {
+        $this->getOutput()->writeln("");
+        $this->container->get('phpguard')
+            ->log('<info>Start to run commands</info>');
+        $this->unsetStreamBlocking();
+    }
 
-            $this->unsetStreamBlocking();
-            $event = new ChangeSetEvent($listener,$changeset);
-            $this->container->get('phpguard.dispatcher')
-                ->dispatch(PhpGuardEvents::POST_EVALUATE,new EvaluateEvent($event));
-            $this->setStreamBlocking();
-            $this->installReadlineCallback();
-        }
+    public function postRunCommand()
+    {
+        $this->setStreamBlocking();
+        $this->installReadlineCallback();
     }
 
     private function unsetStreamBlocking()
@@ -131,7 +136,6 @@ class Shell extends ContainerAware
     {
         // bring back shell behavior
         stream_set_blocking(STDIN,0);
-        //$this->installReadlineCallback();
     }
 
     public function readlineCallback($return)
