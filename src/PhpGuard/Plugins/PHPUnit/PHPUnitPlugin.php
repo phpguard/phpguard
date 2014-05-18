@@ -36,7 +36,7 @@ class PHPUnitPlugin extends Plugin
         $runner = $this->createRunner('phpunit',$arguments);
         $return = $runner->run();
         if(!$return){
-            $this->log('Command all tests failed');
+            $this->log('<log-error>Command all tests failed</log-error>');
         }else{
             $this->log('Command all tests success');
         }
@@ -58,11 +58,11 @@ class PHPUnitPlugin extends Plugin
         if($success){
             $this->log('Command test success');
             if($this->options['all_after_pass']){
-                $this->log('Running all tests after pass');
+                $this->log('Run all tests after pass');
                 $this->runAll();
             }
         }else{
-            $this->log('Command test failed');
+            $this->log('<log-error>Command test failed</log-error>');
         }
     }
 

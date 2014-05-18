@@ -38,7 +38,6 @@ class PhpSpecPlugin extends Plugin
         $options = array_merge($this->options,$options);
         $arguments = $this->buildArguments($options);
         $runner = $this->createRunner('phpspec',$arguments);
-        $this->log('Start to run allspecs');
         $return = $runner->run();
         if($return){
             $this->log('All spec pass');
@@ -52,13 +51,6 @@ class PhpSpecPlugin extends Plugin
         $success = true;
         foreach($paths as $file)
         {
-            $this->log(sprintf(
-                'Run specs for <comment>%s</comment>',
-                $file->getRelativePathname()
-            ));
-
-
-
             $arguments = $this->buildArguments($this->options);
             $arguments[] = $file->getRelativePathName();
             $runner = $this->createRunner('phpspec',$arguments);
