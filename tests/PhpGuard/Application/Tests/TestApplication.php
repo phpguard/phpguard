@@ -20,11 +20,14 @@ class TestApplication extends Application
     {
         parent::__construct();
 
+        $phpguard = new TestPhpGuard();
+        $phpguard->setOptions(array());
         $this->getContainer()
-            ->set('phpguard',new TestPhpGuard())
+            ->set('phpguard',$phpguard)
         ;
         $this->setCatchExceptions(true);
         $this->setAutoExit(false);
+
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)
@@ -32,10 +35,7 @@ class TestApplication extends Application
         $container = $this->getContainer();
         $container->set('phpguard.ui.input',$input);
         $container->set('phpguard.ui.output',$output);
-        $container->set('phpguard.ui.shell',new TestShell($this->getContainer()))
-        ;
+        $container->set('phpguard.ui.shell',new TestShell($this->getContainer()));
         parent::doRun($input,$output);
     }
-
-
 } 

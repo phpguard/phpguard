@@ -15,7 +15,7 @@ use PhpGuard\Application\Tests\FunctionalTestCase;
 
 class ApplicationTest extends FunctionalTestCase
 {
-    public function testShouldStartTest()
+    public function testShouldStartShellOnRunning()
     {
         $tester = $this->getApplicationTester();
         $exit = $tester->run(array());
@@ -24,4 +24,3 @@ class ApplicationTest extends FunctionalTestCase
         $this->assertContains('Shell is running',$display);
     }
 }
- 

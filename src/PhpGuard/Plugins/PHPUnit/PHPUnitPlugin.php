@@ -27,16 +27,40 @@ class PHPUnitPlugin extends Plugin
 
     public function runAll()
     {
-        // TODO: Implement runAll() method.
+        $arguments = array();
+        $runner = $this->createRunner('phpunit',$arguments);
+        $return = $runner->run();
+        if(!$return){
+            $this->log('Command run all failed');
+        }else{
+            $this->log('Command run all success');
+        }
     }
 
     public function run(array $paths = array())
     {
-        
+        $success = true;
+        foreach($paths as $path){
+            $arguments = array();
+            $arguments[] = $path;
+            $runner = $this->createRunner('phpunit',$arguments);
+            $return = $runner->run();
+            if(!$return){
+                $success = false;
+            }
+        }
+
+        if($success){
+            $this->log('Command success');
+        }else{
+            $this->log('Command failed');
+        }
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        // TODO: Implement setDefaultOptions() method.
+        $resolver->setDefaults(array(
+            'cli' => null,
+        ));
     }
 }

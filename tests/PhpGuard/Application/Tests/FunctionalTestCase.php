@@ -23,14 +23,17 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
         return new TestPhpGuard();
     }
 
+    public function getApplication()
+    {
+        return new TestApplication();
+    }
+
     /**
      * @return \ApplicationTester
      */
     protected function getApplicationTester()
     {
-        $app = new TestApplication();
-        $tester = new ApplicationTester($app);
-
+        $tester = new ApplicationTester($this->getApplication());
         return $tester;
     }
 } 

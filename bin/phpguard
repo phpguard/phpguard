@@ -19,6 +19,6 @@ if (is_dir($vendor = __DIR__ . '/../vendor')) {
     );
 }
 
-
+set_time_limit(0);
 $app = new \PhpGuard\Application\Console\Application();
 $app->run();
