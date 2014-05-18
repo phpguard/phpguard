@@ -2,6 +2,7 @@
 
 namespace spec\PhpGuard\Application\Plugin;
 
+use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
@@ -9,6 +10,7 @@ use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class MockPlugin extends Plugin
@@ -37,10 +39,11 @@ class MockPlugin extends Plugin
 
 class PluginSpec extends ObjectBehavior
 {
-    function let(Watcher $watcher)
+    function let(Watcher $watcher,ContainerInterface $container)
     {
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPlugin');
         $this->addWatcher($watcher);
+        $this->setContainer($container);
     }
 
     function it_is_initializable()
@@ -126,5 +129,15 @@ class PluginSpec extends ObjectBehavior
     {
         $this->setOptions(array('some' => 'value'))->shouldReturn($this);
         $this->getOptions()->shouldContain('value');
+    }
+
+    function it_should_create_runner(ContainerInterface $container,OutputInterface $output)
+    {
+        $container->get('phpguard.ui.output')
+            ->willReturn($output);
+
+        $runner = $this->createRunner('some',array('foobar'));
+        $runner->shouldHaveType('PhpGuard\\Application\\Runner');
+        $runner->getArguments()->shouldContain('foobar');
     }
 }
