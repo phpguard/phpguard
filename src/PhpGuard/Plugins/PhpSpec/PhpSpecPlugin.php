@@ -19,14 +19,14 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class PhpSpecPlugin extends Plugin
 {
-    private $phpSpecCommand;
-
     public function configure()
     {
         /* @var \PhpGuard\Application\Console\Application $application */
         $container = $this->container;
         $application = $container->get('phpguard.ui.application');
-        $application->add(new DescribeCommand());
+        $command = new DescribeCommand();
+        $command->setContainer($this->container);
+        $application->add($command);
     }
 
     public function getName()

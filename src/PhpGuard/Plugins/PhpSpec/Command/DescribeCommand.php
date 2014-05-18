@@ -23,9 +23,6 @@ class DescribeCommand extends Command
     protected function configure()
     {
         $this->setName('phpspec:describe');
-        //$this->addArgument('class',InputArgument::REQUIRED,'Class to describe');
-        $app = new Application('PHPGUARD');
-
         $base = new BaseCommand();
         $this->setDefinition($base->getDefinition());
         $this->setHelp($base->getHelp());
