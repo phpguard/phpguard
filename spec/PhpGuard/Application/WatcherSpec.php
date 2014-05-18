@@ -37,31 +37,23 @@ class WatcherSpec extends ObjectBehavior
 
     function it_should_generate_default_options(OptionsResolverInterface $resolver)
     {
-        $resolver->setRequired(array('pattern'))
-            ->shouldBeCalled();
-        $resolver->setDefaults(array(
-                'tags' => array(),
-            ))
-            ->shouldBeCalled()
-        ;
-        $this->setDefaultOptions($resolver);
-
         $this->setOptions(array('pattern'=>'some_pattern'));
 
         $options = $this->getOptions();
         $options->shouldHaveKey('pattern');
         $options->shouldHaveKey('tags');
+        $options->shouldHaveKey('transform');
     }
 
-    function its_matchFile_returns_true_if_file_is_matched()
+    function its_matchFile_returns_SplFileInfo_is_matched()
     {
         $this->setOptions(array(
             'pattern' => '#.*\.php$#',
         ));
-        $this->matchFile(__FILE__)->shouldReturn(true);
+        $this->matchFile(__FILE__)->shouldHaveType('SplFileInfo');
 
         $resource = new FileResource(__FILE__);
-        $this->matchFile($resource)->shouldReturn(true);
+        $this->matchFile($resource)->shouldHaveType('SplFileInfo');
     }
 
     function its_matchFile_should_check_with_relative_path_name()
@@ -69,7 +61,7 @@ class WatcherSpec extends ObjectBehavior
         $this->setOptions(array(
             'pattern' => '#^spec\/.*\.php$#',
         ));
-        $this->matchFile(__FILE__)->shouldReturn(true);
+        $this->matchFile(__FILE__)->shouldHaveType('SplFileInfo');
 
         touch($file = mfs::$tmpDir.'/foobar.php');
 
@@ -79,5 +71,16 @@ class WatcherSpec extends ObjectBehavior
     function its_matchFile_returns_false_if_file_not_exists()
     {
         $this->matchFile('/tmp/foobar.php')->shouldReturn(false);
+    }
+
+    function its_matchFile_should_transform_file_if_defined()
+    {
+        $this->setOptions(array(
+            'pattern' => '#^src\/(.+)\.php$#',
+            'transform' => 'spec/${1}Spec.php'
+        ));
+
+        $spl = $this->matchFile(getcwd().'/src/PhpGuard/Application/Watcher.php');
+        $spl->getRelativePathName()->shouldReturn('spec/PhpGuard/Application/WatcherSpec.php');
     }
 }

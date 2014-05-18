@@ -55,14 +55,22 @@ class Watcher
 
         $pattern = $this->options['pattern'];
 
+        $retVal = false;
         if(preg_match($pattern,$file)){
-            return true;
-        }
-        if(preg_match($pattern,$file->getRelativePathname())){
-            return true;
+            $retVal = $file;
+        }elseif(preg_match($pattern,$file->getRelativePathname())){
+            $retVal = $file;
         }
 
-        return false;
+        if($retVal && $this->options['transform']){
+            $transformed = preg_replace($pattern,$this->options['transform'],$file->getRelativePathname());
+            if(!is_file($transformed)){
+                return false;
+            }
+            $retVal = PathUtil::createSplFileInfo(getcwd(),$transformed);
+        }
+
+        return $retVal;
     }
 
     public function setDefaultOptions(OptionsResolverInterface  $resolver)
@@ -73,6 +81,7 @@ class Watcher
 
         $resolver->setDefaults(array(
             'tags' => array(),
+            'transform' => null,
         ));
     }
 

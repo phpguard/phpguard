@@ -58,11 +58,11 @@ abstract class Plugin extends ContainerAware implements PluginInterface,LoggerAw
         $filtered = array();
         $files = $event->getFiles();
         foreach($files as $file){
-            if($this->matchFile($file)){
-                if(!$file instanceof SplFileInfo){
-                    $file = PathUtil::createSplFileInfo(getcwd(),$file);
+            if($matched=$this->matchFile($file)){
+                if(!$matched instanceof SplFileInfo){
+                    $matched = PathUtil::createSplFileInfo(getcwd(),$matched);
                 }
-                $filtered[] = $file;
+                $filtered[] = $matched;
             }
         }
         return $filtered;
@@ -107,12 +107,17 @@ abstract class Plugin extends ContainerAware implements PluginInterface,LoggerAw
         return $runner;
     }
 
+    /**
+     * @param $file
+     * @return bool|SplFileInfo
+     * @author Anthonius Munthi <me@itstoni.com>
+     */
     private function matchFile($file)
     {
         /* @var Watcher $watcher */
         foreach($this->watchers as $watcher){
-            if($watcher->matchFile($file)){
-                return true;
+            if($matched = $watcher->matchFile($file)){
+                return $matched;
             }
         }
         return false;
