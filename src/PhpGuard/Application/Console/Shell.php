@@ -155,12 +155,14 @@ class Shell extends ContainerAware
      */
     private function doRunCommand($command)
     {
-        $command = trim($command);
-        if($command=='quit'){
+        if(false===$command){
             $this->exitShell();
         }
 
-        if($command=='' || $command=='run-all'){
+        $command = trim($command);
+        if($command=='quit'){
+            $this->exitShell();
+        }elseif($command=='' || $command=='run-all'){
             $this->doRunAll();
         }else{
             $this->unsetStreamBlocking();
@@ -176,6 +178,7 @@ class Shell extends ContainerAware
     private function doRunAll()
     {
         $this->unsetStreamBlocking();
+        $this->getOutput()->writeln("");
         /* @var PluginInterface $plugin */
         $plugins = $this->container->getByPrefix('phpguard.plugins');
         foreach($plugins as $plugin){
