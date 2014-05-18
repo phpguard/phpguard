@@ -97,6 +97,34 @@ class PHPUnitPluginSpec extends ObjectBehavior
         $this->run(array($spl));
     }
 
+    function it_should_run_all_after_pass_if_defined_in_options(
+        Runner $runner,
+        PhpGuard $phpGuard
+    )
+    {
+        $this->setOptions(array(
+            'all_after_pass' => true,
+            'cli' => '--exclude-group phpspec'
+        ));
+        $runner->setCommand('phpunit')
+            ->shouldBeCalled();
+
+        $runner->run()
+            ->shouldBeCalled()
+            ->willReturn(true);
+
+        $spl = PathUtil::createSplFileInfo(getcwd(),'PhpGuard\\Application\\PhpGuard');
+        $runner->setArguments(Argument::cetera())
+            ->shouldBeCalled();
+
+        $phpGuard->log(Argument::containingString('success'),Argument::cetera())
+            ->shouldBeCalled();
+        $phpGuard->log(Argument::containingString('after pass'),Argument::cetera())
+            ->shouldBeCalled();
+
+        $this->run(array($spl));
+    }
+
     function it_should_run_all_properly(Runner $runner,PhpGuard $phpGuard)
     {
         $runner->setCommand('phpunit')

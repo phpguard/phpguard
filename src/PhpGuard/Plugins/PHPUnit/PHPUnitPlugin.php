@@ -20,6 +20,11 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
  */
 class PHPUnitPlugin extends Plugin
 {
+    public function __construct()
+    {
+        $this->setOptions(array());
+    }
+
     public function getName()
     {
         return 'phpunit';
@@ -27,13 +32,13 @@ class PHPUnitPlugin extends Plugin
 
     public function runAll()
     {
-        $arguments = array();
+        $arguments = $this->buildArguments();
         $runner = $this->createRunner('phpunit',$arguments);
         $return = $runner->run();
         if(!$return){
-            $this->log('Command run all failed');
+            $this->log('Command all tests failed');
         }else{
-            $this->log('Command run all success');
+            $this->log('Command all tests success');
         }
     }
 
@@ -41,7 +46,7 @@ class PHPUnitPlugin extends Plugin
     {
         $success = true;
         foreach($paths as $path){
-            $arguments = array();
+            $arguments = $this->buildArguments();
             $arguments[] = $path;
             $runner = $this->createRunner('phpunit',$arguments);
             $return = $runner->run();
@@ -51,9 +56,13 @@ class PHPUnitPlugin extends Plugin
         }
 
         if($success){
-            $this->log('Command success');
+            $this->log('Command test success');
+            if($this->options['all_after_pass']){
+                $this->log('Running all tests after pass');
+                $this->runAll();
+            }
         }else{
-            $this->log('Command failed');
+            $this->log('Command test failed');
         }
     }
 
@@ -61,6 +70,18 @@ class PHPUnitPlugin extends Plugin
     {
         $resolver->setDefaults(array(
             'cli' => null,
+            'all_after_pass' => false,
         ));
+    }
+
+    private function buildArguments()
+    {
+        $arguments = array();
+        $options = $this->options;
+        if(isset($options['cli'])){
+            $arguments[] = $options['cli'];
+        }
+
+        return $arguments;
     }
 }
