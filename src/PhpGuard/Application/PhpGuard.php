@@ -89,11 +89,11 @@ class PhpGuard
             return $logger;
         });*/
 
-        $container->setShared('phpguard.dispatcher.listeners.config',function($c){
+        $container->setShared('phpguard.dispatcher.listeners.config',function(){
             return new ConfigurationListener();
         });
 
-        $container->setShared('phpguard.dispatcher.listeners.changeset',function($c){
+        $container->setShared('phpguard.dispatcher.listeners.changeset',function(){
             return new ChangesetListener();
         });
 

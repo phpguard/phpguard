@@ -70,7 +70,6 @@ class Shell extends ContainerAware
         $this->application->setCatchExceptions(true);
 
         $this->output->writeln($this->getHeader());
-        $php = null;
 
         if ($this->hasReadline) {
             readline_read_history($this->history);
@@ -236,7 +235,7 @@ EOF;
      *
      * @return bool|array    A list of guessed strings or true
      */
-    private function autocompleter($text)
+    private function autocompleter()
     {
         $info = readline_info();
         $text = substr($info['line_buffer'], 0, $info['end']);
