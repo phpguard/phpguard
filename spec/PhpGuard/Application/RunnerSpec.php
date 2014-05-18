@@ -25,7 +25,6 @@ class RunnerSpec extends ObjectBehavior
 
         $this->getArguments()->shouldHaveKey('name');
         $this->getArguments()->shouldContain('value');
-        $this->getArguments()->shouldHaveKey('foobar');
     }
 
     function its_output_should_be_mutable(OutputInterface $output)
