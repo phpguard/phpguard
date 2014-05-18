@@ -1,6 +1,6 @@
 {
-    "name": "phpguard/development",
-    "description": "PHP PhpGuard Development Package",
+    "name": "phpguard/phpguard",
+    "description": "Simple tool to monitor file changes, and run test automatically.",
     "license": "MIT",
     "authors": [
         {
@@ -26,5 +26,10 @@
             "PhpGuard": "src/"
         }
     },
-    "bin": ["bin/phpguard"]
+    "bin": ["bin/phpguard"],
+    "extra":  {
+        "branch-alias": {
+            "dev-master": "0.1-dev"
+        }
+    }
 }
