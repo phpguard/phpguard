@@ -15,12 +15,12 @@ class PhpSpecPluginSpec extends ObjectBehavior
 
     function it_should_set_default_options_properly(OptionsResolverInterface $resolver)
     {
-        $resolver->setDefaults(array(
-                'format' => 'pretty',
-                'ansi' => true
-            ))
-            ->shouldBeCalled()
-        ;
-        $this->setDefaultOptions($resolver);
+        $this->setOptions(array());
+
+        $options = $this->getOptions();
+
+        $options->shouldHaveKey('run_all');
+        $options->shouldHaveKey('format');
+        $options->shouldHaveKey('all_after_pass');
     }
 }

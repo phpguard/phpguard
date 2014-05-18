@@ -13,13 +13,17 @@ namespace PhpGuard\Plugins\PhpSpec;
 
 
 use PhpGuard\Application\Plugin\Plugin;
+use PhpGuard\Application\Runner;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
+use Psr\Log\LogLevel;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Process\Process;
 
 class PhpSpecPlugin extends Plugin
 {
+    private $phpSpecCommand;
+
     public function configure()
     {
         /* @var \PhpGuard\Application\Console\Application $application */
@@ -35,25 +39,45 @@ class PhpSpecPlugin extends Plugin
 
     public function runAll()
     {
-        $command = $this->getPhpSpecCommand();
-        passthru($command);
+
+        $options = $this->options['run_all'];
+        $options = array_merge($this->options,$options);
+        $arguments = $this->buildArguments($options);
+        $runner = $this->createRunner('phpspec',$arguments);
+        $this->log('Start to run allspecs');
+        $return = $runner->run();
+        if($return){
+            $this->log('All spec pass');
+        }else{
+            $this->log('PhpSpec Run All failed',array(),LogLevel::ERROR);
+        }
     }
 
     public function run(array $paths = array())
     {
+        $success = true;
         foreach($paths as $file)
         {
             $this->log(
-                '<info>start to run <comment>phpspec</comment> for <comment>{file}</comment></info>',
+                'Start to run <comment>phpspec</comment> for <comment>{file}</comment>',
                 array('file'=>$file->getRelativePathName())
             );
-            $command = $this->getPhpSpecCommand().' '.$file->getRelativePathName();
-            passthru($command,$exit);
-            if($exit>0){
-                $this->log('<comment>phpspec</comment> failed');
-            }else{
-                $this->log('<info>done executing <comment>phpspec</comment></info>');
+            $arguments = $this->buildArguments($this->options);
+            $arguments[] = $file->getRelativePathName();
+            $runner = $this->createRunner('phpspec',$arguments);
+            $return = $runner->run();
+            if(!$return){
+                $success = false;
             }
+        }
+        if(true===$success){
+            $this->log('Spec Success');
+            if($this->options['all_after_pass']){
+                $this->log('Run all specs after pass');
+                $this->runAll();
+            }
+        }else{
+            $this->log('PhpSpec command failed',array(),LogLevel::ERROR);
         }
     }
 
@@ -62,19 +86,20 @@ class PhpSpecPlugin extends Plugin
         $resolver->setDefaults(array(
             'format' => 'pretty',
             'ansi' => true,
+            'all_after_pass' => false,
+            'run_all' => array(
+                'format' => 'progress'
+            )
         ));
     }
 
-    private function getPhpSpecCommand()
+    private function buildArguments($options)
     {
-        $options = array(
-            //'--no-interaction'
-        );
-
-        if($this->options['ansi']){
-            $options[] = '--ansi';
+        $args = array('run');
+        if($options['ansi']){
+            $args[] = '--ansi';
         }
-        $options[] = '--format='.$this->options['format'];
-        return './vendor/bin/phpspec run '.implode(' ',$options);
+        $args[] = '--format='.$options['format'];
+        return $args;
     }
 }
