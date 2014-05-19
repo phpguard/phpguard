@@ -4,6 +4,7 @@ namespace spec\PhpGuard\Plugins\PhpSpec\Command;
 
 require_once __DIR__.'/../MockPhpSpecPlugin.php';
 
+use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Runner;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;

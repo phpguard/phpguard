@@ -14,7 +14,9 @@ namespace PhpGuard\Application\Listener;
 use PhpGuard\Application\ContainerAware;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Application\Event\EvaluateEvent;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 
 /**
@@ -46,20 +48,95 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public static function getSubscribedEvents()
     {
         return array(
-            PhpGuardEvents::POST_EVALUATE => 'postEvaluate'
+            PhpGuardEvents::POST_EVALUATE => 'postEvaluate',
+            PhpGuardEvents::PRE_RUN_COMMANDS => 'preRunCommand',
+            PhpGuardEvents::POST_RUN_COMMANDS => 'postRunCommand',
+            PhpGuardEvents::runAllCommands => 'runAllCommand',
         );
     }
 
     public function postEvaluate(EvaluateEvent $event)
     {
-        /* @var PluginInterface $plugin */
+        /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
         $container = $this->container;
+
+        $dispatcher = $container->get('phpguard.dispatcher');
 
         foreach($container->getByPrefix('phpguard.plugins') as $plugin){
             $paths = $plugin->getMatchedFiles($event);
             if(count($paths) > 0){
+                $runEvent = new GenericEvent($plugin,$paths);
+                $dispatcher->dispatch(
+                    PhpGuardEvents::PRE_RUN_COMMANDS,
+                    $runEvent
+                );
+
                 $plugin->run($paths);
+
+                $dispatcher->dispatch(
+                    PhpGuardEvents::POST_RUN_COMMANDS,
+                    $runEvent
+                );
             }
         }
+    }
+
+    public function preRunCommand(GenericEvent $event,$paths)
+    {
+        $shell = $this->getShell();
+        $output = $this->container->get('phpguard.ui.output');
+        $output->writeln("");
+        $this->getPhpGuard()->log(
+            'Begin executing '.$event->getSubject()->getName(),
+            'PhpGuard',OutputInterface::VERBOSITY_DEBUG
+        );
+        $shell->unsetStreamBlocking();
+    }
+
+    public function postRunCommand(GenericEvent $event)
+    {
+        $shell = $this->getShell();
+        $this->getPhpGuard()->log(
+            'End executing '.$event->getSubject()->getName(),
+            'PhpGuard',
+            OutputInterface::VERBOSITY_DEBUG
+        );
+        $shell->setStreamBlocking();
+        $shell->installReadlineCallback();
+    }
+
+    public function runAllCommand(GenericEvent $event)
+    {
+        /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
+
+        $this->unsetStreamBlocking();
+
+        $this->getPhpGuard()->log();
+        $this->getPhpGuard()->log('Running all commands');
+        $plugins = $this->container->getByPrefix('phpguard.plugins');
+        foreach($plugins as $plugin)
+        {
+            $plugin->runAll();
+        }
+
+        // restore shell behavior
+        $this->getShell()->setStreamBlocking();
+        $this->getShell()->installReadlineCallback();
+    }
+
+    /**
+     * @return \PhpGuard\Application\Console\Shell
+     */
+    private function getShell()
+    {
+        return $this->container->get('phpguard.ui.shell');
+    }
+
+    /**
+     * @return \PhpGuard\Application\PhpGuard
+     */
+    private function getPhpGuard()
+    {
+        return $this->container->get('phpguard');
     }
 }

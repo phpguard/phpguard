@@ -32,7 +32,12 @@ class PhpGuardSpec extends ObjectBehavior
 {
     protected $cwd;
 
-    function let(ContainerInterface $container,ConsoleOutput $output, OutputFormatter $formatter,EventDispatcherInterface $dispatcher)
+    function let(
+        ContainerInterface $container,
+        ConsoleOutput $output,
+        OutputFormatter $formatter,
+        EventDispatcherInterface $dispatcher
+    )
     {
         $container->get('phpguard.ui.output')
             ->willReturn($output);
@@ -94,16 +99,8 @@ class PhpGuardSpec extends ObjectBehavior
     {
         $event->getFiles()
             ->willReturn(array('some_file'));
-
-        $output->writeln('')->shouldBeCalled();
-        $dispatcher->dispatch(PhpGuardEvents::PRE_RUN_COMMANDS,Argument::cetera())
-            ->shouldBeCalled()
-        ;
         $dispatcher->dispatch(PhpGuardEvents::POST_EVALUATE,Argument::cetera())
             ->shouldBeCalled();
-        $dispatcher->dispatch(PhpGuardEvents::POST_RUN_COMMANDS,Argument::cetera())
-            ->shouldBeCalled();
-
         $this->listen($event);
     }
 

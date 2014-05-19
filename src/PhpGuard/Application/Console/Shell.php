@@ -11,10 +11,12 @@ namespace PhpGuard\Application\Console;
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Application\ContainerAware;
 use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * A Shell wraps an PhpGuard to add shell capabilities to it.
@@ -22,18 +24,39 @@ use Symfony\Component\Console\Input\StringInput;
  * Support for history and completion only works with a PHP compiled
  * with readline support (either --with-readline or --with-libedit)
  *
- * @author Fabien Potencier <fabien@symfony.com>
- * @author Martin Hasoň <martin.hason@gmail.com>
  */
-class Shell extends ContainerAware
+class Shell
 {
-    private $application;
-    private $history;
-    private $output;
-    private $hasReadline;
-    private $processIsolation = false;
 
+    /**
+     * @var \PhpGuard\Application\Console\Application
+     */
+    private $application;
+
+    /**
+     * @var string
+     */
+    private $history;
+
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    /**
+     * @var bool
+     */
+    private $hasReadline;
+
+    /**
+     * @var bool
+     */
     private $running = false;
+
+    /**
+     * @var bool
+     */
+    private $initialized = false;
 
     /**
      * @param ContainerInterface $container
@@ -44,57 +67,61 @@ class Shell extends ContainerAware
         $this->application = $container->get('phpguard.ui.application');
         $this->history = getenv('HOME').'/.history_phpguard';
         $this->output = $container->get('phpguard.ui.output');
+        $this->container = $container;
+        $this->application->setAutoExit(false);
+        $this->application->setCatchExceptions(true);
     }
 
     /**
      * Runs the shell.
+     * @codeCoverageIgnore
      */
     public function run()
     {
-        $container = $this->container;
-        $dispatcher = $container->get('phpguard.dispatcher');
-        $dispatcher->addListener(
-            PhpGuardEvents::PRE_RUN_COMMANDS,
-            array($this,'preRunCommand')
-        );
-        $dispatcher->addListener(
-            PhpGuardEvents::POST_RUN_COMMANDS,
-            array($this,'postRunCommand')
-        );
-
-        $this->application->setAutoExit(false);
-        $this->application->setCatchExceptions(true);
-
-        $this->output->writeln($this->getHeader());
-
-        if ($this->hasReadline) {
-            readline_read_history($this->history);
-            readline_completion_function(array($this, 'autocompleter'));
-            $this->installReadlineCallback();
-        }
-        $this->running = true;
+        $evaluate = false;
         stream_set_blocking(STDIN,0);
         while ($this->running) {
             $r = array(STDIN);
             $w = array();
             $e = array();
-            $n = stream_select($r,$w,$e,2);
+            $n = @stream_select($r,$w,$e,2);
             if ($n && in_array(STDIN, $r)) {
-                // read a character, will call the callback when a newline is entered
-                if($this->hasReadline){
-                    readline_callback_read_char();
-                }else{
-                    $this->output->write($this->getPrompt());
-                    $line = fgets(STDIN, 1024);
-                    $line = (!$line && strlen($line) == 0) ? false : rtrim($line);
-                    if(false==$line){
-                        $this->doRunCommand($line);
-                    }
-                }
-            }else{
-                $this->evaluate();
+                $this->readline();
+            }
+            else{
+                $this->stop();
+                $evaluate = true;
             }
         }
+        if($evaluate){
+            $this->evaluate();
+        }
+    }
+
+    private function readline()
+    {
+        if($this->hasReadline){
+            // read a character, will call the callback when a newline is entered
+            readline_callback_read_char();
+        }
+        else{
+            $this->output->write($this->getPrompt());
+            $line = fgets(STDIN, 1024);
+            $line = (!$line && strlen($line) == 0) ? false : rtrim($line);
+            $this->doRunCommand($line);
+        }
+    }
+
+    public function start()
+    {
+        $this->initialize();
+        $this->running = true;
+        $this->run();
+    }
+
+    public function stop()
+    {
+        $this->running = false;
     }
 
     public function evaluate()
@@ -102,21 +129,13 @@ class Shell extends ContainerAware
         /* @var \PhpGuard\Listen\Listener $listener */
         $listener = $this->container->get('phpguard.listen.listener');
         $listener->evaluate();
+        $this->start();
     }
 
-    public function preRunCommand()
-    {
-        $this->getOutput()->writeln("");
-        $this->unsetStreamBlocking();
-    }
-
-    public function postRunCommand()
-    {
-        $this->setStreamBlocking();
-        $this->installReadlineCallback();
-    }
-
-    private function unsetStreamBlocking()
+    /**
+     * @codeCoverageIgnore
+     */
+    public function unsetStreamBlocking()
     {
         // normalize console behavior first
         stream_set_blocking(STDIN,1);
@@ -125,46 +144,51 @@ class Shell extends ContainerAware
         }
     }
 
-    private function setStreamBlocking()
+    /**
+     * @codeCoverageIgnore
+     */
+    public function setStreamBlocking()
     {
         // bring back shell behavior
         stream_set_blocking(STDIN,0);
     }
 
-    public function readlineCallback($return)
-    {
-        $return = trim($return);
-        $this->doRunCommand($return);
-        $this->installReadlineCallback();
-    }
-
-    private function installReadlineCallback()
+    /**
+     * @codeCoverageIgnore
+     */
+    public function installReadlineCallback()
     {
         if($this->hasReadline){
-            readline_callback_handler_install($this->getPrompt(),array($this,'readlineCallback'));
+            readline_callback_handler_install($this->getPrompt(),array($this,'doRunCommand'));
         }
     }
 
+    /**
+     * @return bool
+     */
     public function isRunning()
     {
         return $this->running;
     }
 
     /**
-     * @param false|string $command
+     * @param   mixed $command
+     * @return int
      */
-    private function doRunCommand($command)
+    public function doRunCommand($command)
     {
-        if(false===$command){
-            $this->exitShell();
+        if($command==false){
+            $this->doRunAll();
+            return;
         }
-
         $command = trim($command);
         if($command=='quit'){
             $this->exitShell();
-        }elseif($command=='' || $command=='run-all'){
+        }
+        elseif($command=='run-all'){
             $this->doRunAll();
-        }else{
+        }
+        else{
             $this->unsetStreamBlocking();
             readline_add_history(trim($command));
             readline_write_history($this->history);
@@ -175,16 +199,15 @@ class Shell extends ContainerAware
         }
     }
 
+    /**
+     * Run all plugins command
+     */
     private function doRunAll()
     {
-        $this->unsetStreamBlocking();
-        $this->getOutput()->writeln("");
-        /* @var PluginInterface $plugin */
-        $plugins = $this->container->getByPrefix('phpguard.plugins');
-        foreach($plugins as $plugin){
-            $plugin->runAll();
-        }
-        $this->setStreamBlocking();
+        // dispatch run all events
+        $event = new GenericEvent($this,array());
+        $dispatcher = $this->container->get('phpguard.dispatcher');
+        $dispatcher->dispatch(PhpGuardEvents::runAllCommands,$event);
         readline_add_history('run-all');
         readline_write_history($this->history);
     }
@@ -219,17 +242,6 @@ EOF;
         // using the formatter here is required when using readline
         return $this->output->getFormatter()->format("\n".$this->application->getName().'>> ');
     }
-
-    protected function getOutput()
-    {
-        return $this->output;
-    }
-
-    protected function getApplication()
-    {
-        return $this->application;
-    }
-
     /**
      * Tries to return autocompletion for the current entered text.
      *
@@ -270,24 +282,31 @@ EOF;
         return $list;
     }
 
-    public function getProcessIsolation()
-    {
-        return $this->processIsolation;
-    }
-
-    public function setProcessIsolation($processIsolation)
-    {
-        $this->processIsolation = (bool) $processIsolation;
-
-        if ($this->processIsolation && !class_exists('Symfony\\Component\\Process\\Process')) {
-            throw new \RuntimeException('Unable to isolate processes as the Symfony Process Component is not installed.');
-        }
-    }
-
+    /**
+     * Exiting shell
+     * @codeCoverageIgnore
+     */
     public function exitShell()
     {
         $this->output->writeln('');
         $this->output->writeln('Exit PhpGuard. <comment>bye... bye...!</comment>');
         exit(0);
+    }
+
+    /**
+     * Runs on shell first start
+     */
+    private function initialize()
+    {
+        if($this->initialized){
+            return;
+        }
+        $this->output->writeln($this->getHeader());
+        if ($this->hasReadline) {
+            readline_read_history($this->history);
+            readline_completion_function(array($this, 'autocompleter'));
+            $this->installReadlineCallback();
+        }
+        $this->initialized = true;
     }
 }

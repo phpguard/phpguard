@@ -15,7 +15,10 @@ namespace PhpGuard\Application\Interfaces;
 interface ContainerAwareInterface
 {
     /**
-     * @return void
+     * Set container for command
+     *
+     * @param   ContainerInterface $container
+     * @return  mixed
      */
     public function setContainer(ContainerInterface $container);
 } 

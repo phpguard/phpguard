@@ -29,7 +29,8 @@ class DescribeCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $phpspec = $this->container->get('phpguard.plugins.phpspec');
+        $container = $this->container;
+        $phpspec = $container->get('phpguard.plugins.phpspec');
         $runner = $phpspec->createRunner('phpspec',array(
             'desc',
             '--ansi',

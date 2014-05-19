@@ -21,6 +21,6 @@ class ApplicationTest extends FunctionalTestCase
         $exit = $tester->run(array());
         $display = $tester->getDisplay(true);
         $this->assertEquals(0,$exit);
-        $this->assertContains('Shell is running',$display);
+        $this->assertContains('Welcome',$display);
     }
 }

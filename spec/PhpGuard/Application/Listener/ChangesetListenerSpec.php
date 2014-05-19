@@ -9,17 +9,22 @@ use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ChangesetListenerSpec extends ObjectBehavior
 {
     function let(
         ContainerInterface $container,
         PluginInterface $plugin,
-        EvaluateEvent $evaluateEvent
+        EvaluateEvent $evaluateEvent,
+        EventDispatcherInterface $dispatcher
     )
     {
         $container->getByPrefix('phpguard.plugins')
             ->willReturn(array($plugin));
+
+        $container->get('phpguard.dispatcher')
+            ->willReturn($dispatcher);
 
         $this->setContainer($container);
     }
@@ -36,7 +41,8 @@ class ChangesetListenerSpec extends ObjectBehavior
 
     function it_should_run_plugins_when_the_paths_is_matched(
         EvaluateEvent $evaluateEvent,
-        PluginInterface $plugin
+        PluginInterface $plugin,
+        EventDispatcherInterface $dispatcher
     )
     {
         $plugin->getMatchedFiles($evaluateEvent)

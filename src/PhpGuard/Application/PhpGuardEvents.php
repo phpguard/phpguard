@@ -21,4 +21,6 @@ final class PhpGuardEvents
 
     const PRE_RUN_COMMANDS = 'preRunCommands';
     const POST_RUN_COMMANDS = 'postRunCommands';
+
+    const runAllCommands = 'phpGuardRunAllCommands';
 }

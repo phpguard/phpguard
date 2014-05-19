@@ -76,18 +76,6 @@ class PhpGuard
             return $dispatcher;
         });
 
-        /*$container->setShared('phpguard.logger.handler',function($c){
-            $handler = new Console\LogHandler($c->getParameter('phpguard.log_level'));
-            $handler->setLevel(LogLevel::INFO);
-            return $handler;
-        });
-
-        $container->setShared('phpguard.logger',function($c){
-            $logger = new Logger('PhpGuard');
-            $logger->pushHandler($c->get('phpguard.logger.handler'));
-            return $logger;
-        });*/
-
         $container->setShared('phpguard.dispatcher.listeners.config',function(){
             return new ConfigurationListener();
         });
@@ -159,21 +147,10 @@ class PhpGuard
     {
         $files = $event->getFiles();
         if(!empty($files)){
-            $this->log();
             $dispatcher = $this->container->get('phpguard.dispatcher');
             $evaluateEvent = new EvaluateEvent($event);
             $dispatcher->dispatch(
-                PhpGuardEvents::PRE_RUN_COMMANDS,
-                $evaluateEvent
-            );
-
-            $dispatcher->dispatch(
                 PhpGuardEvents::POST_EVALUATE,
-                $evaluateEvent
-            );
-
-            $dispatcher->dispatch(
-                PhpGuardEvents::POST_RUN_COMMANDS,
                 $evaluateEvent
             );
         }

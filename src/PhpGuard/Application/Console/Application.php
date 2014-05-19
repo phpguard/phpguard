@@ -73,7 +73,7 @@ class Application extends BaseApplication
             /* @var Shell $shell */
             $shell = $container->get('phpguard.ui.shell');
             if(!$shell->isRunning()){
-                return $shell->run();
+                return $shell->start();
             }
             return 0;
         }
