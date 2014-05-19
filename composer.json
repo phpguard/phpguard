@@ -15,7 +15,8 @@
         "symfony/process":  "*",
         "monolog/monolog":  "*",
         "phpguard/listen":  "0.1.*@dev",
-        "symfony/options-resolver": "*"
+        "symfony/options-resolver": "*",
+        "symfony/event-dispatcher": "*"
     },
     "require-dev": {
         "phpspec/phpspec": "~2.0",
