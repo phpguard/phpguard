@@ -260,7 +260,6 @@ EOF;
      *
      *
      * @return bool|array    A list of guessed strings or true
-     * @codeCoverageIgnore
      */
     private function autocompleter()
     {
@@ -313,9 +312,6 @@ EOF;
         $this->initialized = true;
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
     private function readline()
     {
         if($this->hasReadline){
