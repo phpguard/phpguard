@@ -112,7 +112,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $shell->installReadlineCallback();
     }
 
-    public function runAllCommand(GenericEvent $event,$plugin=null)
+    public function runAllCommand(GenericEvent $event)
     {
         /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
 
