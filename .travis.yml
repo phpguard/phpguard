@@ -9,7 +9,6 @@ matrix:
 
 before_script:
   - "pecl install inotify"
-  - "echo \"extension=inotify.so\" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini"
   - composer selfupdate
   - export COMPOSER_ROOT_VERSION=2.0.0-RC3
   - composer install --prefer-source
