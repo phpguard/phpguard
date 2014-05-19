@@ -93,12 +93,11 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
 
         foreach($event->getArgument('paths') as $path){
             $this->getPhpGuard()->log(
-                'Matched file: '.$path->getRelativePathName(),
+                'Match file: '.$path->getRelativePathName(),
                 OutputInterface::VERBOSITY_DEBUG
             );
         }
 
-        // tests;
         $shell->unsetStreamBlocking();
     }
 

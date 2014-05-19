@@ -8,6 +8,7 @@ use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
+use PhpGuard\Listen\Util\PathUtil;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -92,9 +93,12 @@ class ChangesetListenerSpec extends ObjectBehavior
         $phpGuard->log(Argument::containingString('Begin'),Argument::cetera())
             ->shouldBeCalled();
 
+        $phpGuard->log(Argument::containingString('Match file: '),Argument::cetera())
+            ->shouldBeCalled();
         $event->getSubject()->willReturn($plugin);
         $event->getArgument('paths')
-            ->willReturn(array());
+            ->willReturn(array(PathUtil::createSplFileInfo(getcwd(),__FILE__)));
+
         $shell->unsetStreamBlocking()
             ->shouldBeCalled();
 
