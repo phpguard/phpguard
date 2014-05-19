@@ -93,6 +93,8 @@ class ChangesetListenerSpec extends ObjectBehavior
             ->shouldBeCalled();
 
         $event->getSubject()->willReturn($plugin);
+        $event->getArgument('paths')
+            ->willReturn(array());
         $shell->unsetStreamBlocking()
             ->shouldBeCalled();
 
@@ -189,12 +191,11 @@ class ChangesetListenerSpec extends ObjectBehavior
 
         $this->runAllCommand($event);
 
-
-
         $event->getArgument('plugin')
             ->willReturn('foo');
 
         $this->shouldThrow('RuntimeException')
             ->duringRunAllCommand($event);
+
     }
 }

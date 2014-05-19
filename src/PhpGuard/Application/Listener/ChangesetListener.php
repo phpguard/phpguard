@@ -65,7 +65,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         foreach($container->getByPrefix('plugins') as $plugin){
             $paths = $plugin->getMatchedFiles($event);
             if(count($paths) > 0){
-                $runEvent = new GenericEvent($plugin,$paths);
+                $runEvent = new GenericEvent($plugin,array('paths' =>$paths));
                 $dispatcher->dispatch(
                     PhpGuardEvents::preRunCommand,
                     $runEvent
@@ -81,7 +81,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         }
     }
 
-    public function preRunCommand(GenericEvent $event,$paths = array())
+    public function preRunCommand(GenericEvent $event)
     {
         $shell = $this->getShell();
         $output = $this->container->get('ui.output');
@@ -90,6 +90,15 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
             'Begin executing '.$event->getSubject()->getName(),
             OutputInterface::VERBOSITY_DEBUG
         );
+
+        foreach($event->getArgument('paths') as $path){
+            $this->getPhpGuard()->log(
+                'Matched file: '.$path->getRelativePathName(),
+                OutputInterface::VERBOSITY_DEBUG
+            );
+        }
+
+        // tests;
         $shell->unsetStreamBlocking();
     }
 
