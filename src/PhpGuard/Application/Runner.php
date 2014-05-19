@@ -10,7 +10,9 @@ namespace PhpGuard\Application;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+use PhpGuard\Listen\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * Class Runner
@@ -54,11 +56,30 @@ class Runner
     /**
      * @param string $command
      *
+     * @throws \PhpGuard\Listen\Exception\InvalidArgumentException
      * @return Runner
      */
     public function setCommand($command)
     {
+        if(is_executable($executable='./vendor/bin/'.$command)){
+            $command = $executable;
+        }
+        elseif(is_executable($executable='/bin/'.$command)){
+            $command = $executable;
+        }
+        else{
+            $executable = $this->findExecutable($command);
+            if(!is_executable($executable)){
+                throw new InvalidArgumentException(sprintf(
+                    'Command "%s" is not executable',
+                    $command
+                ));
+            }
+            $command = $executable;
+        }
+
         $this->command = $command;
+
         return $this;
     }
 
@@ -96,12 +117,6 @@ class Runner
     public function run()
     {
         $command = $this->command;
-        if(is_file($executable='./vendor/bin/'.$command)){
-            $command = $executable;
-        }
-        elseif(is_file($executable='/bin/'.$command)){
-            $command = $executable;
-        }
 
         $arguments = $command.' '.implode(' ',$this->arguments);
 
@@ -112,5 +127,12 @@ class Runner
         }else{
             return false;
         }
+    }
+
+    private function findExecutable($command)
+    {
+        $finder = new ExecutableFinder();
+        $finder->find($command);
+        return $finder->find($command);
     }
 }

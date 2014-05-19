@@ -1,7 +1,5 @@
 <?php
 
-namespace PhpGuard\Plugins\PHPUnit;
-
 /*
  * This file is part of the PhpGuard project.
  *
@@ -10,6 +8,9 @@ namespace PhpGuard\Plugins\PHPUnit;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace PhpGuard\Plugins\PHPUnit;
+
 use PhpGuard\Application\Plugin\Plugin;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 

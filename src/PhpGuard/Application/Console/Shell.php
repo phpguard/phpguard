@@ -83,7 +83,6 @@ class Shell
      */
     public function run()
     {
-        $evaluate = false;
         stream_set_blocking(STDIN,0);
         while ($this->running) {
             $r = array(STDIN);
@@ -94,12 +93,8 @@ class Shell
                 $this->readline();
             }
             else{
-                $this->stop();
-                $evaluate = true;
+                $this->evaluate();
             }
-        }
-        if($evaluate){
-            $this->evaluate();
         }
     }
 
@@ -120,7 +115,6 @@ class Shell
         /* @var \PhpGuard\Listen\Listener $listener */
         $listener = $this->container->get('listen.listener');
         $listener->evaluate();
-        $this->start();
     }
 
     /**

@@ -113,7 +113,7 @@ class PluginSpec extends ObjectBehavior
         $container->get('ui.output')
             ->willReturn($output);
 
-        $runner = $this->createRunner('some',array('foobar'));
+        $runner = $this->createRunner('phpspec',array('foobar'));
         $runner->shouldHaveType('PhpGuard\\Application\\Runner');
         $runner->getArguments()->shouldContain('foobar');
     }

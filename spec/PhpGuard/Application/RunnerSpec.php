@@ -15,8 +15,14 @@ class RunnerSpec extends ObjectBehavior
 
     function its_command_should_be_mutable()
     {
-        $this->setCommand('any')->shouldReturn($this);
-        $this->getCommand()->shouldReturn('any');
+        $this->setCommand('phpspec')->shouldReturn($this);
+        $this->getCommand()->shouldReturn('./vendor/bin/phpspec');
+    }
+
+    function its_setCommand_throws_when_command_not_executable()
+    {
+        $this->shouldThrow('InvalidArgumentException')
+            ->duringSetCommand('some');
     }
 
     function its_arguments_should_be_mutable()

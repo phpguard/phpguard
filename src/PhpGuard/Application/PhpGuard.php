@@ -39,9 +39,13 @@ class PhpGuard
      */
     private $container;
 
-    private $options = array(
-        'ignores' => array(),
-    );
+    private $options = array();
+
+    public function __construct()
+    {
+        // force to setup default values
+        $this->setOptions(array());
+    }
 
     /**
      * @return Container
