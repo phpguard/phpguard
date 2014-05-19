@@ -59,6 +59,11 @@ class Shell
     private $initialized = false;
 
     /**
+     * @var \PhpGuard\Application\Interfaces\ContainerInterface
+     */
+    private $container;
+
+    /**
      * @param ContainerInterface $container
      */
     public function __construct(ContainerInterface $container)
