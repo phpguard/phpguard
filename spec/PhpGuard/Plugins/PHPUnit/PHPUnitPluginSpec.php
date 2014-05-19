@@ -42,7 +42,7 @@ class PHPUnitPluginSpec extends ObjectBehavior
     {
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPhpUnitPlugin');
         $this->setRunner($runner);
-        $container->get('phpguard.ui.output')
+        $container->get('ui.output')
             ->willReturn($output);
         $container->get('phpguard')
             ->willReturn($phpGuard);

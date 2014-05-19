@@ -33,9 +33,9 @@ class TestApplication extends Application
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $container = $this->getContainer();
-        $container->set('phpguard.ui.input',$input);
-        $container->set('phpguard.ui.output',$output);
-        $container->set('phpguard.ui.shell',new TestShell($this->getContainer()));
+        $container->set('ui.input',$input);
+        $container->set('ui.output',$output);
+        $container->set('ui.shell',new TestShell($this->getContainer()));
         parent::doRun($input,$output);
     }
 } 

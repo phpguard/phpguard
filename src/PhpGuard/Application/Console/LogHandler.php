@@ -38,7 +38,7 @@ class LogHandler extends AbstractProcessingHandler implements ContainerAwareInte
     protected function write(array $record)
     {
         /* @var \Symfony\Component\Console\Output\OutputInterface $output */
-        $output = $this->container->get('phpguard.ui.output');
+        $output = $this->container->get('ui.output');
 
         $context = $record['context'];
         $message = (string)$record['message'];

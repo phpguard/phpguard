@@ -26,16 +26,16 @@ class ChangesetListenerSpec extends ObjectBehavior
         OutputInterface $output
     )
     {
-        $container->getByPrefix('phpguard.plugins')
+        $container->getByPrefix('plugins')
             ->willReturn(array($plugin));
 
-        $container->get('phpguard.dispatcher')
+        $container->get('dispatcher')
             ->willReturn($dispatcher);
 
-        $container->get('phpguard.ui.shell')
+        $container->get('ui.shell')
             ->willReturn($shell);
 
-        $container->get('phpguard.ui.output')
+        $container->get('ui.output')
             ->willReturn($output);
 
         $container->get('phpguard')
@@ -162,16 +162,16 @@ class ChangesetListenerSpec extends ObjectBehavior
     )
     {
 
-        $container->getByPrefix('phpguard.plugins')
+        $container->getByPrefix('plugins')
             ->shouldNotBeCalled()
         ;
-        $container->has('phpguard.plugins.some_plugin')
+        $container->has('plugins.some_plugin')
             ->shouldBeCalled()
             ->willReturn(true);
-        $container->get('phpguard.plugins.some_plugin')
+        $container->get('plugins.some_plugin')
             ->willReturn($plugin);
 
-        $container->has('phpguard.plugins.foo')
+        $container->has('plugins.foo')
             ->shouldBeCalled()
             ->willReturn(false);
 

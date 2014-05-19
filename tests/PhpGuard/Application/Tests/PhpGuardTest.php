@@ -21,8 +21,8 @@ class PhpGuardTest extends FunctionalTestCase
     {
         $app = new Application();
         $container = $app->getContainer();
-        $container->set('phpguard.ui.output',new ConsoleOutput());
-        $shell = $container->get('phpguard.ui.shell');
+        $container->set('ui.output',new ConsoleOutput());
+        $shell = $container->get('ui.shell');
         $this->assertInstanceOf('PhpGuard\\Application\\Console\\Shell',$shell);
     }
 
@@ -33,7 +33,7 @@ class PhpGuardTest extends FunctionalTestCase
         $phpguard->setOptions(array(
             'ignores' => 'foobar'
         ));
-        $listener = $app->getContainer()->get('phpguard.listen.listener');
+        $listener = $app->getContainer()->get('listen.listener');
         $this->assertInstanceOf('PhpGuard\\Listen\\Listener',$listener);
 
         $this->assertContains('foobar',$listener->getIgnores());

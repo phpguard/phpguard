@@ -55,7 +55,7 @@ class Configuration extends ContainerAware
     private function parsePluginSection($name,$definitions)
     {
         $container = $this->container;
-        $id = 'phpguard.plugins.'.$name;
+        $id = 'plugins.'.$name;
 
         if(!$container->has($id)){
             throw new ConfigurationException(sprintf(

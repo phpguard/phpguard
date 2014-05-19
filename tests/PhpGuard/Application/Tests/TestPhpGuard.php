@@ -18,7 +18,7 @@ class TestPhpGuard extends PhpGuard
 {
     public function start()
     {
-        $listener = $this->getContainer()->get('phpguard.listen.listener');
+        $listener = $this->getContainer()->get('listen.listener');
         $listener->latency(10);
         $listener->alwaysNotify(true);
         parent::start();

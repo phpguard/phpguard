@@ -68,7 +68,7 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         $guard->setupListen();
 
 
-        $plugins = $guard->getContainer()->getByPrefix('phpguard.plugins');
+        $plugins = $guard->getContainer()->getByPrefix('plugins');
         foreach($plugins as $plugin){
             $plugin->configure();
         }

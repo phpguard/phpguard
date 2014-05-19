@@ -61,30 +61,30 @@ class PhpGuard
         $container = $this->container;
         $container->set('phpguard',$this);
 
-        $container->setShared('phpguard.config',function(){
+        $container->setShared('config',function(){
             return new Configuration();
         });
 
-        $container->setShared('phpguard.dispatcher', function ($c) {
+        $container->setShared('dispatcher', function ($c) {
             $dispatcher = new EventDispatcher;
 
             array_map(
                 array($dispatcher, 'addSubscriber'),
-                $c->getByPrefix('phpguard.dispatcher.listeners')
+                $c->getByPrefix('dispatcher.listeners')
             );
 
             return $dispatcher;
         });
 
-        $container->setShared('phpguard.dispatcher.listeners.config',function(){
+        $container->setShared('dispatcher.listeners.config',function(){
             return new ConfigurationListener();
         });
 
-        $container->setShared('phpguard.dispatcher.listeners.changeset',function(){
+        $container->setShared('dispatcher.listeners.changeset',function(){
             return new ChangesetListener();
         });
 
-        $container->setShared('phpguard.ui.shell',function($c){
+        $container->setShared('ui.shell',function($c){
             $shell = new Shell($c);
             return $shell;
         });
@@ -95,7 +95,7 @@ class PhpGuard
     {
         $container = $this->container;
 
-        $container->setShared('phpguard.listen.listener',function($c){
+        $container->setShared('listen.listener',function($c){
             $listener = Listen::to(getcwd());
             $options = $c->get('phpguard')->getOptions();
             foreach($options['ignores'] as $ignored){
@@ -111,10 +111,10 @@ class PhpGuard
 
     public function loadPlugins()
     {
-        $this->container->setShared('phpguard.plugins.phpspec',function(){
+        $this->container->setShared('plugins.phpspec',function(){
             return new PhpSpecPlugin();
         });
-        $this->container->setShared('phpguard.plugins.phpunit',function(){
+        $this->container->setShared('plugins.phpunit',function(){
             return new PHPUnitPlugin();
         });
     }
@@ -122,13 +122,13 @@ class PhpGuard
     public function loadConfiguration()
     {
         $event = new GenericEvent($this);
-        $dispatcher = $this->container->get('phpguard.dispatcher');
+        $dispatcher = $this->container->get('dispatcher');
         $dispatcher->dispatch(PhpGuardEvents::preLoadConfig,$event);
 
         if(!is_file($configFile=getcwd().'/phpguard.yml')){
             $configFile = getcwd().'/phpguard.yml.dist';
         }
-        $this->container->get('phpguard.config')
+        $this->container->get('config')
             ->compileFile($configFile)
         ;
         $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,$event);
@@ -137,7 +137,7 @@ class PhpGuard
     public function start()
     {
         /* @var \PhpGuard\Listen\Listener $listener */
-        $listener = $this->container->get('phpguard.listen.listener');
+        $listener = $this->container->get('listen.listener');
 
         $this->log('Starting to watch at <comment>'.getcwd().'</comment>');
         $listener->start();
@@ -147,7 +147,7 @@ class PhpGuard
     {
         $files = $event->getFiles();
         if(!empty($files)){
-            $dispatcher = $this->container->get('phpguard.dispatcher');
+            $dispatcher = $this->container->get('dispatcher');
             $evaluateEvent = new EvaluateEvent($event);
             $dispatcher->dispatch(
                 PhpGuardEvents::postEvaluate,
@@ -186,12 +186,14 @@ class PhpGuard
     }
 
     /**
-     * @param string $message
+     * @param null   $message
+     * @param int    $level
+     * @param string $channel
      */
-    public function log($message=null,$channel='PhpGuard', $level=OutputInterface::VERBOSITY_NORMAL)
+    public function log($message=null,$level=OutputInterface::VERBOSITY_NORMAL,$channel='PhpGuard')
     {
         /* @var \Symfony\Component\Console\Output\OutputInterface $output */
-        $output = $this->container->get('phpguard.ui.output');
+        $output = $this->container->get('ui.output');
         if(is_null($message)){
             $output->writeln("");
             return;
@@ -203,9 +205,14 @@ class PhpGuard
 
         $time = new \DateTime();
         $format = "[%s][%s] %s";
+        if($level==OutputInterface::VERBOSITY_DEBUG){
+            $format = '<comment>'.$format.'</comment>';
+            $channel = $channel.'.DEBUG';
+        }else{
+            $format = '<info>'.$format.'</info>';
+        }
 
         $message = sprintf($format,$time->format('H:i:s'),$channel,$message);
-
-        $output->writeln('<info>'.$message.'</info>');
+        $output->writeln($message);
     }
 }

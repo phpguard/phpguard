@@ -54,13 +54,13 @@ class ShellSpec extends ObjectBehavior
     )
     {
         mfs::mkdir(mfs::$tmpDir);
-        $container->get('phpguard.ui.application')
+        $container->get('ui.application')
             ->willReturn($application)
         ;
-        $container->get('phpguard.ui.output')
+        $container->get('ui.output')
             ->willReturn($output)
         ;
-        $container->get('phpguard.dispatcher')
+        $container->get('dispatcher')
             ->willReturn($dispatcher)
         ;
         $container->get('phpguard')
@@ -88,7 +88,7 @@ class ShellSpec extends ObjectBehavior
 
     function it_should_start_to_evaluate_file_system_change(ContainerInterface $container,Listener $listener)
     {
-        $container->get('phpguard.listen.listener')
+        $container->get('listen.listener')
             ->willReturn($listener)
         ;
         $listener->evaluate()

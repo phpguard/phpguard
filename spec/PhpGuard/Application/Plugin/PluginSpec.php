@@ -110,7 +110,7 @@ class PluginSpec extends ObjectBehavior
 
     function it_should_create_runner(ContainerInterface $container,OutputInterface $output)
     {
-        $container->get('phpguard.ui.output')
+        $container->get('ui.output')
             ->willReturn($output);
 
         $runner = $this->createRunner('some',array('foobar'));

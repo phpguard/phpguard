@@ -12,7 +12,7 @@ class LogHandlerSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,OutputInterface $output)
     {
-        $container->get('phpguard.ui.output')
+        $container->get('ui.output')
             ->willReturn($output);
         $this->setContainer($container);
     }

@@ -111,8 +111,8 @@ class Container implements ContainerInterface
             $value->setContainer($this);
         }
 
-        if(method_exists($value,'setLogger') && $this->has('phpguard.logger')){
-            $value->setLogger($this->get('phpguard.logger'));
+        if(method_exists($value,'setLogger') && $this->has('logger')){
+            $value->setLogger($this->get('logger'));
         }
         return $value;
     }

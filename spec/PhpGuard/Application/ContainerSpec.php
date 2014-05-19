@@ -91,7 +91,7 @@ class ContainerSpec extends ObjectBehavior
         $aware->setLogger($logger)
             ->shouldBeCalled();
 
-        $this->set('phpguard.logger',$logger);
+        $this->set('logger',$logger);
         $this->set('some.logger_aware',$aware);
         $this->get('some.logger_aware');
     }

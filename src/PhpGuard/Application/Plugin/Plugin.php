@@ -90,7 +90,7 @@ abstract class Plugin extends ContainerAware implements PluginInterface
         $channel = strtoupper($this->getName());
         /* @var \PhpGuard\Application\PhpGuard $phpguard */
         $phpguard = $this->container->get('phpguard');
-        $phpguard->log($message,$channel,$level);
+        $phpguard->log($message,$level,$channel);
     }
 
     /**
@@ -103,7 +103,7 @@ abstract class Plugin extends ContainerAware implements PluginInterface
         $runner = new Runner();
         $runner->setCommand($command);
         $runner->setArguments($arguments);
-        $runner->setOutput($this->container->get('phpguard.ui.output'));
+        $runner->setOutput($this->container->get('ui.output'));
 
         return $runner;
     }

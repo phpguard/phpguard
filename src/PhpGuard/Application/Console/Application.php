@@ -49,7 +49,7 @@ class Application extends BaseApplication
             return;
         }
         $container = new Container();
-        $container->set('phpguard.ui.application',$this);
+        $container->set('ui.application',$this);
         $guard = new PhpGuard();
         $guard->setContainer($container);
         $guard->setupServices();
@@ -63,15 +63,15 @@ class Application extends BaseApplication
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $container = $this->container;
-        $this->setDispatcher($container->get('phpguard.dispatcher'));
-        $container->set('phpguard.ui.input',$input);
-        $container->set('phpguard.ui.output',$output);
+        $this->setDispatcher($container->get('dispatcher'));
+        $container->set('ui.input',$input);
+        $container->set('ui.output',$output);
 
 
         $command = $this->getCommandName($input);
         if($command==''){
             /* @var Shell $shell */
-            $shell = $container->get('phpguard.ui.shell');
+            $shell = $container->get('ui.shell');
             if(!$shell->isRunning()){
                 $shell->start();
             }

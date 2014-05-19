@@ -69,9 +69,9 @@ class Shell
     public function __construct(ContainerInterface $container)
     {
         $this->hasReadline = function_exists('readline');
-        $this->application = $container->get('phpguard.ui.application');
+        $this->application = $container->get('ui.application');
         $this->historyFile = getenv('HOME').'/.history_phpguard';
-        $this->output = $container->get('phpguard.ui.output');
+        $this->output = $container->get('ui.output');
         $this->container = $container;
         $this->application->setAutoExit(false);
         $this->application->setCatchExceptions(true);
@@ -118,7 +118,7 @@ class Shell
     public function evaluate()
     {
         /* @var \PhpGuard\Listen\Listener $listener */
-        $listener = $this->container->get('phpguard.listen.listener');
+        $listener = $this->container->get('listen.listener');
         $listener->evaluate();
         $this->start();
     }
@@ -250,7 +250,7 @@ EOF;
         }
         // dispatch run all events
         $event = new GenericEvent($this,array('plugin' => $plugin));
-        $dispatcher = $this->container->get('phpguard.dispatcher');
+        $dispatcher = $this->container->get('dispatcher');
         $dispatcher->dispatch(PhpGuardEvents::runAllCommands,$event);
 
     }

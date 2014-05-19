@@ -60,9 +60,9 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
         $container = $this->container;
 
-        $dispatcher = $container->get('phpguard.dispatcher');
+        $dispatcher = $container->get('dispatcher');
 
-        foreach($container->getByPrefix('phpguard.plugins') as $plugin){
+        foreach($container->getByPrefix('plugins') as $plugin){
             $paths = $plugin->getMatchedFiles($event);
             if(count($paths) > 0){
                 $runEvent = new GenericEvent($plugin,$paths);
@@ -84,11 +84,11 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public function preRunCommand(GenericEvent $event,$paths = array())
     {
         $shell = $this->getShell();
-        $output = $this->container->get('phpguard.ui.output');
+        $output = $this->container->get('ui.output');
         $output->writeln("");
         $this->getPhpGuard()->log(
             'Begin executing '.$event->getSubject()->getName(),
-            'PhpGuard',OutputInterface::VERBOSITY_DEBUG
+            OutputInterface::VERBOSITY_DEBUG
         );
         $shell->unsetStreamBlocking();
     }
@@ -98,7 +98,6 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $shell = $this->getShell();
         $this->getPhpGuard()->log(
             'End executing '.$event->getSubject()->getName(),
-            'PhpGuard',
             OutputInterface::VERBOSITY_DEBUG
         );
         $shell->setStreamBlocking();
@@ -113,11 +112,11 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
 
         $this->getPhpGuard()->log();
         if(is_null($plugin = $event->getArgument('plugin'))){
-            $plugins = $this->container->getByPrefix('phpguard.plugins');
+            $plugins = $this->container->getByPrefix('plugins');
         }else{
-            $name = 'phpguard.plugins.'.$plugin;
+            $name = 'plugins.'.$plugin;
             if($this->container->has($name)){
-                $plugin = $this->container->get('phpguard.plugins.'.$plugin);
+                $plugin = $this->container->get('plugins.'.$plugin);
                 $plugins = array($plugin);
             }else{
                 throw new \RuntimeException(sprintf(
@@ -129,9 +128,15 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
 
         foreach($plugins as $plugin)
         {
-            $this->getPhpGuard()->log('Start running all for plugin '.$plugin->getName());
+            $this->getPhpGuard()->log(
+                'Start running all for plugin '.$plugin->getName(),
+                OutputInterface::VERBOSITY_DEBUG
+            );
             $plugin->runAll();
-            $this->getPhpGuard()->log('End running all for plugin '.$plugin->getName());
+            $this->getPhpGuard()->log(
+                'End running all for plugin '.$plugin->getName(),
+                OutputInterface::VERBOSITY_DEBUG
+            );
         }
 
         // restore shell behavior
@@ -144,7 +149,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
      */
     private function getShell()
     {
-        return $this->container->get('phpguard.ui.shell');
+        return $this->container->get('ui.shell');
     }
 
     /**

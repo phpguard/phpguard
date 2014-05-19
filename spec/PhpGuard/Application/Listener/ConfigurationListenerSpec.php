@@ -55,7 +55,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $guard->getContainer()->shouldBeCalled()
             ->willReturn($container)
         ;
-        $container->getByPrefix('phpguard.plugins')
+        $container->getByPrefix('plugins')
             ->shouldBeCalled()
             ->willReturn(array())
         ;

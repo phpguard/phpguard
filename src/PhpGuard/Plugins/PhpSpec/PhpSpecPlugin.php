@@ -21,7 +21,7 @@ class PhpSpecPlugin extends Plugin
     {
         /* @var \PhpGuard\Application\Console\Application $application */
         $container = $this->container;
-        $application = $container->get('phpguard.ui.application');
+        $application = $container->get('ui.application');
         $command = new DescribeCommand();
         $command->setContainer($this->container);
         $application->add($command);

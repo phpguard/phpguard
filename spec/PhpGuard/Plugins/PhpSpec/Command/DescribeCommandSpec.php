@@ -17,7 +17,7 @@ class DescribeCommandSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,PhpSpecPlugin $phpspec)
     {
-        $container->get('phpguard.plugins.phpspec')
+        $container->get('plugins.phpspec')
             ->willReturn($phpspec);
         $this->setContainer($container);
     }

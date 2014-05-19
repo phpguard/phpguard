@@ -22,7 +22,7 @@ class MockPhpGuard extends PhpGuard
     public function start()
     {
         parent::start();
-        $listener = $this->getContainer()->get('phpguard.listen.listener');
+        $listener = $this->getContainer()->get('listen.listener');
         $listener->alwaysNotify(true);
         $listener->stop();
     }
@@ -39,9 +39,9 @@ class PhpGuardSpec extends ObjectBehavior
         EventDispatcherInterface $dispatcher
     )
     {
-        $container->get('phpguard.ui.output')
+        $container->get('ui.output')
             ->willReturn($output);
-        $container->get('phpguard.dispatcher')
+        $container->get('dispatcher')
             ->willReturn($dispatcher)
         ;
         $output->getVerbosity()
@@ -76,15 +76,15 @@ class PhpGuardSpec extends ObjectBehavior
     {
         $container->set('phpguard',$this)
             ->shouldBeCalled();
-        $container->setShared('phpguard.config',Argument::cetera())
+        $container->setShared('config',Argument::cetera())
             ->shouldBeCalled();
-        $container->setShared('phpguard.dispatcher',Argument::cetera())
+        $container->setShared('dispatcher',Argument::cetera())
             ->shouldBeCalled();
-        $container->setShared('phpguard.dispatcher.listeners.config',Argument::cetera())
+        $container->setShared('dispatcher.listeners.config',Argument::cetera())
             ->shouldBeCalled();
-        $container->setShared('phpguard.dispatcher.listeners.changeset',Argument::cetera())
+        $container->setShared('dispatcher.listeners.changeset',Argument::cetera())
             ->shouldBeCalled();
-        $container->setShared('phpguard.ui.shell',Argument::cetera())
+        $container->setShared('ui.shell',Argument::cetera())
             ->shouldBeCalled();
 
         $this->setupServices();
@@ -106,7 +106,7 @@ class PhpGuardSpec extends ObjectBehavior
 
     function it_should_start_properly(Listener $listener,ContainerInterface $container,ConsoleOutput $output)
     {
-        $container->get('phpguard.listen.listener')
+        $container->get('listen.listener')
             ->willReturn($listener);
 
         $this->setOptions(array(
@@ -132,7 +132,7 @@ class PhpGuardSpec extends ObjectBehavior
         $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
         $output->writeln(Argument::any())
             ->shouldNotBeCalled();
-        $this->log('not_visibled','main',ConsoleOutput::VERBOSITY_VERY_VERBOSE);
+        $this->log('not_visibled',ConsoleOutput::VERBOSITY_VERY_VERBOSE);
     }
 
     function it_should_load_configuration(
@@ -141,7 +141,8 @@ class PhpGuardSpec extends ObjectBehavior
         EventDispatcherInterface $dispatcher
     )
     {
-        $container->get('phpguard.config')
+
+        $container->get('config')
             ->willReturn($config);
 
         $dispatcher->dispatch(PhpGuardEvents::preLoadConfig,Argument::any())
@@ -150,7 +151,7 @@ class PhpGuardSpec extends ObjectBehavior
         $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,Argument::any())
             ->shouldBeCalled();
 
-        $config->compileFile(Argument::containingString('phpguard.yml'))
+        $config->compileFile(Argument::containingString('yml'))
             ->shouldBeCalled();
 
         $this->loadConfiguration();
@@ -158,7 +159,7 @@ class PhpGuardSpec extends ObjectBehavior
         mfs::mkdir($dir = mfs::$tmpDir);
         touch($dir.'/phpunit.yml.dist');
         chdir($dir);
-        $config->compileFile(Argument::containingString('phpguard.yml.dist'))
+        $config->compileFile(Argument::containingString('yml.dist'))
             ->shouldBeCalled();
         $this->loadConfiguration();
     }

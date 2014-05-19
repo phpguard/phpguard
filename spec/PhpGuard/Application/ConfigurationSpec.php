@@ -53,10 +53,10 @@ EOF;
 
     function it_should_process_plugin_section(ContainerInterface $container, PluginInterface $pspec, PluginInterface $plugin)
     {
-        $container->has('phpguard.plugins.phpspec')
+        $container->has('plugins.phpspec')
             ->willReturn(true)
         ;
-        $container->get('phpguard.plugins.phpspec')
+        $container->get('plugins.phpspec')
             ->willReturn($plugin)
         ;
 
@@ -91,7 +91,7 @@ EOF;
         ContainerInterface $container
     )
     {
-        $container->has('phpguard.plugins.some')
+        $container->has('plugins.some')
             ->willReturn(false);
 
         $text = <<<EOF
