@@ -63,6 +63,9 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $dispatcher = $container->get('dispatcher');
 
         foreach($container->getByPrefix('plugins') as $plugin){
+            if(!$plugin->isActive()){
+                continue;
+            }
             $paths = $plugin->getMatchedFiles($event);
             if(count($paths) > 0){
                 $runEvent = new GenericEvent($plugin,array('paths' =>$paths));
@@ -136,6 +139,9 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
 
         foreach($plugins as $plugin)
         {
+            if(!$plugin->isActive()){
+                continue;
+            }
             $this->getPhpGuard()->log(
                 'Start running all for plugin '.$plugin->getName(),
                 OutputInterface::VERBOSITY_DEBUG

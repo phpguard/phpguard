@@ -22,21 +22,55 @@ interface PluginInterface
     public function getName();
 
     /**
+     * @param \PhpGuard\Application\Watcher $watcher
      * @return void
      */
     public function addWatcher(Watcher $watcher);
 
+    /**
+     * Run all command
+     * @return void
+     */
     public function runAll();
 
+    /**
+     * @param array $paths
+     * @return void
+     */
     public function run(array $paths = array());
 
     /**
+     * @return bool
+     */
+    public function isActive();
+
+    /**
+     * @param   bool    $value
+     * @return  $this
+     */
+    public function setActive($value);
+
+    /**
+     * @return  bool
+     */
+    public function getActive();
+
+    /**
+     * @param array $options
      * @return \PhpGuard\Application\Plugin\Plugin
      */
     public function setOptions(array $options = array());
 
+    /**
+     * @param OptionsResolverInterface $resolver
+     * @return void
+     */
     public function setDefaultOptions(OptionsResolverInterface $resolver);
 
+    /**
+     * @param EvaluateEvent $event
+     * @return void
+     */
     public function getMatchedFiles(EvaluateEvent $event);
 
     /**

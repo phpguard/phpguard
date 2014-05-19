@@ -62,14 +62,16 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     public function postLoad(GenericEvent $event)
     {
         /* @var PhpGuard $guard */
-        /* @var PluginInterface $plugin */
+        /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
 
         $guard = $event->getSubject();
         $guard->setupListen();
 
-
         $plugins = $guard->getContainer()->getByPrefix('plugins');
         foreach($plugins as $plugin){
+            if(!$plugin->isActive()){
+                continue;
+            }
             $plugin->configure();
         }
     }

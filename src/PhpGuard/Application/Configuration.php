@@ -66,6 +66,7 @@ class Configuration extends ContainerAware
 
         /* @var PluginInterface $plugin */
         $plugin = $container->get($id);
+        $plugin->setActive(true);
         if(isset($definitions['options'])){
             $plugin->setOptions($definitions['options']);
         }

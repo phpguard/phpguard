@@ -117,4 +117,16 @@ class PluginSpec extends ObjectBehavior
         $runner->shouldHaveType('PhpGuard\\Application\\Runner');
         $runner->getArguments()->shouldContain('foobar');
     }
+
+    function its_isActive_returns_false_by_default()
+    {
+        $this->shouldNotBeActive();
+    }
+
+    function its_active_should_be_mutable()
+    {
+        $this->setActive(true)->shouldReturn($this);
+        $this->getActive()->shouldReturn(true);
+        $this->shouldBeActive();
+    }
 }

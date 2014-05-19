@@ -37,6 +37,11 @@ abstract class Plugin extends ContainerAware implements PluginInterface
      */
     protected $logger;
 
+    /**
+     * @var boolean
+     */
+    protected $active = false;
+
     public function configure(){}
 
     public function addWatcher(Watcher $watcher)
@@ -83,7 +88,35 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     }
 
     /**
+     * @param boolean $active
+     *
+     * @return Plugin
+     */
+    public function setActive($active)
+    {
+        $this->active = $active;
+        return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getActive()
+    {
+        return $this->active;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isActive()
+    {
+        return $this->active;
+    }
+
+    /**
      * @param string $message
+     * @param int    $level
      */
     public function log($message,$level=OutputInterface::VERBOSITY_NORMAL)
     {

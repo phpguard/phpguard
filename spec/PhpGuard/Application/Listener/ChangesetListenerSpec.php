@@ -42,6 +42,9 @@ class ChangesetListenerSpec extends ObjectBehavior
         $container->get('phpguard')
             ->willReturn($phpGuard);
 
+        $plugin->isActive()->willReturn(true);
+        $plugin->getName()->willReturn('some');
+
         $this->setContainer($container);
     }
 
@@ -81,6 +84,38 @@ class ChangesetListenerSpec extends ObjectBehavior
             ->shouldNotBeCalled()
         ;
         $this->postEvaluate($evaluateEvent);
+    }
+
+    function it_plugin_should_not_run_if_not_active(
+        ContainerInterface $container,
+        PluginInterface $active,
+        PluginInterface $inactive,
+        EvaluateEvent $event
+    )
+    {
+        $container->getByPrefix('plugins')
+            ->willReturn(array($active,$inactive))
+        ;
+
+        $active->isActive()
+            ->shouldBeCalled()
+            ->willReturn(true)
+        ;
+        $active->getMatchedFiles($event)
+            ->willReturn(array('some_file'));
+        $active->run(Argument::any())
+            ->shouldBeCalled()
+        ;
+
+        $inactive->isActive()
+            ->shouldBeCalled()
+            ->willReturn(false)
+        ;
+        $inactive->run(Argument::any())
+            ->shouldNotBeCalled()
+        ;
+
+        $this->postEvaluate($event);
     }
 
     function it_should_handle_preRunCommand_events(
@@ -162,12 +197,9 @@ class ChangesetListenerSpec extends ObjectBehavior
     function it_should_runAllCommand_for_spesific_plugin(
         GenericEvent $event,
         PluginInterface $plugin,
-        Shell $shell,
-        PhpGuard $phpGuard,
         ContainerInterface $container
     )
     {
-
         $container->getByPrefix('plugins')
             ->shouldNotBeCalled()
         ;
@@ -201,5 +233,45 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->shouldThrow('RuntimeException')
             ->duringRunAllCommand($event);
 
+    }
+
+    function it_plugin_should_not_runAll_if_not_active(
+        ContainerInterface $container,
+        PluginInterface $active,
+        PluginInterface $inactive,
+        GenericEvent $event
+    )
+    {
+
+        $container->getByPrefix('plugins')
+            ->willReturn(array($active,$inactive))
+        ;
+
+        $container->has('active')
+            ->willReturn(true)
+        ;
+        $active->isActive()
+            ->shouldBeCalled()
+            ->willReturn(true)
+        ;
+        $active->getName()
+            ->willReturn('active');
+        $active->runAll(Argument::any())
+            ->shouldBeCalled()
+        ;
+
+        $container->has('inactive')
+            ->willReturn(true)
+        ;
+        $inactive->getName()->willReturn('inactive');
+        $inactive->isActive()
+            ->shouldBeCalled()
+            ->willReturn(false)
+        ;
+        $inactive->runAll(Argument::any())
+            ->shouldNotBeCalled()
+        ;
+
+        $this->runAllCommand($event);
     }
 }

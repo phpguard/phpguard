@@ -68,6 +68,8 @@ EOF;
             ->shouldBeCalled()
         ;
         $plugin->addWatcher(Argument::any())->shouldBeCalled();
+        $plugin->setActive(true)
+            ->shouldBeCalled();
 
         $text = <<<EOF
 
