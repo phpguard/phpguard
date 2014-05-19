@@ -16,7 +16,13 @@ use PhpGuard\Application\Console\Shell;
 
 class TestShell extends Shell
 {
+    public function installReadlineCallback()
+    {
+
+    }
+
     public function run()
     {
+        
     }
 }
