@@ -2,6 +2,7 @@
 
 namespace spec\PhpGuard\Application\Listener;
 
+use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuardEvents;
@@ -60,6 +61,33 @@ class ConfigurationListenerSpec extends ObjectBehavior
             ->willReturn(array())
         ;
 
+        $this->postLoad($event);
+    }
+
+    function it_postLoad_should_configure_only_active_plugin(
+        GenericEvent $event,
+        PhpGuard $guard,
+        ContainerInterface $container,
+        PluginInterface $active,
+        PluginInterface $inactive
+    )
+    {
+
+        $guard->setupListen()->shouldBeCalled();
+        $guard->getContainer()->shouldBeCalled()
+            ->willReturn($container)
+        ;
+
+        $container->getByPrefix('plugins')
+            ->shouldBeCalled()
+            ->willReturn(array($active,$inactive))
+        ;
+
+        $active->isActive()->willReturn(true);
+        $active->configure()->shouldBeCalled();
+
+        $inactive->isActive()->willReturn(false);
+        $inactive->configure()->shouldNotBeCalled();
 
         $this->postLoad($event);
     }
