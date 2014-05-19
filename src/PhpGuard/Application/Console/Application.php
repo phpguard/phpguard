@@ -35,8 +35,6 @@ class Application extends BaseApplication
      */
     private $container;
 
-    private $initialized = false;
-
     public function __construct()
     {
         parent::__construct('phpguard',PhpGuard::VERSION);
@@ -45,9 +43,6 @@ class Application extends BaseApplication
 
     private function initialize()
     {
-        if($this->initialized){
-            return;
-        }
         $container = new Container();
         $container->set('ui.application',$this);
         $guard = new PhpGuard();
@@ -57,7 +52,6 @@ class Application extends BaseApplication
 
         $this->guard = $guard;
         $this->container = $container;
-        $this->initialized = true;
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)

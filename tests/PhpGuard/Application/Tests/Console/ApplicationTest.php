@@ -23,4 +23,21 @@ class ApplicationTest extends FunctionalTestCase
         $this->assertEquals(0,$exit);
         $this->assertContains('Welcome',$display);
     }
+
+    public function testShouldRunSomeBasicCommand()
+    {
+        $tester = $this->getApplicationTester();
+
+        $exit = $tester->run(array('help'));
+        $display = $tester->getDisplay();
+
+        $this->assertEquals(0,$exit);
+        $this->assertContains('Usage:',$display);
+
+        $exit = $tester->run(array('list'));
+        $display = $tester->getDisplay();
+
+        $this->assertEquals(0,$exit);
+        $this->assertContains('phpguard version',$display);
+    }
 }

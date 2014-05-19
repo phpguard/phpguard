@@ -135,6 +135,23 @@ class PhpGuardSpec extends ObjectBehavior
         $this->log('not_visibled',ConsoleOutput::VERBOSITY_VERY_VERBOSE);
     }
 
+    function it_should_format_log_message(ConsoleOutput $output)
+    {
+        $output->getVerbosity()
+            ->willReturn(ConsoleOutput::VERBOSITY_DEBUG);
+
+        $output->writeln(Argument::containingString('normal'))
+            ->shouldBeCalled()
+        ;
+
+        $this->log('normal');
+
+        $output->writeln(Argument::containingString('debug'))
+            ->shouldBeCalled()
+        ;
+        $this->log('debug',ConsoleOutput::VERBOSITY_DEBUG);
+    }
+
     function it_should_load_configuration(
         ContainerInterface $container,
         Configuration $config,
