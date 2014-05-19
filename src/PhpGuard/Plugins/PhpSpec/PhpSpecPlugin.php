@@ -19,12 +19,15 @@ class PhpSpecPlugin extends Plugin
 {
     public function configure()
     {
-        /* @var \PhpGuard\Application\Console\Application $application */
-        $container = $this->container;
-        $application = $container->get('ui.application');
-        $command = new DescribeCommand();
-        $command->setContainer($this->container);
-        $application->add($command);
+        if(class_exists('PhpSpec\\Console\\Application')){
+            // only load command when phpspec package exists
+            /* @var \PhpGuard\Application\Console\Application $application */
+            $container = $this->container;
+            $application = $container->get('ui.application');
+            $command = new DescribeCommand();
+            $command->setContainer($this->container);
+            $application->add($command);
+        }
     }
 
     public function getName()
