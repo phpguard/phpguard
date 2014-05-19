@@ -2,14 +2,17 @@
 
 namespace spec\PhpGuard\Application\Listener;
 
+use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Interfaces\PluginInterface;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
-use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 class ChangesetListenerSpec extends ObjectBehavior
 {
@@ -17,7 +20,10 @@ class ChangesetListenerSpec extends ObjectBehavior
         ContainerInterface $container,
         PluginInterface $plugin,
         EvaluateEvent $evaluateEvent,
-        EventDispatcherInterface $dispatcher
+        EventDispatcherInterface $dispatcher,
+        Shell $shell,
+        PhpGuard $phpGuard,
+        OutputInterface $output
     )
     {
         $container->getByPrefix('phpguard.plugins')
@@ -25,6 +31,15 @@ class ChangesetListenerSpec extends ObjectBehavior
 
         $container->get('phpguard.dispatcher')
             ->willReturn($dispatcher);
+
+        $container->get('phpguard.ui.shell')
+            ->willReturn($shell);
+
+        $container->get('phpguard.ui.output')
+            ->willReturn($output);
+
+        $container->get('phpguard')
+            ->willReturn($phpGuard);
 
         $this->setContainer($container);
     }
@@ -36,7 +51,7 @@ class ChangesetListenerSpec extends ObjectBehavior
 
     function it_should_subscribe_postEvaluate_event()
     {
-        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::POST_EVALUATE);
+        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::postEvaluate);
     }
 
     function it_should_run_plugins_when_the_paths_is_matched(
@@ -65,5 +80,121 @@ class ChangesetListenerSpec extends ObjectBehavior
             ->shouldNotBeCalled()
         ;
         $this->postEvaluate($evaluateEvent);
+    }
+
+    function it_should_handle_preRunCommand_events(
+        GenericEvent $event,
+        PluginInterface $plugin,
+        Shell $shell,
+        PhpGuard $phpGuard
+    )
+    {
+        $phpGuard->log(Argument::containingString('Begin'),Argument::cetera())
+            ->shouldBeCalled();
+
+        $event->getSubject()->willReturn($plugin);
+        $shell->unsetStreamBlocking()
+            ->shouldBeCalled();
+
+        $this->preRunCommand($event);
+    }
+
+    function it_should_handle_postRunCommand_events(
+        GenericEvent $event,
+        PluginInterface $plugin,
+        Shell $shell,
+        PhpGuard $phpGuard
+    )
+    {
+        $event->getSubject()
+            ->willReturn($plugin);
+
+        $phpGuard->log(Argument::containingString('End'),Argument::cetera())
+            ->shouldBeCalled();
+
+        $shell->setStreamBlocking()
+            ->shouldBeCalled();
+        $shell->installReadlineCallback()
+            ->shouldBeCalled();
+
+        $this->postRunCommand($event);
+    }
+
+    function it_should_handle_runAllCommand_events(
+        GenericEvent $event,
+        PluginInterface $plugin,
+        Shell $shell,
+        PhpGuard $phpGuard
+    )
+    {
+        $phpGuard->log(Argument::cetera())
+            ->shouldBeCalled();
+        $shell->setStreamBlocking()
+            ->shouldBeCalled();
+        $shell->unsetStreamBlocking()
+            ->shouldBeCalled();
+        $shell->installReadlineCallback()
+            ->shouldBeCalled();
+
+        $phpGuard->log(Argument::containingString('Start'),Argument::cetera())
+            ->shouldBeCalled()
+        ;
+        $phpGuard->log(Argument::containingString('End'),Argument::cetera())
+            ->shouldBeCalled()
+        ;
+        $event->getArgument('plugin')
+            ->willReturn(null);
+
+        $plugin->getName()
+            ->willReturn('some_plugin');
+        $plugin->runAll()
+            ->shouldBeCalled();
+
+        $this->runAllCommand($event);
+    }
+
+    function it_should_runAllCommand_for_spesific_plugin(
+        GenericEvent $event,
+        PluginInterface $plugin,
+        Shell $shell,
+        PhpGuard $phpGuard,
+        ContainerInterface $container
+    )
+    {
+
+        $container->getByPrefix('phpguard.plugins')
+            ->shouldNotBeCalled()
+        ;
+        $container->has('phpguard.plugins.some_plugin')
+            ->shouldBeCalled()
+            ->willReturn(true);
+        $container->get('phpguard.plugins.some_plugin')
+            ->willReturn($plugin);
+
+        $container->has('phpguard.plugins.foo')
+            ->shouldBeCalled()
+            ->willReturn(false);
+
+        $plugin->getName()
+            ->willReturn('some_plugin')
+            ->shouldBeCalled()
+        ;
+
+        $plugin->runAll()
+            ->shouldBeCalled()
+        ;
+
+        $event->getArgument('plugin')
+            ->willReturn('some_plugin');
+
+        $this->runAllCommand($event);
+
+
+
+        $event->getArgument('plugin')
+            ->willReturn('foo');
+
+        $this->shouldThrow('RuntimeException')
+            ->duringRunAllCommand($event);
     }
 }

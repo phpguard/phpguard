@@ -46,8 +46,8 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     public static function getSubscribedEvents()
     {
         return array(
-            PhpGuardEvents::CONFIG_PRE_LOAD => 'preLoad',
-            PhpGuardEvents::CONFIG_POST_LOAD => 'postLoad',
+            PhpGuardEvents::preLoadConfig => 'preLoad',
+            PhpGuardEvents::postLoadConfig => 'postLoad',
         );
     }
 

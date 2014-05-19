@@ -14,13 +14,13 @@ namespace PhpGuard\Application;
 
 final class PhpGuardEvents
 {
-    const CONFIG_PRE_LOAD   = 'preLoadConfiguration';
-    const CONFIG_POST_LOAD  = 'postLoadConfiguration';
+    const preLoadConfig     = 'config.preLoad';
+    const postLoadConfig    = 'config.postLoad';
 
-    const POST_EVALUATE = 'postEvaluateFilesystem';
+    const postEvaluate      = 'listen.postEvaluate';
 
-    const PRE_RUN_COMMANDS = 'preRunCommands';
-    const POST_RUN_COMMANDS = 'postRunCommands';
+    const preRunCommand     = 'plugin.preRunCommand';
+    const postRunCommand    = 'plugin.postRunCommand';
 
-    const runAllCommands = 'phpGuardRunAllCommands';
+    const runAllCommands    = 'plugin.runAllCommand';
 }

@@ -99,7 +99,7 @@ class PhpGuardSpec extends ObjectBehavior
     {
         $event->getFiles()
             ->willReturn(array('some_file'));
-        $dispatcher->dispatch(PhpGuardEvents::POST_EVALUATE,Argument::cetera())
+        $dispatcher->dispatch(PhpGuardEvents::postEvaluate,Argument::cetera())
             ->shouldBeCalled();
         $this->listen($event);
     }
@@ -144,10 +144,10 @@ class PhpGuardSpec extends ObjectBehavior
         $container->get('phpguard.config')
             ->willReturn($config);
 
-        $dispatcher->dispatch(PhpGuardEvents::CONFIG_PRE_LOAD,Argument::any())
+        $dispatcher->dispatch(PhpGuardEvents::preLoadConfig,Argument::any())
             ->shouldBeCalled();
 
-        $dispatcher->dispatch(PhpGuardEvents::CONFIG_POST_LOAD,Argument::any())
+        $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,Argument::any())
             ->shouldBeCalled();
 
         $config->compileFile(Argument::containingString('phpguard.yml'))

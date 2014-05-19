@@ -48,9 +48,9 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public static function getSubscribedEvents()
     {
         return array(
-            PhpGuardEvents::POST_EVALUATE => 'postEvaluate',
-            PhpGuardEvents::PRE_RUN_COMMANDS => 'preRunCommand',
-            PhpGuardEvents::POST_RUN_COMMANDS => 'postRunCommand',
+            PhpGuardEvents::postEvaluate => 'postEvaluate',
+            PhpGuardEvents::preRunCommand => 'preRunCommand',
+            PhpGuardEvents::postRunCommand => 'postRunCommand',
             PhpGuardEvents::runAllCommands => 'runAllCommand',
         );
     }
@@ -67,21 +67,21 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
             if(count($paths) > 0){
                 $runEvent = new GenericEvent($plugin,$paths);
                 $dispatcher->dispatch(
-                    PhpGuardEvents::PRE_RUN_COMMANDS,
+                    PhpGuardEvents::preRunCommand,
                     $runEvent
                 );
 
                 $plugin->run($paths);
 
                 $dispatcher->dispatch(
-                    PhpGuardEvents::POST_RUN_COMMANDS,
+                    PhpGuardEvents::postRunCommand,
                     $runEvent
                 );
             }
         }
     }
 
-    public function preRunCommand(GenericEvent $event,$paths)
+    public function preRunCommand(GenericEvent $event,$paths = array())
     {
         $shell = $this->getShell();
         $output = $this->container->get('phpguard.ui.output');
@@ -105,18 +105,33 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $shell->installReadlineCallback();
     }
 
-    public function runAllCommand(GenericEvent $event)
+    public function runAllCommand(GenericEvent $event,$plugin=null)
     {
         /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
 
-        $this->unsetStreamBlocking();
+        $this->getShell()->unsetStreamBlocking();
 
         $this->getPhpGuard()->log();
-        $this->getPhpGuard()->log('Running all commands');
-        $plugins = $this->container->getByPrefix('phpguard.plugins');
+        if(is_null($plugin = $event->getArgument('plugin'))){
+            $plugins = $this->container->getByPrefix('phpguard.plugins');
+        }else{
+            $name = 'phpguard.plugins.'.$plugin;
+            if($this->container->has($name)){
+                $plugin = $this->container->get('phpguard.plugins.'.$plugin);
+                $plugins = array($plugin);
+            }else{
+                throw new \RuntimeException(sprintf(
+                        'Plugin "%s" is not registered',
+                        $plugin
+                ));
+            }
+        }
+
         foreach($plugins as $plugin)
         {
+            $this->getPhpGuard()->log('Start running all for plugin '.$plugin->getName());
             $plugin->runAll();
+            $this->getPhpGuard()->log('End running all for plugin '.$plugin->getName());
         }
 
         // restore shell behavior

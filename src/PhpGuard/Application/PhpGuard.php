@@ -123,7 +123,7 @@ class PhpGuard
     {
         $event = new GenericEvent($this);
         $dispatcher = $this->container->get('phpguard.dispatcher');
-        $dispatcher->dispatch(PhpGuardEvents::CONFIG_PRE_LOAD,$event);
+        $dispatcher->dispatch(PhpGuardEvents::preLoadConfig,$event);
 
         if(!is_file($configFile=getcwd().'/phpguard.yml')){
             $configFile = getcwd().'/phpguard.yml.dist';
@@ -131,7 +131,7 @@ class PhpGuard
         $this->container->get('phpguard.config')
             ->compileFile($configFile)
         ;
-        $dispatcher->dispatch(PhpGuardEvents::CONFIG_POST_LOAD,$event);
+        $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,$event);
     }
 
     public function start()
@@ -150,7 +150,7 @@ class PhpGuard
             $dispatcher = $this->container->get('phpguard.dispatcher');
             $evaluateEvent = new EvaluateEvent($event);
             $dispatcher->dispatch(
-                PhpGuardEvents::POST_EVALUATE,
+                PhpGuardEvents::postEvaluate,
                 $evaluateEvent
             );
         }

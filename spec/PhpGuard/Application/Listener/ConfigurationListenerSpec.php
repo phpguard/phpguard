@@ -23,12 +23,12 @@ class ConfigurationListenerSpec extends ObjectBehavior
 
     function it_should_subscribe_config_preLoad_event()
     {
-        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::CONFIG_PRE_LOAD);
+        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::preLoadConfig);
     }
 
     function it_should_subscribe_config_postLoad_event()
     {
-        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::CONFIG_POST_LOAD);
+        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::postLoadConfig);
     }
 
     function it_should_pre_load_configuration_properly(
