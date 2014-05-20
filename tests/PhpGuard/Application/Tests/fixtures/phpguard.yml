@@ -1,0 +1,11 @@
+phpguard:
+    latency: 0.01
+    ignores:
+        - foo
+        - bar
+        - hello
+        - world
+
+test:
+    watch:
+        - { pattern: "#^src/(.+)\.php$#" }
