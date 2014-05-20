@@ -62,6 +62,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
 
         $dispatcher = $container->get('dispatcher');
 
+        $exception = null;
         foreach($container->getByPrefix('plugins') as $plugin){
             if(!$plugin->isActive()){
                 continue;
@@ -73,13 +74,19 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
                     PhpGuardEvents::preRunCommand,
                     $runEvent
                 );
-
-                $plugin->run($paths);
+                try{
+                    $plugin->run($paths);
+                }catch(\Exception $e){
+                    $exception = $e;
+                }
 
                 $dispatcher->dispatch(
                     PhpGuardEvents::postRunCommand,
                     $runEvent
                 );
+                if(!is_null($exception)){
+                    throw $exception;
+                }
             }
         }
     }
