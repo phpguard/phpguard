@@ -8,7 +8,7 @@ use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Runner;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

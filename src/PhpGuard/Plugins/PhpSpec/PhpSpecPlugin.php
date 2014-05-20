@@ -11,14 +11,23 @@
 
 namespace PhpGuard\Plugins\PhpSpec;
 
+use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
+use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
+use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Yaml\Yaml;
 
 class PhpSpecPlugin extends Plugin
 {
+    public function __construct()
+    {
+        // set default options for phpspec plugin
+        $this->setOptions(array());
+    }
+
     public function configure()
     {
         if(class_exists('PhpSpec\\Console\\Application')){

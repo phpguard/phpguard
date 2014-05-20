@@ -9,7 +9,7 @@ use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Util\PathUtil;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;

@@ -11,6 +11,7 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
 use PhpGuard\Application\Console\Shell;
@@ -125,13 +126,20 @@ class PhpGuard
 
     public function loadConfiguration()
     {
+        $configFile = null;
+        if(is_file($file=getcwd().'/phpguard.yml')){
+            $configFile = $file;
+        }elseif(is_file($file = getcwd().'/phpguard.yml.dist')){
+            $configFile = $file;
+        }
+        if(is_null($configFile)){
+            throw new ConfigurationException('Can not find configuration file "phpguard.yml" or "phpguard.yml.dist" in the current directory');
+        }
+
         $event = new GenericEvent($this);
         $dispatcher = $this->container->get('dispatcher');
         $dispatcher->dispatch(PhpGuardEvents::preLoadConfig,$event);
 
-        if(!is_file($configFile=getcwd().'/phpguard.yml')){
-            $configFile = getcwd().'/phpguard.yml.dist';
-        }
         $this->container->get('config')
             ->compileFile($configFile)
         ;

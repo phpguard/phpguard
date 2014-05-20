@@ -2,20 +2,18 @@
 
 namespace spec\PhpGuard\Application\Console;
 
-require_once __DIR__.'/../MockFileSystem.php';
 use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Listener;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-use spec\PhpGuard\Application\MockFileSystem as mfs;
 class MockShell extends Shell
 {
     private $exit;
@@ -28,7 +26,7 @@ class MockShell extends Shell
     public function __construct(ContainerInterface $container)
     {
         parent::__construct($container);
-        $this->historyFile = mfs::$tmpDir.'/history';
+        $this->historyFile = ObjectBehavior::$tmpDir.'/history';
     }
 
     public function run()
@@ -53,7 +51,7 @@ class ShellSpec extends ObjectBehavior
         PhpGuard $phpGuard
     )
     {
-        mfs::mkdir(mfs::$tmpDir);
+        self::mkdir(self::$tmpDir);
         $container->get('ui.application')
             ->willReturn($application)
         ;
@@ -78,7 +76,7 @@ class ShellSpec extends ObjectBehavior
 
     function letgo()
     {
-        mfs::cleanDir(mfs::$tmpDir);
+        self::cleanDir(self::$tmpDir);
     }
 
     function it_is_initializable()

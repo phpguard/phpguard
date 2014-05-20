@@ -2,22 +2,18 @@
 
 namespace spec\PhpGuard\Application;
 
-require_once __DIR__.'/MockFileSystem.php';
-
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Interfaces\PluginInterface;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
-
-use spec\PhpGuard\Application\MockFileSystem as mfs;
 
 class ConfigurationSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,PhpGuard $guard, PluginInterface $plugin)
     {
-        mfs::cleanDir(mfs::$tmpDir);
-        mfs::mkdir(mfs::$tmpDir);
+        self::cleanDir(self::$tmpDir);
+        self::mkdir(self::$tmpDir);
         $container->get('phpguard')
             ->willReturn($guard)
         ;
@@ -83,7 +79,7 @@ phpspec:
         - { pattern: "#^src\/.*\.php$#" }
 
 EOF;
-        touch($file = mfs::$tmpDir.'/test.yml');
+        touch($file = self::$tmpDir.'/test.yml');
         file_put_contents($file,$text,LOCK_EX);
 
         $this->compileFile($file);

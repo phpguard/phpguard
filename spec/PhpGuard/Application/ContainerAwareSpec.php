@@ -5,7 +5,7 @@ namespace spec\PhpGuard\Application;
 use PhpGuard\Application\ContainerAware;
 use PhpGuard\Application\Interfaces\ContainerAwareInterface;
 use PhpGuard\Application\Interfaces\ContainerInterface;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 
 class ContainerAwareSpec extends ObjectBehavior

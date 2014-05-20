@@ -2,7 +2,7 @@
 
 namespace spec\PhpGuard\Application;
 
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Output\OutputInterface;
 

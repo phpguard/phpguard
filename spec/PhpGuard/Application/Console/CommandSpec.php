@@ -3,7 +3,7 @@
 namespace spec\PhpGuard\Application\Console;
 
 use PhpGuard\Application\Console\Command;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 
 class MockCommand extends Command

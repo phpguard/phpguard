@@ -6,7 +6,7 @@ use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;

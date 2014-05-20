@@ -35,7 +35,9 @@ class Configuration extends ContainerAware
     public function compile($text)
     {
         $parsed = Yaml::parse($text);
-
+        if(!is_array($parsed)){
+            return;
+        }
         foreach($parsed as $plugin=>$definitions){
             if($plugin=='phpguard'){
                 $this->parseGuardSection($definitions);

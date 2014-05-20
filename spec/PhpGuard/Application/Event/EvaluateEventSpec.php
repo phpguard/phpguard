@@ -3,7 +3,7 @@
 namespace spec\PhpGuard\Application\Event;
 
 use PhpGuard\Listen\Event\ChangeSetEvent;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 
 class EvaluateEventSpec extends ObjectBehavior

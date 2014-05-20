@@ -2,26 +2,22 @@
 
 namespace spec\PhpGuard\Application;
 
-require_once __DIR__.'/MockFileSystem.php';
-
 use PhpGuard\Listen\Resource\FileResource;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-
-use spec\PhpGuard\Application\MockFileSystem as mfs;
 
 class WatcherSpec extends ObjectBehavior
 {
     function let()
     {
-        mfs::mkdir(mfs::$tmpDir);
+        self::mkdir(self::$tmpDir);
 
     }
 
     function letgo()
     {
-        mfs::cleanDir(mfs::$tmpDir);
+        self::cleanDir(self::$tmpDir);
     }
 
     function it_is_initializable()
@@ -64,7 +60,7 @@ class WatcherSpec extends ObjectBehavior
         ));
         $this->matchFile(__FILE__)->shouldHaveType('SplFileInfo');
 
-        touch($file = mfs::$tmpDir.'/foobar.php');
+        touch($file = self::$tmpDir.'/foobar.php');
 
         $this->matchFile($file)->shouldReturn(false);
     }

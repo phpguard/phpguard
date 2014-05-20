@@ -7,7 +7,7 @@ use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Runner;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Plugins\PHPUnit\PHPUnitPlugin;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Output\OutputInterface;
 

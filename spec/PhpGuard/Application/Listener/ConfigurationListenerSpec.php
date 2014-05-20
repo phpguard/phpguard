@@ -6,7 +6,7 @@ use PhpGuard\Application\Interfaces\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuardEvents;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\EventDispatcher\GenericEvent;
 

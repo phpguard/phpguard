@@ -2,20 +2,17 @@
 
 namespace spec\PhpGuard\Application;
 
-require_once __DIR__.'/MockFileSystem.php';
 use PhpGuard\Application\Configuration;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listener;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-
-use spec\PhpGuard\Application\MockFileSystem as mfs;
 
 class MockPhpGuard extends PhpGuard
 {
@@ -30,7 +27,7 @@ class MockPhpGuard extends PhpGuard
 
 class PhpGuardSpec extends ObjectBehavior
 {
-    protected $cwd;
+    static $cwd;
 
     function let(
         ContainerInterface $container,
@@ -50,12 +47,16 @@ class PhpGuardSpec extends ObjectBehavior
         $this->setContainer($container);
 
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPhpGuard');
-        $this->cwd = getcwd();
+
+        if(!is_dir(self::$cwd)){
+            self::$cwd = getcwd();
+        }
     }
 
     function letgo()
     {
-        chdir($this->cwd);
+        chdir(self::$cwd);
+        self::cleanDir(self::$tmpDir.'/test-config');
     }
 
     function it_is_initializable()
@@ -158,6 +159,8 @@ class PhpGuardSpec extends ObjectBehavior
         EventDispatcherInterface $dispatcher
     )
     {
+        self::mkdir($dir = self::$tmpDir.'/test-config');
+        chdir($dir);
 
         $container->get('config')
             ->willReturn($config);
@@ -168,16 +171,23 @@ class PhpGuardSpec extends ObjectBehavior
         $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,Argument::any())
             ->shouldBeCalled();
 
-        $config->compileFile(Argument::containingString('yml'))
+        $config->compileFile(Argument::containingString('phpguard.yml.dist'))
+            ->shouldBeCalled();
+        touch($dir.'/phpguard.yml.dist');
+        $this->loadConfiguration();
+
+        touch($dir.'/phpguard.yml');
+        $config->compileFile(Argument::containingString('phpguard.yml'))
             ->shouldBeCalled();
 
         $this->loadConfiguration();
+    }
 
-        mfs::mkdir($dir = mfs::$tmpDir);
-        touch($dir.'/phpunit.yml.dist');
-        chdir($dir);
-        $config->compileFile(Argument::containingString('yml.dist'))
-            ->shouldBeCalled();
-        $this->loadConfiguration();
+    function it_throws_when_configuration_file_not_exists()
+    {
+        chdir(self::$tmpDir);
+        $this->shouldThrow('InvalidArgumentException')
+            ->duringLoadConfiguration()
+        ;
     }
 }

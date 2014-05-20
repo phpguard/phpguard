@@ -3,7 +3,7 @@
 namespace spec\PhpGuard\Application\Console;
 
 use PhpGuard\Application\Interfaces\ContainerInterface;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Output\OutputInterface;
