@@ -72,8 +72,9 @@ class PhpSpecPlugin extends Plugin
             if(!$this->hasSpecFile($file)){
                 continue;
             }
+            $classFile = $this->getClassFile($file);
             $arguments = $this->buildArguments($this->options);
-            $arguments[] = $file->getRelativePathName();
+            $arguments[] = $classFile;
             $runner = $this->createRunner('phpspec',$arguments);
             $return = $runner->run();
             if(!$return){
@@ -95,18 +96,15 @@ class PhpSpecPlugin extends Plugin
     {
         //find by relative path first
         $absPath = realpath($path);
+        if(false!==strpos($absPath,'Spec.php')){
+            return true;
+        }
         $rpath = $path->getRelativePathname();
+
         $baseDir = rtrim(str_replace($rpath,'',$absPath),'\\/');
 
         $pattern = '#^(\w+)\/(.*)\.php$#';
         preg_match($pattern,$rpath,$matches);
-
-        if($matches[1]=='spec'){
-            return true;
-        }
-        if(false!==strpos($rpath,'Spec.php')){
-            return true;
-        }
 
         $transform = $baseDir.DIRECTORY_SEPARATOR.preg_replace($pattern,'spec/${2}Spec.php',$rpath);
         if(is_file($transform)){
@@ -130,6 +128,39 @@ class PhpSpecPlugin extends Plugin
         }
 
         return false;
+    }
+
+    public function getClassFile(SplFileInfo $file)
+    {
+        $absPath = $file;
+
+        if(false===strpos($absPath,'Spec.php')){
+            return $file->getRelativePathname();
+        }
+
+        $rpath = $file->getRelativePathname();
+        $baseDir = str_replace($rpath,'',$absPath);
+        $classFile = str_replace('Spec.php','',$rpath);
+
+        $exp = explode(DIRECTORY_SEPARATOR,$classFile);
+        $class = null;
+        $i = count($exp)-1;
+
+        while(isset($exp[$i])){
+            $class = $exp[$i].'\\'.$class;
+            $class = rtrim($class,'\\');
+            if(class_exists($class,true)){
+                $r = new \ReflectionClass($class);
+                $file = str_replace($baseDir,'',$r->getFileName());
+                return $file;
+                break;
+            }
+            $i--;
+        }
+
+        // class file not exists
+        // should wait until phpspec complete feature to run spec from spec file
+        return $file->getRelativePathname();
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)

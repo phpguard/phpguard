@@ -30,6 +30,9 @@ class PhpSpecPluginSpec extends ObjectBehavior
             $target = self::$fixturesDir.DIRECTORY_SEPARATOR.$rPath;
             self::mkdir(dirname($target));
             copy($path->getRealpath(),$target);
+            if(false!==strpos($target,'.php')){
+                require_once $target;
+            }
         }
     }
 
@@ -100,22 +103,22 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $this->importSuites();
 
         $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace3/Spec/Namespace3/ClassSpec.php'
+            getcwd(),getcwd().'/src/Namespace3/Spec/Namespace3/TestClassSpec.php'
         );
         $this->shouldHaveSpecFile($spl);
 
         $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace1/Class.php'
+            getcwd(),getcwd().'/src/Namespace1/TestClass.php'
         );
         $this->shouldHaveSpecFile($spl);
 
         $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace2/Class.php'
+            getcwd(),getcwd().'/src/Namespace2/TestClass.php'
         );
         $this->shouldHaveSpecFile($spl);
 
         $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace3/Class.php'
+            getcwd(),getcwd().'/src/Namespace3/TestClass.php'
         );
         $this->shouldHaveSpecFile($spl);
 
@@ -123,6 +126,37 @@ class PhpSpecPluginSpec extends ObjectBehavior
             getcwd(),getcwd().'/src/Namespace1/NotExist.php'
         );
         $this->shouldNotHaveSpecFile($spl);
+    }
+
+    function it_getClassFile_returns_file_to_use_with_phpspec_run_command()
+    {
+        $this->buildFixtures();
+        chdir(self::$fixturesDir);
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace1/TestClass.php'
+        );
+        $this->getClassFile($spl)->shouldReturn('src/Namespace1/TestClass.php');
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/spec/Namespace1/TestClassSpec.php'
+        );
+        $this->getClassFile($spl)->shouldReturn('src/Namespace1/TestClass.php');
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace2/spec/Namespace2/TestClassSpec.php'
+        );
+        $this->getClassFile($spl)->shouldReturn('src/Namespace2/TestClass.php');
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace3/Spec/Namespace3/TestClassSpec.php'
+        );
+        $this->getClassFile($spl)->shouldReturn('src/Namespace3/TestClass.php');
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/spec/Namespace1/NotDescribedSpec.php'
+        );
+        $this->getClassFile($spl)->shouldReturn($spl->getRelativePathname());
     }
 
     function it_should_log_error_when_failed_to_run(Runner $runner,PhpGuard $phpGuard)
