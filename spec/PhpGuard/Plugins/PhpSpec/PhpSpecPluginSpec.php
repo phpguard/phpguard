@@ -12,10 +12,12 @@ use PhpGuard\Application\Runner;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
+use Symfony\Component\Finder\Finder;
 
 class PhpSpecPluginSpec extends ObjectBehavior
 {
     static $cwd;
+    static $fixturesDir;
 
     function let(
         ContainerInterface $container,
@@ -41,6 +43,10 @@ class PhpSpecPluginSpec extends ObjectBehavior
         self::mkdir(self::$tmpDir);
         if(is_null(self::$cwd)){
             self::$cwd = getcwd();
+        }
+
+        if(is_null(self::$fixturesDir)){
+            self::$fixturesDir = self::$tmpDir.'/phpspec-plugin';
         }
     }
 
@@ -245,5 +251,42 @@ EOF;
         $this->getMatchedFiles($event)->shouldHaveCount(1);
         $matched = $this->getMatchedFiles($event);
         $matched[0]->getRelativePathname()->shouldReturn('src/Namespace2/Class.php');
+    }
+
+    function its_hasSpecFile_returns_true_if_spec_file_exists()
+    {
+        self::buildFixtures();
+        chdir(self::$fixturesDir);
+
+        $this->importSuites();
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace1/Class.php'
+        );
+        $this->shouldHaveSpecFile($spl);
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace2/Class.php'
+        );
+        $this->shouldHaveSpecFile($spl);
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace3/Class.php'
+        );
+        $this->shouldHaveSpecFile($spl);
+    }
+
+    protected function buildFixtures()
+    {
+        self::cleanDir(self::$fixturesDir);
+        $finder = Finder::create();
+        $finder->in(__DIR__.'/Resources/fixtures');
+        foreach($finder->files() as $path)
+        {
+            $rPath = $path->getRelativePathname();
+            $target = self::$fixturesDir.DIRECTORY_SEPARATOR.$rPath;
+            self::mkdir(dirname($target));
+            copy($path->getRealpath(),$target);
+        }
     }
 }

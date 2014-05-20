@@ -1,0 +1,4 @@
+suites:
+    Namespace1: { Namespace: Namespace1 }
+    Namespace2: { Namespace: Namespace2, spec_path: src/Namespace2 }
+    Namespace3: { Namespace: Namespace3, spec_path: src/Namespace3, spec_prefix: Spec }

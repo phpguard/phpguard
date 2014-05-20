@@ -11,10 +11,8 @@
 
 namespace PhpGuard\Plugins\PhpSpec;
 
-use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
-use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
@@ -22,6 +20,8 @@ use Symfony\Component\Yaml\Yaml;
 
 class PhpSpecPlugin extends Plugin
 {
+    protected $suites = array();
+
     public function __construct()
     {
         // set default options for phpspec plugin
@@ -69,6 +69,9 @@ class PhpSpecPlugin extends Plugin
         $success = true;
         foreach($paths as $file)
         {
+            if(!$this->hasSpecFile($file)){
+                continue;
+            }
             $arguments = $this->buildArguments($this->options);
             $arguments[] = $file->getRelativePathName();
             $runner = $this->createRunner('phpspec',$arguments);
@@ -86,6 +89,47 @@ class PhpSpecPlugin extends Plugin
         }else{
             $this->log('<log-error>Run spec failed</log-error>');
         }
+    }
+
+    public function hasSpecFile(SplFileInfo $path)
+    {
+        //find by relative path first
+        $absPath = realpath($path);
+        $rpath = $path->getRelativePathname();
+        $baseDir = rtrim(str_replace($rpath,'',$absPath),'\\/');
+
+        $pattern = '#^(\w+)\/(.*)\.php$#';
+        preg_match($pattern,$rpath,$matches);
+
+        if($matches[1]=='spec'){
+            return true;
+        }
+        if(false!==strpos($rpath,'Spec.php')){
+            return true;
+        }
+
+        $transform = $baseDir.DIRECTORY_SEPARATOR.preg_replace($pattern,'spec/${2}Spec.php',$rpath);
+        if(is_file($transform)){
+            return true;
+        }
+
+        // find based on suites
+        foreach($this->suites as $suite){
+            $specPrefix = isset($suite['spec_prefix']) ? $suite['spec_prefix']:'spec';
+            if(isset($suite['spec_path'])){
+                $specPath = $suite['spec_path'].DIRECTORY_SEPARATOR.$specPrefix;
+            }else{
+                $specPath = 'spec';
+            }
+            $testPath = $baseDir.DIRECTORY_SEPARATOR.$specPath;
+            $testPath = rtrim($testPath,'\\/');
+            $testFile = $testPath.DIRECTORY_SEPARATOR.$matches[2]."Spec.php";
+            if(is_file($testFile)){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
@@ -120,7 +164,8 @@ class PhpSpecPlugin extends Plugin
             return;
         }
 
-        $suites = $config['suites'];
+        $this->suites = $suites = $config['suites'];
+
         foreach($suites as $name=>$definition){
             $source = 'src';
             if(isset($definition['src'])){
