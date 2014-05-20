@@ -12,8 +12,10 @@
 namespace PhpGuard\Plugins\PhpSpec;
 
 use PhpGuard\Application\Plugin\Plugin;
+use PhpGuard\Application\Watcher;
 use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\Yaml\Yaml;
 
 class PhpSpecPlugin extends Plugin
 {
@@ -27,6 +29,10 @@ class PhpSpecPlugin extends Plugin
             $command = new DescribeCommand();
             $command->setContainer($this->container);
             $application->add($command);
+        }
+
+        if($this->options['import_suites']){
+            $this->importSuites();
         }
     }
 
@@ -79,10 +85,49 @@ class PhpSpecPlugin extends Plugin
             'format' => 'pretty',
             'ansi' => true,
             'all_after_pass' => false,
+            'import_suites' => false,
             'run_all' => array(
                 'format' => 'progress'
             )
         ));
+    }
+
+    public function importSuites()
+    {
+        $path = null;
+        if(is_file($file='phpspec.yml')){
+            $path = $file;
+        }
+        elseif(is_file($file='phpspec.yml.dist')){
+            $path = $file;
+        }
+        if(is_null($path)){
+            return;
+        }
+
+        $config = Yaml::parse($path);
+
+        if(!isset($config['suites'])){
+            return;
+        }
+
+        $suites = $config['suites'];
+        foreach($suites as $name=>$definition){
+            $source = 'src';
+            if(isset($definition['src'])){
+                $source = $definition['src'];
+            }
+            elseif(isset($definition['spec_path'])){
+                $source = $definition['spec_path'];
+            }
+            $pattern = '#^'.str_replace('/','\/',$source).'(.+)\.php$#';
+            $watcher = new Watcher();
+            $watcher->setOptions(array(
+                'pattern' => $pattern,
+                'tags' => $name
+            ));
+            $this->addWatcher($watcher);
+        }
     }
 
     private function buildArguments($options)

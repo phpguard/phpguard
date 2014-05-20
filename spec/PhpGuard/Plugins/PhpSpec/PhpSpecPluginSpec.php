@@ -4,17 +4,24 @@ namespace spec\PhpGuard\Plugins\PhpSpec;
 
 require_once __DIR__.'/MockPhpSpecPlugin.php';
 
+use PhpGuard\Application\Console\Application;
+use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Runner;
 use PhpGuard\Listen\Util\PathUtil;
-use PhpSpec\ObjectBehavior;
+use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
-
 
 class PhpSpecPluginSpec extends ObjectBehavior
 {
-    function let(ContainerInterface $container, Runner $runner,PhpGuard $phpGuard)
+    static $cwd;
+
+    function let(
+        ContainerInterface $container,
+        Runner $runner,
+        PhpGuard $phpGuard
+    )
     {
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPhpSpecPlugin');
         $this->setRunner($runner);
@@ -30,6 +37,17 @@ class PhpSpecPluginSpec extends ObjectBehavior
             ->willReturn($phpGuard);
 
         $this->setContainer($container);
+
+        self::mkdir(self::$tmpDir);
+        if(is_null(self::$cwd)){
+            self::$cwd = getcwd();
+        }
+    }
+
+    function letgo()
+    {
+        chdir(self::$cwd);
+        self::cleanDir(self::$tmpDir);
     }
 
     function it_is_initializable()
@@ -133,5 +151,99 @@ class PhpSpecPluginSpec extends ObjectBehavior
 
         $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
         $this->runAll(array($spl));
+    }
+
+    function it_should_configured_properly(
+        ContainerInterface $container,
+        Application $application
+    )
+    {
+        $container->get('ui.application')
+            ->willReturn($application);
+
+        $application->add(Argument::any())
+            ->shouldBeCalled();
+        $this->setOptions(array(
+            'import_suites' => true,
+        ));
+        chdir($dir = self::$tmpDir);
+        file_put_contents($dir.'/phpspec.yml',$this->getPhpSpecFileContent(),LOCK_EX);
+        $this->configure();
+        $this->getWatchers()->shouldHaveCount(2);
+    }
+
+    protected function getPhpSpecFileContent()
+    {
+        $content = <<<EOF
+suites:
+    Namespace1: { namespace: Namespace1, spec_path: src/Namespace1 }
+    Namespace2: { namespace: Namespace2, src: src/Namespace2 }
+EOF;
+        return $content;
+    }
+
+    function it_should_import_suites_from_phpspec_file()
+    {
+        chdir(self::$tmpDir);
+
+        // no configuration file in the cwd
+        $this->importSuites()->shouldReturn(null);
+        $this->getWatchers()->shouldHaveCount(0);
+
+        // configuration file exists but with no suites configuration
+        $file = self::$tmpDir.'/phpspec.yml';
+        touch($file);
+        $this->importSuites()->shouldReturn(null);
+        $this->getWatchers()->shouldHaveCount(0);
+
+        // configuration file exists with suites configuration
+        file_put_contents($file,$this->getPhpSpecFileContent(),LOCK_EX);
+        $this->importSuites();
+        $this->getWatchers()->shouldHaveCount(2);
+    }
+
+    function it_should_import_suites_from_phpspec_dist_file(
+        EvaluateEvent $event,
+        ContainerInterface $container
+    )
+    {
+        chdir(self::$tmpDir);
+        file_put_contents(self::$tmpDir.'/phpspec.yml.dist',$this->getPhpSpecFileContent());
+        $this->importSuites();
+        $this->getWatchers()->shouldHaveCount(2);
+
+        self::mkdir($dir1 = self::$tmpDir.'/src/Namespace1');
+        self::mkdir($dir2 = self::$tmpDir.'/src/Namespace2');
+        touch($file1 = $dir1.'/Class.php');
+        touch($file2 = $dir2.'/Class.php');
+
+        $container->getParameter('filter.tags',Argument::any())
+            ->willReturn(array())
+        ;
+        $event->getFiles()
+            ->willReturn(array($file1,$file2));
+        $this->getMatchedFiles($event)->shouldHaveCount(2);
+
+        // edge cases section
+
+        // test for Namespace1
+        $container->getParameter('filter.tags',Argument::any())
+            ->willReturn(array('Namespace1'))
+        ;
+        $event->getFiles()
+            ->willReturn(array($file1,$file2));
+        $this->getMatchedFiles($event)->shouldHaveCount(1);
+        $matched = $this->getMatchedFiles($event);
+        $matched[0]->getRelativePathname()->shouldReturn('src/Namespace1/Class.php');
+
+        // test for Namespace2
+        $container->getParameter('filter.tags',Argument::any())
+            ->willReturn(array('Namespace2'))
+        ;
+        $event->getFiles()
+            ->willReturn(array($file1,$file2));
+        $this->getMatchedFiles($event)->shouldHaveCount(1);
+        $matched = $this->getMatchedFiles($event);
+        $matched[0]->getRelativePathname()->shouldReturn('src/Namespace2/Class.php');
     }
 }
