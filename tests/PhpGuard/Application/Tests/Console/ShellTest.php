@@ -12,22 +12,54 @@
 namespace PhpGuard\Application\Tests\Console;
 
 
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Tests\FunctionalTestCase;
+use PhpGuard\Application\Tests\TestPlugin;
+use PhpGuard\Application\Tests\TestShell;
 
 class ShellTest extends FunctionalTestCase
 {
     public function testShouldEvaluateChange()
     {
-        $this->buildFixtures();
-        chdir(self::$tmpDir);
-        $app = $this->getApplication();
-        $tester = $this->getApplicationTester($app);
+        touch($file1 = self::$tmpDir.'/src/PhpGuardTest/Namespace1/NewClass.php');
+        $this->getShell()->evaluate();
+        $this->assertContains($file1,$this->getDisplay());
+    }
 
-        $tester->run(array(),array('-vvv'));
-        touch($file1 = getcwd().'/src/PhpGuardTest/Namespace1/NewClass.php');
-        $app->evaluate();
-        $display = $tester->getDisplay();
-        $this->assertContains($file1,$display);
+    /**
+     * @dataProvider getTestRunCommand
+     */
+    public function testShouldRunCommand($command,$expected)
+    {
+        $this->getShell()->runCommand($command);
+        $this->assertContains($expected,$this->getDisplay());
+    }
+
+    public function getTestRunCommand()
+    {
+        return array(
+            array('help','The help command'),
+            array('list','version '.PhpGuard::VERSION),
+            array(false,TestPlugin::RUN_ALL_MESSAGE),
+            array('',TestPlugin::RUN_ALL_MESSAGE),
+            array('all',TestPlugin::RUN_ALL_MESSAGE),
+            array('all foo','Plugin "foo" is not registered'),
+            array('quit',TestShell::EXIT_SHELL_MESSAGE)
+        );
+    }
+
+    public function testShouldRenderExceptionIfPluginThrowsExceptionWhenRunning()
+    {
+        $plugin = $this->app->getContainer()->get('plugins.test');
+        $plugin->throwException = true;
+        touch(self::$tmpDir.'/src/PhpGuardTest/Namespace1/TestThrow.php');
+        $this->getShell()->evaluate();
+        $this->assertContains(TestPlugin::THROW_MESSAGE,$this->getDisplay());
+    }
+
+    public function testCanBeStopped()
+    {
+        $this->getShell()->stop();
+        $this->assertFalse($this->getShell()->isRunning());
     }
 }
- 

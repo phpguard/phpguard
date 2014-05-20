@@ -17,7 +17,12 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class TestPlugin extends Plugin
 {
+    const THROW_MESSAGE = 'Test Plugin Throws Exception';
+    const RUN_ALL_MESSAGE = 'Test Plugin Run All';
+    const RUN_MESSAGE = 'Test Plugin Run';
     public $runCount = 0;
+
+    public $throwException = false;
 
     public function configure()
     {
@@ -39,7 +44,7 @@ class TestPlugin extends Plugin
      */
     public function runAll()
     {
-        // TODO: Implement runAll() method.
+        $this->log(self::RUN_ALL_MESSAGE);
     }
 
     /**
@@ -49,8 +54,11 @@ class TestPlugin extends Plugin
      */
     public function run(array $paths = array())
     {
+        if($this->throwException){
+            throw new \RuntimeException(self::THROW_MESSAGE);
+        }
         $this->runCount++;
-        $this->log('Test Plugin Running');
+        $this->log(self::RUN_MESSAGE);
         foreach($paths as $path){
             $this->log('Modified path: '.$path);
         }

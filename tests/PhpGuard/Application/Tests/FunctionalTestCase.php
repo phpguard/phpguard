@@ -20,6 +20,16 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     static $tmpDir;
     static $cwd;
 
+    /**
+     * @var TestApplication
+     */
+    protected $app;
+
+    /**
+     * @var ApplicationTester
+     */
+    protected $tester;
+
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
@@ -32,12 +42,32 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
         ob::mkdir(self::$tmpDir);
     }
 
+    protected function setUp()
+    {
+        parent::setUp();
+        ob::mkdir(self::$tmpDir);
+        $this->buildFixtures();
+
+        chdir(self::$tmpDir);
+        $this->app = $this->getApplication();
+        $this->tester = $this->getApplicationTester($this->app);
+        $this->tester->run(array());
+    }
+
     protected function tearDown()
     {
-        parent::tearDown();
         ob::cleanDir(self::$tmpDir);
     }
 
+    protected function getShell()
+    {
+        return $this->app->getShell();
+    }
+
+    protected function getDisplay()
+    {
+        return $this->tester->getDisplay();
+    }
 
     /**
      * @return TestPhpGuard
@@ -47,6 +77,9 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
         return new TestPhpGuard();
     }
 
+    /**
+     * @return TestApplication
+     */
     public function getApplication()
     {
         return new TestApplication();

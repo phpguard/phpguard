@@ -117,9 +117,14 @@ class Shell
 
     public function evaluate()
     {
-        /* @var \PhpGuard\Listen\Listener $listener */
-        $listener = $this->container->get('listen.listener');
-        $listener->evaluate();
+        try{
+            /* @var \PhpGuard\Listen\Listener $listener */
+            $listener = $this->container->get('listen.listener');
+            $listener->evaluate();
+        }catch(\Exception $e){
+            $this->application->renderException($e,$this->output);
+        }
+
     }
 
     /**
@@ -252,10 +257,14 @@ EOF;
             }
         }
 
-        // dispatch run all events
-        $event = new GenericEvent($this,array('plugin' => $plugin));
-        $dispatcher = $this->container->get('dispatcher');
-        $dispatcher->dispatch(PhpGuardEvents::runAllCommands,$event);
+        try{
+            // dispatch run all events
+            $event = new GenericEvent($this,array('plugin' => $plugin));
+            $dispatcher = $this->container->get('dispatcher');
+            $dispatcher->dispatch(PhpGuardEvents::runAllCommands,$event);
+        }catch(\Exception $e){
+            $this->application->renderException($e,$this->output);
+        }
     }
 
     /**

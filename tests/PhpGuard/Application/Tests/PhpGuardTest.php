@@ -13,10 +13,10 @@ namespace PhpGuard\Application\Tests;
 
 
 use PhpGuard\Application\PhpGuard;
+use PhpGuard\Application\Spec\ObjectBehavior as ob;
 
 class PhpGuardTest extends FunctionalTestCase
 {
-
     public function testShouldConfigureOptions()
     {
         $phpGuard = new PhpGuard();
@@ -37,11 +37,7 @@ class PhpGuardTest extends FunctionalTestCase
 
     public function testShouldSetupListenProperly()
     {
-        chdir(__DIR__.'/fixtures');
-        $app = $this->getApplication();
-        $tester = $this->getApplicationTester($app);
-        $tester->run(array());
-        $listener = $app->getContainer()->get('listen.listener');
+        $listener = $this->app->getContainer()->get('listen.listener');
         $this->assertInstanceOf('PhpGuard\\Listen\\Listener',$listener);
         $this->assertEquals(doubleval(0.01*1000000),$listener->getLatency());
         $this->assertContains('foo',$listener->getIgnores());
@@ -49,14 +45,37 @@ class PhpGuardTest extends FunctionalTestCase
 
     public function testShouldLoadPlugins()
     {
-        $this->buildFixtures();
-        chdir(self::$tmpDir);
-        $app = $this->getApplication();
-        $tester = $this->getApplicationTester($app);
-        $tester->run(array());
-
-        $container = $app->getContainer();
+        $container = $this->app->getContainer();
         $this->assertTrue($container->get('plugins.test')->isActive());
     }
+
+    public function testShouldMonitorBasedOnTags()
+    {
+        ob::mkdir($dirTag1 = self::$tmpDir.'/tag1');
+        ob::mkdir($dirTag2 = self::$tmpDir.'/tag2');
+
+        $this->tester->run(array('--tags'=>'tag1'));
+        touch($ftag1 = $dirTag1.'/test1.php');
+        touch($ftag2 = $dirTag2.'/test1.php');
+        $this->getShell()->evaluate();
+        $this->assertContains($ftag1,$this->getDisplay());
+        $this->assertNotContains($ftag2,$this->getDisplay());
+
+        $this->tester->run(array('--tags'=>'tag2'));
+        touch($ftag1 = $dirTag1.'/test2.php');
+        touch($ftag2 = $dirTag2.'/test2.php');
+        $this->getShell()->evaluate();
+        $this->assertContains($ftag2,$this->getDisplay());
+        $this->assertNotContains($ftag1,$this->getDisplay());
+
+        $this->tester->run(array('--tags'=>'tag1,tag2'));
+        touch($ftag1 = $dirTag1.'/test3.php');
+        touch($ftag2 = $dirTag2.'/test3.php');
+        $this->getShell()->evaluate();
+        $this->assertContains($ftag2,$this->getDisplay());
+        $this->assertContains($ftag1,$this->getDisplay());
+    }
+
+
 }
  
