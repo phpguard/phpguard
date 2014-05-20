@@ -94,7 +94,7 @@ class PhpGuard
             return $listener;
         });
 
-        $container->setShared('listen.adapter',function($c){
+        $container->setShared('listen.adapter',function(){
             $adapter = Listen::getDefaultAdapter();
             return $adapter;
         });

@@ -181,8 +181,7 @@ class Shell
         }
         else{
             $this->unsetStreamBlocking();
-            readline_add_history($command);
-            readline_write_history($this->historyFile);
+            $this->readlineWriteHistory($command);
             $input = new StringInput($command);
             $retVal = $this->application->run($input, $this->output);
             $this->installReadlineCallback();
@@ -244,9 +243,8 @@ EOF;
         if(false!==$command){
             $command = str_replace('\040',' ',$command);
             $command = trim($command);
-            if($command){
-                readline_add_history($command);
-                readline_write_history($this->historyFile);
+            if($command!=''){
+                $this->readlineWriteHistory($command);
             }
             $plugin = trim(substr($command,4));
             if($plugin == ''){
@@ -335,6 +333,14 @@ EOF;
             $line = fgets(STDIN, 1024);
             $line = (!$line && strlen($line) == 0) ? false : rtrim($line);
             $this->runCommand($line);
+        }
+    }
+
+    private function readlineWriteHistory($command)
+    {
+        if($this->hasReadline){
+            readline_add_history($command);
+            readline_write_history($this->historyFile);
         }
     }
 }

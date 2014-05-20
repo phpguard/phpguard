@@ -153,7 +153,6 @@ class PhpSpecPlugin extends Plugin
                 $r = new \ReflectionClass($class);
                 $file = str_replace($baseDir,'',$r->getFileName());
                 return $file;
-                break;
             }
             $i--;
         }
