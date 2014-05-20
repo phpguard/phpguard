@@ -7,14 +7,38 @@ use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Application\Spec\ObjectBehavior;
+use PhpGuard\Listen\Adapter\AdapterInterface;
+use PhpGuard\Listen\Listener;
 use Prophecy\Argument;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 class ConfigurationListenerSpec extends ObjectBehavior
 {
-    function let(GenericEvent $event,PhpGuard $guard)
+    function let(
+        GenericEvent $event,
+        PhpGuard $phpGuard,
+        ContainerInterface $container,
+        PluginInterface $plugin,
+        AdapterInterface $adapter,
+        Listener $listener
+    )
     {
-        $event->getSubject()->willReturn($guard);
+        $event->getSubject()->willReturn($phpGuard);
+        $container->get('phpguard')
+            ->willReturn($phpGuard);
+        $phpGuard->log(Argument::cetera())
+            ->willReturn(null);
+
+        $container->getByPrefix('plugins')
+            ->willReturn(array($plugin))
+        ;
+
+        $container->get('listen.listener')
+            ->willReturn($listener);
+        $container->get('listen.adapter')
+            ->willReturn($adapter);
+
+        $this->setContainer($container);
     }
 
     function it_is_initializable()
@@ -46,43 +70,41 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $this->preLoad($event);
     }
 
-    function it_should_post_load_configuration_properly(
-        GenericEvent $event,
-        PhpGuard $guard,
-        ContainerInterface $container
+    function its_postLoad_should_configure_listen(
+        ContainerInterface $container,
+        AdapterInterface $adapter,
+        Listener $listener
     )
     {
-        $guard->setupListen()->shouldBeCalled();
-        $guard->getContainer()->shouldBeCalled()
-            ->willReturn($container)
-        ;
-        $container->getByPrefix('plugins')
+        // listen specs
+        $container->get('listen.listener')
             ->shouldBeCalled()
-            ->willReturn(array())
+            ->willReturn($listener)
+        ;
+        $container->get('listen.adapter')
+            ->shouldBeCalled()
+            ->willReturn($adapter)
         ;
 
-        $this->postLoad($event);
+        $listener->setAdapter($adapter)
+            ->shouldBeCalled();
+
+        $this->postLoad();
     }
 
     function it_postLoad_should_configure_only_active_plugin(
         GenericEvent $event,
-        PhpGuard $guard,
         ContainerInterface $container,
         PluginInterface $active,
         PluginInterface $inactive
     )
     {
-
-        $guard->setupListen()->shouldBeCalled();
-        $guard->getContainer()->shouldBeCalled()
-            ->willReturn($container)
-        ;
-
         $container->getByPrefix('plugins')
             ->shouldBeCalled()
             ->willReturn(array($active,$inactive))
         ;
-
+        $active->getName()->shouldBeCalled()
+            ->willReturn('some');
         $active->isActive()->willReturn(true);
         $active->configure()->shouldBeCalled();
 

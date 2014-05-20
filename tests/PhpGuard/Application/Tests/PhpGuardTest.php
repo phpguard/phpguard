@@ -13,10 +13,12 @@ namespace PhpGuard\Application\Tests;
 
 
 use PhpGuard\Application\Console\Application;
+use PhpGuard\Application\Tests\Console\ApplicationTest;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class PhpGuardTest extends FunctionalTestCase
 {
+
     public function testShouldCreateShellService()
     {
         $app = new Application();
@@ -28,15 +30,14 @@ class PhpGuardTest extends FunctionalTestCase
 
     public function testShouldSetupListenProperly()
     {
-        $app = new Application();
-        $phpguard = $app->getContainer()->get('phpguard');
-        $phpguard->setOptions(array(
-            'ignores' => 'foobar'
-        ));
+        chdir(__DIR__.'/fixtures');
+        $app = $this->getApplication();
+        $tester = $this->getApplicationTester($app);
+        $tester->run(array());
         $listener = $app->getContainer()->get('listen.listener');
         $this->assertInstanceOf('PhpGuard\\Listen\\Listener',$listener);
-
-        $this->assertContains('foobar',$listener->getIgnores());
+        $this->assertEquals(doubleval(0.01*1000000),$listener->getLatency());
+        $this->assertContains('foo',$listener->getIgnores());
     }
 
 

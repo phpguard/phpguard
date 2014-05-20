@@ -7,23 +7,11 @@ use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
-use PhpGuard\Listen\Listener;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-
-class MockPhpGuard extends PhpGuard
-{
-    public function start()
-    {
-        parent::start();
-        $listener = $this->getContainer()->get('listen.listener');
-        $listener->alwaysNotify(true);
-        $listener->stop();
-    }
-}
 
 class PhpGuardSpec extends ObjectBehavior
 {
@@ -45,8 +33,6 @@ class PhpGuardSpec extends ObjectBehavior
             ->willReturn(ConsoleOutput::VERBOSITY_NORMAL);
 
         $this->setContainer($container);
-
-        $this->beAnInstanceOf(__NAMESPACE__.'\\MockPhpGuard');
 
         if(!is_dir(self::$cwd)){
             self::$cwd = getcwd();
@@ -85,7 +71,10 @@ class PhpGuardSpec extends ObjectBehavior
             ->shouldBeCalled();
         $container->setShared('dispatcher.listeners.changeset',Argument::cetera())
             ->shouldBeCalled();
-        $container->setShared('ui.shell',Argument::cetera())
+
+        $container->setShared('listen.listener',Argument::cetera())
+            ->shouldBeCalled();
+        $container->setShared('listen.adapter',Argument::cetera())
             ->shouldBeCalled();
 
         $this->setupServices();
@@ -103,22 +92,6 @@ class PhpGuardSpec extends ObjectBehavior
         $dispatcher->dispatch(PhpGuardEvents::postEvaluate,Argument::cetera())
             ->shouldBeCalled();
         $this->listen($event);
-    }
-
-    function it_should_start_properly(Listener $listener,ContainerInterface $container,ConsoleOutput $output)
-    {
-        $container->get('listen.listener')
-            ->willReturn($listener);
-
-        $this->setOptions(array(
-            'ignores' => 'some_dir'
-        ));
-
-        $listener->start()
-            ->shouldBeCalled();
-        $output->writeln(Argument::cetera())
-            ->shouldBeCalled();
-        $this->start();
     }
 
     function it_should_log_null_message(ConsoleOutput $output)

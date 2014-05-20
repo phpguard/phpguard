@@ -44,15 +44,12 @@ class Application extends BaseApplication
     public function __construct()
     {
         parent::__construct('phpguard',PhpGuard::VERSION);
-        $this->initialize();
+        $this->setupContainer();
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->initialize();
-
         $container = $this->container;
-        $this->setDispatcher($container->get('dispatcher'));
         $container->set('ui.input',$input);
         $container->set('ui.output',$output);
 
@@ -114,26 +111,20 @@ class Application extends BaseApplication
         return $definition;
     }
 
-    private function initialize()
+    private function setupContainer()
     {
-        if($this->initialized){
-            return;
-        }
         $container = new Container();
+        $container->setShared('ui.shell',function($c){
+            $shell = new Shell($c);
+            return $shell;
+        });
         $container->set('ui.application',$this);
-
-        try{
-            $guard = new PhpGuard();
-            $guard->setContainer($container);
-            $guard->setupServices();
-            $guard->loadConfiguration();
-        }catch(\Exception $e){
-            $this->renderException($e, new ConsoleOutput());
-            exit(1);
-        }
-        $this->guard = $guard;
+        $container->setShared('phpguard',function($c){
+            $phpGuard = new PhpGuard();
+            $phpGuard->setContainer($c);
+            return $phpGuard;
+        });
         $this->container = $container;
-        $this->initialized = true;
     }
 
 }

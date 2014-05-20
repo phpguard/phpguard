@@ -19,15 +19,8 @@ class TestApplication extends Application
     public function __construct()
     {
         parent::__construct();
-
-        $phpguard = new TestPhpGuard();
-        $phpguard->setOptions(array());
-        $this->getContainer()
-            ->set('phpguard',$phpguard)
-        ;
         $this->setCatchExceptions(true);
         $this->setAutoExit(false);
-
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)

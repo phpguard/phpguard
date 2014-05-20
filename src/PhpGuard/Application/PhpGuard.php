@@ -14,7 +14,6 @@ namespace PhpGuard\Application;
 use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
-use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Listener\ConfigurationListener;
@@ -70,6 +69,14 @@ class PhpGuard
             return new Configuration();
         });
 
+        $container->setShared('dispatcher.listeners.config',function(){
+            return new ConfigurationListener();
+        });
+
+        $container->setShared('dispatcher.listeners.changeset',function(){
+            return new ChangesetListener();
+        });
+
         $container->setShared('dispatcher', function ($c) {
             $dispatcher = new EventDispatcher;
 
@@ -81,25 +88,6 @@ class PhpGuard
             return $dispatcher;
         });
 
-        $container->setShared('dispatcher.listeners.config',function(){
-            return new ConfigurationListener();
-        });
-
-        $container->setShared('dispatcher.listeners.changeset',function(){
-            return new ChangesetListener();
-        });
-
-        $container->setShared('ui.shell',function($c){
-            $shell = new Shell($c);
-            return $shell;
-        });
-        $this->container = $container;
-    }
-
-    public function setupListen()
-    {
-        $container = $this->container;
-
         $container->setShared('listen.listener',function($c){
             $listener = Listen::to(getcwd());
             $options = $c->get('phpguard')->getOptions();
@@ -110,8 +98,16 @@ class PhpGuard
             $phpguard = $c->get('phpguard');
             $listener->latency($options['latency']);
             $listener->callback(array($phpguard,'listen'));
+
             return $listener;
         });
+
+        $container->setShared('listen.adapter',function($c){
+            $adapter = Listen::getDefaultAdapter();
+            return $adapter;
+        });
+
+        $this->container = $container;
     }
 
     public function loadPlugins()
@@ -146,14 +142,6 @@ class PhpGuard
         $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,$event);
     }
 
-    public function start()
-    {
-        /* @var \PhpGuard\Listen\Listener $listener */
-        $listener = $this->container->get('listen.listener');
-
-        $this->log('Starting to watch at <comment>'.getcwd().'</comment>');
-        $listener->start();
-    }
 
     public function listen(ChangeSetEvent $event)
     {
@@ -204,6 +192,9 @@ class PhpGuard
      */
     public function log($message=null,$level=OutputInterface::VERBOSITY_NORMAL,$channel='PhpGuard')
     {
+        if(is_null($level)){
+            $level = OutputInterface::VERBOSITY_NORMAL;
+        }
         /* @var \Symfony\Component\Console\Output\OutputInterface $output */
         $output = $this->container->get('ui.output');
         if(is_null($message)){

@@ -16,19 +16,10 @@ use PhpGuard\Listen\Event\ChangeSetEvent;
 
 class TestPhpGuard extends PhpGuard
 {
-    public function start()
-    {
-        $listener = $this->getContainer()->get('listen.listener');
-        $listener->latency(10);
-        $listener->alwaysNotify(true);
-        parent::start();
-    }
-
     public function listen(ChangeSetEvent $event)
     {
         parent::listen($event);
         // always stop after first evaluation
         $event->getListener()->stop();
     }
-
 }

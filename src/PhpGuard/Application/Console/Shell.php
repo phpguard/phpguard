@@ -308,7 +308,14 @@ EOF;
         if($this->initialized){
             return;
         }
+        $container = $this->container;
         $this->output->writeln($this->getHeader());
+        $guard = $this->container->get('phpguard');
+        $guard->setupServices();
+        $guard->loadConfiguration();
+        $this->application->setDispatcher($container->get('dispatcher'));
+
+
         if ($this->hasReadline) {
             readline_read_history($this->historyFile);
             readline_completion_function(array($this, 'autocompleter'));

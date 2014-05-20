@@ -14,6 +14,7 @@ namespace PhpGuard\Application\Listener;
 use PhpGuard\Application\ContainerAware;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
+use PhpGuard\Listen\Listen;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
@@ -59,20 +60,41 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         $guard->setOptions(array());
     }
 
-    public function postLoad(GenericEvent $event)
+    public function postLoad()
     {
-        /* @var PhpGuard $guard */
         /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
+        $container = $this->container;
+        $phpGuard = $container->get('phpguard');
+        $plugins = $container->getByPrefix('plugins');
 
-        $guard = $event->getSubject();
-        $guard->setupListen();
-
-        $plugins = $guard->getContainer()->getByPrefix('plugins');
         foreach($plugins as $plugin){
             if(!$plugin->isActive()){
                 continue;
             }
             $plugin->configure();
+            $phpGuard->log('Plugin <comment>'.$plugin->getName().'</comment> is running');
         }
+        $this->setupListen();
+    }
+
+    private function setupListen()
+    {
+        $container = $this->container;
+        $adapter = $container->get('listen.adapter');
+        $listener = $container->get('listen.listener');
+        $this->getPhpGuard()->log('Using <comment>'.get_class($adapter).'</comment>',null,'Listen');
+        $this->getPhpGuard()->log('Scanning Directory <comment>Please Wait!</comment>',null,'Listen');
+
+        $listener->setAdapter($adapter);
+
+        $this->getPhpGuard()->log('Start to monitor at <comment>'.getcwd().'</comment>',null,'Listen');
+    }
+
+    /**
+     * @return \PhpGuard\Application\PhpGuard
+     */
+    private function getPhpGuard()
+    {
+        return $this->container->get('phpguard');
     }
 }
