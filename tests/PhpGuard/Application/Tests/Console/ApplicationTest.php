@@ -22,6 +22,7 @@ class ApplicationTest extends FunctionalTestCase
         $display = $tester->getDisplay(true);
         $this->assertEquals(0,$exit);
         $this->assertContains('Welcome',$display);
+        $this->assertContains(getcwd(),$display);
     }
 
     public function testShouldRunSomeBasicCommand()

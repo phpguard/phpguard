@@ -39,8 +39,6 @@ class Application extends BaseApplication
      */
     private $container;
 
-    private $initialized = false;
-
     public function __construct()
     {
         parent::__construct('phpguard',PhpGuard::VERSION);

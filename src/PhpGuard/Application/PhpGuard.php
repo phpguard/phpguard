@@ -47,14 +47,6 @@ class PhpGuard
         $this->setOptions(array());
     }
 
-    /**
-     * @return Container
-     */
-    public function getContainer()
-    {
-        return $this->container;
-    }
-
     public function setContainer(ContainerInterface $container)
     {
         $this->container = $container;

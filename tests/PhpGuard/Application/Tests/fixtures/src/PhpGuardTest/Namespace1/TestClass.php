@@ -9,11 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Tests;
+namespace PhpGuardTest\Namespace1;
 
-use PhpGuard\Application\PhpGuard;
-use PhpGuard\Listen\Event\ChangeSetEvent;
-
-class TestPhpGuard extends PhpGuard
+class TestClass
 {
+
 }

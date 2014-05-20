@@ -12,20 +12,27 @@
 namespace PhpGuard\Application\Tests;
 
 
-use PhpGuard\Application\Console\Application;
-use PhpGuard\Application\Tests\Console\ApplicationTest;
-use Symfony\Component\Console\Output\ConsoleOutput;
+use PhpGuard\Application\PhpGuard;
 
 class PhpGuardTest extends FunctionalTestCase
 {
 
-    public function testShouldCreateShellService()
+    public function testShouldConfigureOptions()
     {
-        $app = new Application();
-        $container = $app->getContainer();
-        $container->set('ui.output',new ConsoleOutput());
-        $shell = $container->get('ui.shell');
-        $this->assertInstanceOf('PhpGuard\\Application\\Console\\Shell',$shell);
+        $phpGuard = new PhpGuard();
+
+        $phpGuard->setOptions(array(
+            'ignores' => 'test'
+        ));
+        $options = $phpGuard->getOptions();
+        $this->assertSame(array('test'),$options['ignores']);
+
+        $ignores = array('foo','bar');
+        $phpGuard->setOptions(array(
+            'ignores' => $ignores
+        ));
+        $options = $phpGuard->getOptions();
+        $this->assertSame($ignores,$options['ignores']);
     }
 
     public function testShouldSetupListenProperly()
@@ -40,6 +47,16 @@ class PhpGuardTest extends FunctionalTestCase
         $this->assertContains('foo',$listener->getIgnores());
     }
 
+    public function testShouldLoadPlugins()
+    {
+        $this->buildFixtures();
+        chdir(self::$tmpDir);
+        $app = $this->getApplication();
+        $tester = $this->getApplicationTester($app);
+        $tester->run(array());
 
+        $container = $app->getContainer();
+        $this->assertTrue($container->get('plugins.test')->isActive());
+    }
 }
  
