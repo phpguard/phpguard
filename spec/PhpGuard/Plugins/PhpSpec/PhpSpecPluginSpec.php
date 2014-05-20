@@ -19,6 +19,20 @@ class PhpSpecPluginSpec extends ObjectBehavior
     static $cwd;
     static $fixturesDir;
 
+    protected function buildFixtures()
+    {
+        self::cleanDir(self::$fixturesDir);
+        $finder = Finder::create();
+        $finder->in(__DIR__.'/Resources/fixtures');
+        foreach($finder->files() as $path)
+        {
+            $rPath = $path->getRelativePathname();
+            $target = self::$fixturesDir.DIRECTORY_SEPARATOR.$rPath;
+            self::mkdir(dirname($target));
+            copy($path->getRealpath(),$target);
+        }
+    }
+
     function let(
         ContainerInterface $container,
         Runner $runner,
@@ -78,7 +92,49 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $options->shouldHaveKey('all_after_pass');
     }
 
-    function it_should_run_properly(Runner $runner,PhpGuard $phpGuard)
+    function it_hasSpecFile_returns_true_if_spec_file_exists()
+    {
+        self::buildFixtures();
+        chdir(self::$fixturesDir);
+
+        $this->importSuites();
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace3/Spec/Namespace3/ClassSpec.php'
+        );
+        $this->shouldHaveSpecFile($spl);
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace1/Class.php'
+        );
+        $this->shouldHaveSpecFile($spl);
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace2/Class.php'
+        );
+        $this->shouldHaveSpecFile($spl);
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace3/Class.php'
+        );
+        $this->shouldHaveSpecFile($spl);
+
+        $spl = PathUtil::createSplFileInfo(
+            getcwd(),getcwd().'/src/Namespace1/NotExist.php'
+        );
+        $this->shouldNotHaveSpecFile($spl);
+    }
+
+    function it_should_log_error_when_failed_to_run(Runner $runner,PhpGuard $phpGuard)
+    {
+        $runner->run()
+            ->willReturn(false);
+
+        $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
+        $this->run(array($spl));
+    }
+
+    function it_should_run_properly(Runner $runner)
     {
         $this->setOptions(array(
             'format' => 'dot'
@@ -92,6 +148,21 @@ class PhpSpecPluginSpec extends ObjectBehavior
             ->willReturn(true)
         ;
         $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
+        $this->run(array($spl));
+    }
+
+    function it_should_not_run_if_spec_file_not_exists(
+        Runner $runner
+    )
+    {
+        $this->buildFixtures();
+        chdir(self::$fixturesDir);
+
+        $runner->run(Argument::cetera())
+            ->shouldNotBeCalled()
+        ;
+        $spl = PathUtil::createSplFileInfo(getcwd(),'src/Namespace1/NotExist.php');
+        $this->importSuites();
         $this->run(array($spl));
     }
 
@@ -119,15 +190,6 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
 
 
-        $this->run(array($spl));
-    }
-
-    function it_should_log_error_when_failed_to_run(Runner $runner,PhpGuard $phpGuard)
-    {
-        $runner->run()
-            ->willReturn(false);
-
-        $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
         $this->run(array($spl));
     }
 
@@ -251,42 +313,5 @@ EOF;
         $this->getMatchedFiles($event)->shouldHaveCount(1);
         $matched = $this->getMatchedFiles($event);
         $matched[0]->getRelativePathname()->shouldReturn('src/Namespace2/Class.php');
-    }
-
-    function its_hasSpecFile_returns_true_if_spec_file_exists()
-    {
-        self::buildFixtures();
-        chdir(self::$fixturesDir);
-
-        $this->importSuites();
-
-        $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace1/Class.php'
-        );
-        $this->shouldHaveSpecFile($spl);
-
-        $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace2/Class.php'
-        );
-        $this->shouldHaveSpecFile($spl);
-
-        $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace3/Class.php'
-        );
-        $this->shouldHaveSpecFile($spl);
-    }
-
-    protected function buildFixtures()
-    {
-        self::cleanDir(self::$fixturesDir);
-        $finder = Finder::create();
-        $finder->in(__DIR__.'/Resources/fixtures');
-        foreach($finder->files() as $path)
-        {
-            $rPath = $path->getRelativePathname();
-            $target = self::$fixturesDir.DIRECTORY_SEPARATOR.$rPath;
-            self::mkdir(dirname($target));
-            copy($path->getRealpath(),$target);
-        }
     }
 }

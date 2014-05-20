@@ -32,6 +32,11 @@ class ConfigurationSpec extends ObjectBehavior
             ->duringCompileFile('foo.yml');
     }
 
+    function it_should_not_process_empty_file()
+    {
+        $this->compile('')->shouldReturn(null);
+    }
+
     function it_should_process_global_section(ContainerInterface $container,PhpGuard $guard)
     {
         $guard->setOptions(array(
