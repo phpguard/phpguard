@@ -190,9 +190,9 @@ class PhpGuard
     }
 
     /**
-     * @param null   $message
-     * @param int    $level
-     * @param string $channel
+     * @param string    $message
+     * @param int       $level
+     * @param string    $channel
      */
     public function log($message=null,$level=OutputInterface::VERBOSITY_NORMAL,$channel='PhpGuard')
     {
