@@ -124,11 +124,4 @@ class Runner
             return false;
         }
     }
-
-    private function findExecutable($command)
-    {
-        $finder = new ExecutableFinder();
-        $finder->find($command);
-        return $finder->find($command);
-    }
 }

@@ -23,7 +23,10 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
  */
 class Watcher
 {
-    private $options;
+    private $options = array(
+        'groups' => array(),
+        'tags' => array(),
+    );
 
     public function setOptions($options)
     {
@@ -35,6 +38,28 @@ class Watcher
     public function getOptions()
     {
         return $this->options;
+    }
+
+    public function hasGroup($group)
+    {
+        return in_array($group,$this->options['groups']);
+    }
+
+    public function hasTag($tags)
+    {
+        if(empty($tags)){
+            return true;
+        }
+        if(!is_array($tags)){
+            $tags = array($tags);
+        }
+
+        foreach($tags as $tag){
+            if(in_array($tag,$this->options['tags'])){
+                return true;
+            }
+        }
+        return false;
     }
 
     public function matchFile($file)
@@ -79,8 +104,19 @@ class Watcher
 
         $resolver->setDefaults(array(
             'tags' => array(),
+            'groups' => array(),
             'transform' => null,
         ));
-    }
 
+        $arrayNormalizer = function($options,$value){
+            if(!is_array($value)){
+                $value = array($value);
+            }
+            return $value;
+        };
+        $resolver->setNormalizers(array(
+            'groups' => $arrayNormalizer,
+            'tags' => $arrayNormalizer
+        ));
+    }
 }

@@ -42,6 +42,8 @@ class PluginSpec extends ObjectBehavior
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPlugin');
         $this->addWatcher($watcher);
         $this->setContainer($container);
+        $watcher->hasTag(null)
+            ->willReturn(true);
     }
 
     function it_is_initializable()
@@ -100,6 +102,58 @@ class PluginSpec extends ObjectBehavior
         ;
         $paths = $this->getMatchedFiles($event);
         $paths[0]->shouldHaveType('SplFileInfo');
+    }
+
+    function its_getMatchedFiles_should_only_match_againts_tag_if_defined(
+        EvaluateEvent $event,
+        Watcher $watcher,
+        ContainerInterface $container
+    )
+    {
+
+        $tags = array('foo');
+        $container->getParameter('filter.tags',array())
+            ->shouldBeCalled()
+            ->willReturn($tags)
+        ;
+
+        $watcher->hasTag($tags)
+            ->shouldBeCalled()
+            ->willReturn(true);
+        $watcher->matchFile(__FILE__)
+            ->shouldBeCalled()
+            ->willReturn(true)
+        ;
+
+        $event->getFiles()
+            ->willReturn(array(__FILE__));
+
+
+        $this->getMatchedFiles($event);
+    }
+
+    function its_getMatchedFiles_returns_false_if_tag_is_not_matched(
+        EvaluateEvent $event,
+        Watcher $watcher,
+        ContainerInterface $container
+    )
+    {
+
+        $tags = array('foo');
+        $container->getParameter('filter.tags',array())
+            ->shouldBeCalled()
+            ->willReturn($tags)
+        ;
+        $watcher->hasTag($tags)
+            ->shouldBeCalled()
+            ->willReturn(false);
+        $watcher->matchFile(__FILE__)
+            ->shouldNotBeCalled()
+        ;
+        $event->getFiles()
+            ->willReturn(array(__FILE__));
+
+        $this->getMatchedFiles($event);
     }
 
     function its_options_should_be_mutable()

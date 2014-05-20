@@ -17,6 +17,9 @@ class RunnerSpec extends ObjectBehavior
     {
         $this->setCommand('phpspec')->shouldReturn($this);
         $this->getCommand()->shouldReturn('./vendor/bin/phpspec');
+
+        $this->setCommand('phpguard')->shouldReturn($this);
+        $this->getCommand()->shouldReturn('./bin/phpguard');
     }
 
     function its_setCommand_throws_when_command_not_executable()

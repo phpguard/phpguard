@@ -43,6 +43,7 @@ class WatcherSpec extends ObjectBehavior
         $options->shouldHaveKey('pattern');
         $options->shouldHaveKey('tags');
         $options->shouldHaveKey('transform');
+        $options->shouldHaveKey('groups');
     }
 
     function its_matchFile_returns_SplFileInfo_is_matched()
@@ -94,5 +95,28 @@ class WatcherSpec extends ObjectBehavior
         $this->matchFile(getcwd().'/src/PhpGuard/Application/Watcher.php')
             ->shouldReturn(false)
         ;
+    }
+
+    function its_hasGroup_should_check_if_group_exists()
+    {
+        $this->setOptions(array(
+            'pattern' => 'some',
+            'groups' => 'foo'
+        ));
+        $this->shouldHaveGroup('foo');
+        $this->shouldNotHaveGroup('bar');
+    }
+
+    function its_hasTag_should_check_if_tag_exists()
+    {
+        $this->setOptions(array(
+            'pattern' => 'some',
+            'tags' => 'tag'
+        ));
+        $this->shouldHaveTag('tag');
+        $this->shouldHaveTag(array('tag'));
+        $this->shouldHaveTag(array());
+        $this->shouldHaveTag(null);
+        $this->shouldNotHaveTag('foo');
     }
 }

@@ -148,12 +148,17 @@ abstract class Plugin extends ContainerAware implements PluginInterface
      */
     private function matchFile($file)
     {
+        $tags = $this->container->getParameter('filter.tags',array());
         /* @var Watcher $watcher */
         foreach($this->watchers as $watcher){
+            if(!$watcher->hasTag($tags)){
+                continue;
+            }
             if($matched = $watcher->matchFile($file)){
                 return $matched;
             }
         }
         return false;
+
     }
 }
