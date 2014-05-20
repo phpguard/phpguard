@@ -119,9 +119,6 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     {
         /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
 
-        $this->getShell()->unsetStreamBlocking();
-
-        $this->getPhpGuard()->log();
         if(is_null($plugin = $event->getArgument('plugin'))){
             $plugins = $this->container->getByPrefix('plugins');
         }else{
@@ -137,6 +134,8 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
             }
         }
 
+        $this->getShell()->unsetStreamBlocking();
+        $this->getPhpGuard()->log();
         foreach($plugins as $plugin)
         {
             if(!$plugin->isActive()){

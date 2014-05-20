@@ -89,11 +89,16 @@ class Shell
             $w = array();
             $e = array();
             $n = @stream_select($r,$w,$e,2);
-            if ($n && in_array(STDIN, $r)) {
-                $this->readline();
-            }
-            else{
-                $this->evaluate();
+            try{
+                if ($n && in_array(STDIN, $r)) {
+                    $this->readline();
+                }
+                else{
+                    $this->evaluate();
+                }
+            }catch(\Exception $e){
+                $this->application->renderException($e,$this->output);
+                $this->installReadlineCallback();
             }
         }
     }
@@ -232,8 +237,10 @@ EOF;
     /**
      * Run all plugins command
      */
-    private function doRunAll($command,$plugin=null)
+    private function doRunAll($command)
     {
+        $plugin = null;
+
         if(false!==$command){
             $command = str_replace('\040',' ',$command);
             $command = trim($command);
@@ -241,12 +248,16 @@ EOF;
                 readline_add_history($command);
                 readline_write_history($this->historyFile);
             }
+            $plugin = trim(substr($command,4));
+            if($plugin == ''){
+                $plugin=null;
+            }
         }
+
         // dispatch run all events
         $event = new GenericEvent($this,array('plugin' => $plugin));
         $dispatcher = $this->container->get('dispatcher');
         $dispatcher->dispatch(PhpGuardEvents::runAllCommands,$event);
-
     }
 
     /**
