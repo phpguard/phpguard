@@ -61,25 +61,21 @@ class Runner
      */
     public function setCommand($command)
     {
-        if(is_executable($executable='./vendor/bin/'.$command)){
-            $command = $executable;
-        }
-        elseif(is_executable($executable='/bin/'.$command)){
-            $command = $executable;
-        }
-        else{
-            $executable = $this->findExecutable($command);
+        if(is_file($file='./vendor/bin/'.$command)){
+            $executable = $file;
+        }elseif(is_executable($file='./bin/'.$command)){
+            $executable = $file;
+        }else{
+            $finder = new ExecutableFinder();
+            $executable = $finder->find($command);
             if(!is_executable($executable)){
                 throw new InvalidArgumentException(sprintf(
-                    'Command "%s" is not executable',
+                    'Can not find command "%s"',
                     $command
                 ));
             }
-            $command = $executable;
         }
-
-        $this->command = $command;
-
+        $this->command = $executable;
         return $this;
     }
 
