@@ -16,11 +16,8 @@ use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**

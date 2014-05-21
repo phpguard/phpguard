@@ -12,7 +12,6 @@ namespace PhpGuard\Application;
  */
 
 use PhpGuard\Listen\Exception\InvalidArgumentException;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 
