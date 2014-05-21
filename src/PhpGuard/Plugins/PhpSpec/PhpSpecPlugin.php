@@ -28,6 +28,20 @@ class PhpSpecPlugin extends Plugin
         $this->setOptions(array());
     }
 
+    public function addWatcher(Watcher $watcher)
+    {
+        parent::addWatcher($watcher);
+        if($this->options['always_lint']){
+            $options = $watcher->getOptions();
+            $linters = array_keys($options['lint']);
+            if(!in_array('php',$linters)){
+                $linters[] = 'php';
+                $options['lint'] = $linters;
+                $watcher->setOptions($options);
+            }
+        }
+    }
+
     public function configure()
     {
         if(class_exists('PhpSpec\\Console\\Application')){
@@ -170,8 +184,11 @@ class PhpSpecPlugin extends Plugin
         $resolver->setDefaults(array(
             'format' => 'pretty',
             'ansi' => true,
+            'all_on_start' => false,
             'all_after_pass' => false,
-            'import_suites' => false,
+            'keep_failed' => false,
+            'import_suites' => false, // import suites as watcher
+            'always_lint' => true,
             'run_all' => array(
                 'format' => 'progress'
             )

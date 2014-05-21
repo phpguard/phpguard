@@ -5,6 +5,7 @@ namespace spec\PhpGuard\Plugins\PhpSpec;
 use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Linter\LinterInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Application\Spec\ObjectBehavior;
@@ -35,9 +36,15 @@ class PhpSpecPluginSpec extends ObjectBehavior
 
     function let(
         ContainerInterface $container,
-        PhpGuard $phpGuard
+        PhpGuard $phpGuard,
+        LinterInterface $linter
     )
     {
+        $container->has('linters.php')
+            ->willReturn(true);
+        $container->get('linters.php')
+            ->willReturn($linter);
+
         // initialize default options
         $this->setOptions(array());
         $container->get('phpguard')

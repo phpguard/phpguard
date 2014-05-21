@@ -12,6 +12,7 @@
 namespace PhpGuard\Plugins\PHPUnit;
 
 use PhpGuard\Application\Plugin\Plugin;
+use PhpGuard\Application\Watcher;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
@@ -23,6 +24,20 @@ class PHPUnitPlugin extends Plugin
     public function __construct()
     {
         $this->setOptions(array());
+    }
+
+    public function addWatcher(Watcher $watcher)
+    {
+        parent::addWatcher($watcher);
+        if($this->options['always_lint']){
+            $options = $watcher->getOptions();
+            $linters = array_keys($options['lint']);
+            if(!in_array('php',$linters)){
+                $linters[] = 'php';
+                $options['lint'] = $linters;
+                $watcher->setOptions($options);
+            }
+        }
     }
 
     public function getName()
@@ -70,7 +85,10 @@ class PHPUnitPlugin extends Plugin
     {
         $resolver->setDefaults(array(
             'cli' => null,
+            'all_on_start' => false,
             'all_after_pass' => false,
+            'keep_failed' => false,
+            'always_lint' => true,
         ));
     }
 
