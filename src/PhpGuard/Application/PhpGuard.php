@@ -34,12 +34,17 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 class PhpGuard
 {
     const VERSION = '1.0.0-dev';
+
+    const ERROR = 'error';
+
     /**
      * @var Container
      */
     private $container;
 
     private $options = array();
+
+    private $hasLogged = false;
 
     public function __construct()
     {
@@ -110,6 +115,13 @@ class PhpGuard
         $this->container->setShared('plugins.phpunit',function(){
             return new PHPUnitPlugin();
         });
+
+        $this->container->setShared('linters.php',function($c){
+            $linter = new Linter\PhpLinter();
+            $linter->setContainer($c);
+
+            return $linter;
+        });
     }
 
     public function loadConfiguration()
@@ -133,7 +145,6 @@ class PhpGuard
         ;
         $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,$event);
     }
-
 
     public function listen(ChangeSetEvent $event)
     {
@@ -203,11 +214,30 @@ class PhpGuard
         if($level==OutputInterface::VERBOSITY_DEBUG){
             $format = '<comment>'.$format.'</comment>';
             $channel = $channel.'.DEBUG';
-        }else{
+        }
+        elseif($level==self::ERROR){
+            $format = '<error>'.$format.'</error>';
+        }
+        else{
             $format = '<info>'.$format.'</info>';
         }
 
         $message = sprintf($format,$time->format('H:i:s'),$channel,$message);
+        if(!$this->hasLogged){
+            $output->writeln("");
+        }
         $output->writeln($message);
+        $this->hasLogged = true;
     }
+
+    public function hasLogged()
+    {
+        return $this->hasLogged;
+    }
+
+    public function resetLog()
+    {
+        $this->hasLogged = false;
+    }
+
 }

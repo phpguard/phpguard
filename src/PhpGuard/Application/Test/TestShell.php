@@ -9,13 +9,19 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Tests;
+namespace PhpGuard\Application\Test;
 
 
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
 
+/**
+ * Class TestShell
+ *
+ * @package PhpGuard\Application\Test
+ * @codeCoverageIgnore
+ */
 class TestShell extends Shell
 {
     const EXIT_SHELL_MESSAGE = 'shell exit';
@@ -29,12 +35,12 @@ class TestShell extends Shell
 
     public function installReadlineCallback()
     {
-
+        return;
     }
 
     public function run()
     {
-
+        return;
     }
 
     public function exitShell()

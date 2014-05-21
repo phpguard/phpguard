@@ -2,13 +2,10 @@
 
 namespace spec\PhpGuard\Plugins\PhpSpec;
 
-require_once __DIR__.'/MockPhpSpecPlugin.php';
-
 use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\Runner;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
@@ -38,20 +35,11 @@ class PhpSpecPluginSpec extends ObjectBehavior
 
     function let(
         ContainerInterface $container,
-        Runner $runner,
         PhpGuard $phpGuard
     )
     {
-        $this->beAnInstanceOf(__NAMESPACE__.'\\MockPhpSpecPlugin');
-        $this->setRunner($runner);
-
         // initialize default options
         $this->setOptions(array());
-        $runner->setCommand('phpspec')
-            ->willReturn(true);
-        $runner->setArguments(Argument::any())
-            ->willReturn(true);
-
         $container->get('phpguard')
             ->willReturn($phpGuard);
 
@@ -157,102 +145,6 @@ class PhpSpecPluginSpec extends ObjectBehavior
             getcwd(),getcwd().'/spec/Namespace1/NotDescribedSpec.php'
         );
         $this->getClassFile($spl)->shouldReturn($spl->getRelativePathname());
-    }
-
-    function it_should_log_error_when_failed_to_run(Runner $runner,PhpGuard $phpGuard)
-    {
-        $runner->run()
-            ->willReturn(false);
-
-        $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
-        $this->run(array($spl));
-    }
-
-    function it_should_run_properly(Runner $runner)
-    {
-        $this->setOptions(array(
-            'format' => 'dot'
-        ));
-
-        $runner->setArguments(Argument::containing('--format=dot'))
-            ->shouldBeCalled()
-        ;
-        $runner->run()
-            ->shouldBeCalled()
-            ->willReturn(true)
-        ;
-        $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
-        $this->run(array($spl));
-    }
-
-    function it_should_not_run_if_spec_file_not_exists(
-        Runner $runner
-    )
-    {
-        $this->buildFixtures();
-        chdir(self::$fixturesDir);
-
-        $runner->run(Argument::cetera())
-            ->shouldNotBeCalled()
-        ;
-        $spl = PathUtil::createSplFileInfo(getcwd(),'src/Namespace1/NotExist.php');
-        $this->importSuites();
-        $this->run(array($spl));
-    }
-
-    function it_should_run_all_after_pass(Runner $runner,PhpGuard $phpGuard)
-    {
-        $this->setOptions(array(
-            'all_after_pass' => true,
-            'format' => 'dot',
-            'run_all' => array(
-                'format' => 'progress'
-            )
-        ));
-        $runner->run()
-            ->willReturn(true);
-        $runner->setCommand('phpspec')
-            ->shouldBeCalled()
-        ;
-        $runner->setArguments(Argument::containing('--format=dot'))
-            ->shouldBeCalled()
-        ;
-        $runner->setArguments(Argument::containing('--format=progress'))
-            ->shouldBeCalled()
-        ;
-
-        $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
-
-
-        $this->run(array($spl));
-    }
-
-    function it_should_run_all_properly(Runner $runner,PhpGuard $phpGuard)
-    {
-        $runner->run()
-            ->shouldBeCalled()
-            ->willReturn(true)
-        ;
-        $this->setOptions(array(
-            'run_all' => array(
-                'format' => 'dot'
-            )
-        ));
-        $runner->setArguments(Argument::containing('--format=dot'))
-            ->shouldBeCalled();
-
-
-        $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
-        $this->runAll(array($spl));
-    }
-
-    function it_should_log_error_when_failed_to_run_all(Runner $runner,PhpGuard $phpGuard)
-    {
-        $runner->run()
-            ->willReturn(false);
-
-        $spl = PathUtil::createSplFileInfo(getcwd(),__FILE__);
-        $this->runAll(array($spl));
     }
 
     function it_should_configured_properly(

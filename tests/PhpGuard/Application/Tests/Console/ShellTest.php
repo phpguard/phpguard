@@ -13,11 +13,11 @@ namespace PhpGuard\Application\Tests\Console;
 
 
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\Tests\FunctionalTestCase;
+use PhpGuard\Application\Tests\TestCase;
 use PhpGuard\Application\Tests\TestPlugin;
-use PhpGuard\Application\Tests\TestShell;
+use PhpGuard\Application\Test\TestShell;
 
-class ShellTest extends FunctionalTestCase
+class ShellTest extends TestCase
 {
     public function testShouldEvaluateChange()
     {
@@ -50,7 +50,7 @@ class ShellTest extends FunctionalTestCase
 
     public function testShouldRenderExceptionIfPluginThrowsExceptionWhenRunning()
     {
-        $plugin = $this->app->getContainer()->get('plugins.test');
+        $plugin = self::$app->getContainer()->get('plugins.test');
         $plugin->throwException = true;
         touch(self::$tmpDir.'/src/PhpGuardTest/Namespace1/TestThrow.php');
         $this->getShell()->evaluate();

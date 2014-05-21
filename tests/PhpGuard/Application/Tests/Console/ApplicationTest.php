@@ -11,15 +11,15 @@
 
 namespace PhpGuard\Application\Tests\Console;
 
-use PhpGuard\Application\Tests\FunctionalTestCase;
+use PhpGuard\Application\Test\FunctionalTestCase;
 
 class ApplicationTest extends FunctionalTestCase
 {
     public function testShouldStartShellOnRunning()
     {
-        $tester = $this->getApplicationTester();
-        $exit = $tester->run(array());
-        $display = $tester->getDisplay(true);
+        self::createApplication();
+        $exit = self::$tester->run(array());
+        $display = self::getDisplay();
         $this->assertEquals(0,$exit);
         $this->assertContains('Welcome',$display);
         $this->assertContains(getcwd(),$display);
@@ -27,7 +27,7 @@ class ApplicationTest extends FunctionalTestCase
 
     public function testShouldRunSomeBasicCommand()
     {
-        $tester = $this->getApplicationTester();
+        $tester = self::$tester;
 
         $exit = $tester->run(array('help'));
         $display = $tester->getDisplay();

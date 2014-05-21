@@ -25,6 +25,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  */
 class ChangesetListener extends ContainerAware implements EventSubscriberInterface
 {
+
     /**
      * Returns an array of event names this subscriber wants to listen to.
      *
@@ -63,12 +64,15 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $dispatcher = $container->get('dispatcher');
 
         $exception = null;
+        $pluginHasRun = false;
+        $this->getPhpGuard()->resetLog();
         foreach($container->getByPrefix('plugins') as $plugin){
             if(!$plugin->isActive()){
                 continue;
             }
             $paths = $plugin->getMatchedFiles($event);
             if(count($paths) > 0){
+                $pluginHasRun = true;
                 $runEvent = new GenericEvent($plugin,array('paths' =>$paths));
                 $dispatcher->dispatch(
                     PhpGuardEvents::preRunCommand,
@@ -88,6 +92,10 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
                     throw $exception;
                 }
             }
+        }
+
+        if($pluginHasRun || $this->getPhpGuard()->hasLogged()){
+            $this->getShell()->installReadlineCallback();
         }
     }
 
@@ -119,7 +127,6 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
             OutputInterface::VERBOSITY_DEBUG
         );
         $shell->setStreamBlocking();
-        $shell->installReadlineCallback();
     }
 
     public function runAllCommand(GenericEvent $event)

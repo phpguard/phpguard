@@ -10,15 +10,17 @@ namespace PhpGuard\Application;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 use PhpGuard\Listen\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\Process;
 
 /**
  * Class Runner
  *
  */
-class Runner
+class Runner extends ContainerAware
 {
     /**
      * @var string
@@ -31,9 +33,9 @@ class Runner
     private $arguments;
 
     /**
-     * @var OutputInterface
+     * @var Process
      */
-    private $output;
+    private $process;
 
     /**
      * @param array $arguments
@@ -88,40 +90,56 @@ class Runner
     }
 
     /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param bool $silent
      *
-     * @return Runner
-     */
-    public function setOutput($output)
-    {
-        $this->output = $output;
-        return $this;
-    }
-
-    /**
-     * @return \Symfony\Component\Console\Output\OutputInterface
-     */
-    public function getOutput()
-    {
-        return $this->output;
-    }
-
-    /**
      * @return bool
-     * @codeCoverageIgnore
      */
-    public function run()
+    public function run($silent=false)
     {
-        $command = $this->command;
-
-        $arguments = $command.' '.implode(' ',$this->arguments);
-
-        passthru($arguments,$return);
-
-        if($return===0){
+        $process = $this->buildProcess();
+        if($silent){
+            $process->run();
+        }else{
+            $writer = $this->container->get('ui.output');
+            $process->run(function($type,$output) use($writer,$silent){
+                if(false==$silent){
+                    $writer->write($output);
+                }
+            });
+        }
+        $this->process = $process;
+        if($process->getExitCode()===0){
             return true;
         }else{
             return false;
         }
+    }
+
+    /**
+     * @return Process
+     */
+    public function getProcessor()
+    {
+        return $this->process;
+    }
+
+    /**
+     * @return Process
+     */
+    public function buildProcess()
+    {
+        $process = new Process($this->getCommandLine());
+        $useTty = $this->container->getParameter('phpguard.use_tty',false);
+        if($useTty){
+            $process->setTty(true);
+        }
+        $process->setWorkingDirectory(getcwd());
+        return $process;
+    }
+
+    public function getCommandLine()
+    {
+        $commandLine = $this->command.' '.implode(' ',$this->arguments);
+        return $commandLine;
     }
 }

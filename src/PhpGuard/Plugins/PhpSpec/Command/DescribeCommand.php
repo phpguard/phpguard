@@ -13,6 +13,7 @@ namespace PhpGuard\Plugins\PhpSpec\Command;
 
 
 use PhpGuard\Application\Console\Command;
+use PhpGuard\Application\Runner;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use PhpSpec\Console\Command\DescribeCommand as BaseCommand;
@@ -30,12 +31,19 @@ class DescribeCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $container = $this->container;
-        $phpspec = $container->get('plugins.phpspec');
-        $runner = $phpspec->createRunner('phpspec',array(
+        $runner = new Runner();
+        $runner->setContainer($container);
+        $runner->setCommand('phpspec');
+
+        $arguments = array(
             'desc',
-            '--ansi',
             $input->getArgument('class')
-        ));
+        );
+        if($output->isDecorated()){
+            $arguments[] = '--ansi';
+        }
+        $runner->setArguments($arguments);
         $runner->run();
+        return $runner->getProcessor()->getExitCode();// test
     }
 }

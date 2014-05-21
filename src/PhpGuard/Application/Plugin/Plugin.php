@@ -134,9 +134,9 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     public function createRunner($command,array $arguments = array())
     {
         $runner = new Runner();
+        $runner->setContainer($this->container);
         $runner->setCommand($command);
         $runner->setArguments($arguments);
-        $runner->setOutput($this->container->get('ui.output'));
 
         return $runner;
     }
@@ -155,10 +155,11 @@ abstract class Plugin extends ContainerAware implements PluginInterface
                 continue;
             }
             if($matched = $watcher->matchFile($file)){
-                return $matched;
+                if($watcher->lint($file)){
+                    return $matched;
+                }
             }
         }
         return false;
-
     }
 }

@@ -33,6 +33,8 @@ class PhpGuardSpec extends ObjectBehavior
             ->willReturn(ConsoleOutput::VERBOSITY_NORMAL);
 
         $this->setContainer($container);
+        $output->writeln('')
+            ->willReturn(null);
 
         if(!is_dir(self::$cwd)){
             self::$cwd = getcwd();

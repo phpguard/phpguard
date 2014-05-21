@@ -11,9 +11,14 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Linter\LinterException;
+use PhpGuard\Listen\Exception\InvalidArgumentException;
 use PhpGuard\Listen\Resource\FileResource;
 use PhpGuard\Listen\Util\PathUtil;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\SplFileInfo;
+use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -21,12 +26,17 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
  * Class Watcher
  *
  */
-class Watcher
+class Watcher extends ContainerAware
 {
     private $options = array(
         'groups' => array(),
         'tags' => array(),
     );
+
+    public function __construct(ContainerInterface $container)
+    {
+        $this->setContainer($container);
+    }
 
     public function setOptions($options)
     {
@@ -87,6 +97,7 @@ class Watcher
 
         if($retVal && $this->options['transform']){
             $transformed = preg_replace($pattern,$this->options['transform'],$file->getRelativePathname());
+            $this->container->get('phpguard')->log('Transform: '.$file->getRelativePathname(). ' To '.$transformed,OutputInterface::VERBOSITY_DEBUG);
             if(!is_file($transformed)){
                 return false;
             }
@@ -106,6 +117,7 @@ class Watcher
             'tags' => array(),
             'groups' => array(),
             'transform' => null,
+            'lint' => array()
         ));
 
         $arrayNormalizer = function($options,$value){
@@ -114,9 +126,46 @@ class Watcher
             }
             return $value;
         };
+
+        $container = $this->container;
+        $lintChecker = function(Options $options,$value) use($arrayNormalizer,$container){
+            $value = $arrayNormalizer($options,$value);
+            $linters = array();
+            foreach($value as $name){
+                $id = 'linters.'.$name;
+                if(!$container->has($id)){
+                    throw new InvalidArgumentException(sprintf(
+                        'Linter "%s" not exists',
+                        $name
+                    ));
+                }
+                $linter = $container->get($id);
+                $linters[$linter->getName()] = $linter;
+            }
+            return $linters;
+        };
         $resolver->setNormalizers(array(
             'groups' => $arrayNormalizer,
-            'tags' => $arrayNormalizer
+            'tags' => $arrayNormalizer,
+            'lint' => $lintChecker
         ));
+    }
+
+    public function lint($file)
+    {
+        /* @var \PhpGuard\Application\Linter\LinterInterface $linter */
+        /* @var \PhpGuard\Application\PhpGuard $phpguard */
+        $phpguard = $this->container->get('phpguard');
+        $retVal = true;
+
+        foreach($this->options['lint'] as $linter){
+            try{
+                $linter->check($file);
+            }catch(LinterException $e){
+                $phpguard->log($e->getFormattedOutput());
+                $retVal = false;
+            }
+        }
+        return $retVal;
     }
 }

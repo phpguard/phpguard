@@ -57,7 +57,6 @@ class Application extends BaseApplication
             $container->setParameter('filter.tags',$tags);
         }
 
-
         $command = $this->getCommandName($input);
         if($command==''){
             /* @var Shell $shell */

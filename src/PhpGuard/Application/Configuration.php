@@ -80,7 +80,7 @@ class Configuration extends ContainerAware
     private function parseWatchSection(PluginInterface $plugin,$definitions)
     {
         foreach($definitions as $options){
-            $watcher = new Watcher();
+            $watcher = new Watcher($this->container);
             $watcher->setOptions($options);
             $plugin->addWatcher($watcher);
         }

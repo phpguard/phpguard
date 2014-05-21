@@ -9,12 +9,19 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Tests;
+namespace PhpGuard\Application\Test;
+
 use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Console\Shell;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class TestApplication
+ *
+ * @package PhpGuard\Application\Test
+ * @codeCoverageIgnore
+ */
 class TestApplication extends Application
 {
     public function __construct()
@@ -22,11 +29,6 @@ class TestApplication extends Application
         parent::__construct();
         $this->setCatchExceptions(true);
         $this->setAutoExit(false);
-
-        $container = $this->getContainer();
-        $container->setShared('plugins.test',function($c){
-            return new TestPlugin();
-        });
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)
@@ -35,6 +37,7 @@ class TestApplication extends Application
         $container->set('ui.input',$input);
         $container->set('ui.output',$output);
         $container->set('ui.shell',new TestShell($this->getContainer()));
+        $container->setParameter('phpguard.use_tty',false);
 
         $command = $this->getCommandName($input);
         if($command=='evaluate'){

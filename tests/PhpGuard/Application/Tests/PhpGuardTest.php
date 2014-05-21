@@ -11,12 +11,12 @@
 
 namespace PhpGuard\Application\Tests;
 
-
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Spec\ObjectBehavior as ob;
 
-class PhpGuardTest extends FunctionalTestCase
+class PhpGuardTest extends TestCase
 {
+
     public function testShouldConfigureOptions()
     {
         $phpGuard = new PhpGuard();
@@ -37,7 +37,7 @@ class PhpGuardTest extends FunctionalTestCase
 
     public function testShouldSetupListenProperly()
     {
-        $listener = $this->app->getContainer()->get('listen.listener');
+        $listener = self::$app->getContainer()->get('listen.listener');
         $this->assertInstanceOf('PhpGuard\\Listen\\Listener',$listener);
         $this->assertEquals(doubleval(0.01*1000000),$listener->getLatency());
         $this->assertContains('foo',$listener->getIgnores());
@@ -45,7 +45,7 @@ class PhpGuardTest extends FunctionalTestCase
 
     public function testShouldLoadPlugins()
     {
-        $container = $this->app->getContainer();
+        $container = self::$app->getContainer();
         $this->assertTrue($container->get('plugins.test')->isActive());
     }
 
@@ -54,21 +54,21 @@ class PhpGuardTest extends FunctionalTestCase
         ob::mkdir($dirTag1 = self::$tmpDir.'/tag1');
         ob::mkdir($dirTag2 = self::$tmpDir.'/tag2');
 
-        $this->tester->run(array('--tags'=>'tag1'));
+        self::$tester->run(array('--tags'=>'tag1'));
         touch($ftag1 = $dirTag1.'/test1.php');
         touch($ftag2 = $dirTag2.'/test1.php');
         $this->getShell()->evaluate();
         $this->assertContains($ftag1,$this->getDisplay());
         $this->assertNotContains($ftag2,$this->getDisplay());
 
-        $this->tester->run(array('--tags'=>'tag2'));
+        self::$tester->run(array('--tags'=>'tag2'));
         touch($ftag1 = $dirTag1.'/test2.php');
         touch($ftag2 = $dirTag2.'/test2.php');
         $this->getShell()->evaluate();
         $this->assertContains($ftag2,$this->getDisplay());
         $this->assertNotContains($ftag1,$this->getDisplay());
 
-        $this->tester->run(array('--tags'=>'tag1,tag2'));
+        self::$tester->run(array('--tags'=>'tag1,tag2'));
         touch($ftag1 = $dirTag1.'/test3.php');
         touch($ftag2 = $dirTag2.'/test3.php');
         $this->getShell()->evaluate();

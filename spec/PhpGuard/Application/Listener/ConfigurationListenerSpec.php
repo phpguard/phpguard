@@ -33,6 +33,11 @@ class ConfigurationListenerSpec extends ObjectBehavior
             ->willReturn(array($plugin))
         ;
 
+        $container->getParameter(Argument::any(),Argument::any())
+            ->willReturn(null);
+        $container->setParameter(Argument::any(),Argument::any())
+            ->willReturn(null);
+
         $container->get('listen.listener')
             ->willReturn($listener);
         $container->get('listen.adapter')

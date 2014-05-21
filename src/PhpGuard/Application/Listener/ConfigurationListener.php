@@ -62,6 +62,7 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
 
     public function postLoad()
     {
+        $this->setupParameters();
         /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
         $container = $this->container;
         $phpGuard = $container->get('phpguard');
@@ -75,6 +76,15 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
             $phpGuard->log('Plugin <comment>'.$plugin->getName().'</comment> is running');
         }
         $this->setupListen();
+    }
+
+    private function setupParameters()
+    {
+        $container = $this->container;
+
+        if(is_null($container->getParameter('phpguard.use_tty',null))){
+            $container->setParameter('phpguard.use_tty',true);
+        }
     }
 
     private function setupListen()

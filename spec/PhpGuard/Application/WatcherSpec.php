@@ -2,17 +2,23 @@
 
 namespace spec\PhpGuard\Application;
 
+use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Linter\LinterInterface;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Listen\Resource\FileResource;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class WatcherSpec extends ObjectBehavior
 {
-    function let()
+    function let(ContainerInterface $container,OutputInterface $output,PhpGuard $phpGuard)
     {
         self::mkdir(self::$tmpDir);
-
+        $this->beConstructedWith($container);
+        $container->get('phpguard')->willReturn($phpGuard);
+        $container->get('ui.output')->willReturn($output);
     }
 
     function letgo()
@@ -40,6 +46,7 @@ class WatcherSpec extends ObjectBehavior
         $options->shouldHaveKey('tags');
         $options->shouldHaveKey('transform');
         $options->shouldHaveKey('groups');
+        $options->shouldHaveKey('lint');
     }
 
     function its_matchFile_returns_SplFileInfo_is_matched()
@@ -114,5 +121,39 @@ class WatcherSpec extends ObjectBehavior
         $this->shouldHaveTag(array());
         $this->shouldHaveTag(null);
         $this->shouldNotHaveTag('foo');
+    }
+
+    function it_should_check_file_with_linter_if_defined(
+        ContainerInterface $container,
+        LinterInterface $linter,
+        OutputInterface $output,
+        PhpGuard $phpGuard
+    )
+    {
+        $container->has('linters.some')
+            ->shouldBeCalled()
+            ->willReturn(true);
+        $container->get('linters.some')
+            ->willReturn($linter);
+        $linter->getName()
+            ->shouldBeCalled()
+            ->willReturn('some');
+        $linter->getTitle()->willReturn('SomeTitle');
+
+        $container->get('phpguard')
+            ->willReturn($phpGuard);
+        $phpGuard->setContainer($container);
+
+
+        $this->setOptions(array(
+            'lint'=>'some',
+            'pattern'=>'some'
+        ));
+
+        $linter->check(__FILE__)
+            ->shouldBeCalled()
+            ->willReturn(true)
+        ;
+        $this->lint(__FILE__)->shouldReturn(true);
     }
 }

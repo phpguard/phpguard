@@ -1,0 +1,11 @@
+phpspec:
+    options:
+        format:             pretty
+        ansi:               false
+        all_after_pass:     true
+        import_suites:      true
+        run_all:
+            format: pretty
+
+    watch:
+        - { pattern: "#^spec.*\.php$#" }

@@ -155,9 +155,6 @@ class ChangesetListenerSpec extends ObjectBehavior
 
         $shell->setStreamBlocking()
             ->shouldBeCalled();
-        $shell->installReadlineCallback()
-            ->shouldBeCalled();
-
         $this->postRunCommand($event);
     }
 

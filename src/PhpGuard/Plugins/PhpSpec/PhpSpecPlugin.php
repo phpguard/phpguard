@@ -70,8 +70,10 @@ class PhpSpecPlugin extends Plugin
         foreach($paths as $file)
         {
             if(!$this->hasSpecFile($file)){
+                $this->log('Spec file not found for <comment>'.$file->getRelativePathname().'</comment>');
                 continue;
             }
+
             $classFile = $this->getClassFile($file);
             $arguments = $this->buildArguments($this->options);
             $arguments[] = $classFile;
@@ -87,7 +89,8 @@ class PhpSpecPlugin extends Plugin
                 $this->log('Run all specs after pass');
                 $this->runAll();
             }
-        }else{
+        }
+        else{
             $this->log('<log-error>Run spec failed</log-error>');
         }
     }
@@ -205,7 +208,8 @@ class PhpSpecPlugin extends Plugin
                 $source = $definition['spec_path'];
             }
             $pattern = '#^'.str_replace('/','\/',$source).'(.+)\.php$#';
-            $watcher = new Watcher();
+            $watcher = new Watcher($this->container);
+            $watcher->setContainer($this->container);
             $watcher->setOptions(array(
                 'pattern' => $pattern,
                 'tags' => $name

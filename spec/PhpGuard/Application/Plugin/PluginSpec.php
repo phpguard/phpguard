@@ -44,6 +44,8 @@ class PluginSpec extends ObjectBehavior
         $this->setContainer($container);
         $watcher->hasTag(null)
             ->willReturn(true);
+        $watcher->lint(Argument::any())
+            ->willReturn(true);
     }
 
     function it_is_initializable()

@@ -2,12 +2,17 @@
 
 namespace spec\PhpGuard\Application;
 
+use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class RunnerSpec extends ObjectBehavior
 {
+    function let(ContainerInterface $container)
+    {
+        $this->setContainer($container);
+    }
+
     function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Runner');
@@ -36,9 +41,11 @@ class RunnerSpec extends ObjectBehavior
         $this->getArguments()->shouldContain('value');
     }
 
-    function its_output_should_be_mutable(OutputInterface $output)
+    function it_should_build_command_line()
     {
-        $this->setOutput($output)->shouldReturn($this);
-        $this->getOutput()->shouldReturn($output);
+        $this->setCommand('phpspec');
+        $this->setArguments(array('foo=bar'));
+
+        $this->getCommandLine()->shouldReturn('./vendor/bin/phpspec foo=bar');
     }
 }
