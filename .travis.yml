@@ -12,6 +12,8 @@ before_script:
   - export COMPOSER_ROOT_VERSION=2.0.0-RC3
   - composer install --prefer-source
   - composer require --dev "satooshi/php-coveralls ~0.6"
+  - export PATH=$PATH:$PWD"/vendor/bin"
+  - echo $PATH
 
 script:
   - ./vendor/bin/phpunit --coverage-clover=build/logs/clover.xml
