@@ -11,7 +11,7 @@ namespace PhpGuard\Application\Listener;
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Application\ContainerAware;
+use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Listen;

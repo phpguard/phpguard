@@ -4,7 +4,7 @@ namespace spec\PhpGuard\Plugins\PhpSpec;
 
 use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Event\EvaluateEvent;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Linter\LinterInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Listen\Util\PathUtil;

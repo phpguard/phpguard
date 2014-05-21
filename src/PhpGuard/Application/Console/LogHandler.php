@@ -12,8 +12,8 @@ namespace PhpGuard\Application\Console;
  */
 
 use Monolog\Handler\AbstractProcessingHandler;
-use PhpGuard\Application\Interfaces\ContainerAwareInterface;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Container\ContainerAwareInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use Psr\Log\LogLevel;
 
 /**

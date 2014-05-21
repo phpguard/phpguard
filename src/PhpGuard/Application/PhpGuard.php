@@ -15,7 +15,7 @@ use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
 use PhpGuard\Application\Event\EvaluateEvent;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Listener\ConfigurationListener;
 use PhpGuard\Application\Listener\ChangesetListener;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;

@@ -11,6 +11,7 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Listen\Exception\InvalidArgumentException;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;

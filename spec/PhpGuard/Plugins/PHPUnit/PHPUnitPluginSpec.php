@@ -2,7 +2,7 @@
 
 namespace spec\PhpGuard\Plugins\PHPUnit;
 
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Runner;
 use PhpGuard\Listen\Util\PathUtil;

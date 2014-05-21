@@ -2,7 +2,7 @@
 
 namespace spec\PhpGuard\Application\Console;
 
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Psr\Log\LogLevel;

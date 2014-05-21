@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Interfaces;
+namespace PhpGuard\Application\Container;
 
 
 interface ContainerInterface

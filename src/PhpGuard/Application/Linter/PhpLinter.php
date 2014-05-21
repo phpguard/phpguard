@@ -10,7 +10,7 @@
  */
 
 namespace PhpGuard\Application\Linter;
-use PhpGuard\Application\ContainerAware;
+use PhpGuard\Application\Container\ContainerAware;
 use Symfony\Component\Process\Process;
 
 /**

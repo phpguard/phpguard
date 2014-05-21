@@ -3,7 +3,7 @@
 namespace spec\PhpGuard\Application;
 
 use PhpGuard\Application\Configuration;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;

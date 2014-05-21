@@ -11,7 +11,7 @@ namespace PhpGuard\Application\Console;
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use Symfony\Component\Console\Input\StringInput;
@@ -59,7 +59,7 @@ class Shell
     private $initialized = false;
 
     /**
-     * @var \PhpGuard\Application\Interfaces\ContainerInterface
+     * @var \PhpGuard\Application\Container\ContainerInterface
      */
     private $container;
 

@@ -2,7 +2,7 @@
 
 namespace spec\PhpGuard\Application\Linter;
 
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Output\OutputInterface;

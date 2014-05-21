@@ -11,7 +11,8 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Container\ContainerAware;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Linter\LinterException;
 use PhpGuard\Listen\Exception\InvalidArgumentException;
 use PhpGuard\Listen\Resource\FileResource;

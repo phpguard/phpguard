@@ -3,7 +3,7 @@
 namespace spec\PhpGuard\Application;
 
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;

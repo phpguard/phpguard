@@ -11,6 +11,7 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Plugin\PluginInterface;
 use Symfony\Component\Yaml\Yaml;

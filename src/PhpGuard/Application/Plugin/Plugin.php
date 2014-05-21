@@ -10,7 +10,7 @@ namespace PhpGuard\Application\Plugin;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-use PhpGuard\Application\ContainerAware;
+use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Runner;

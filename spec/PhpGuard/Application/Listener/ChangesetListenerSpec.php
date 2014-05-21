@@ -4,7 +4,7 @@ namespace spec\PhpGuard\Application\Listener;
 
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Event\EvaluateEvent;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;

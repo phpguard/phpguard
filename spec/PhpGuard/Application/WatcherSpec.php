@@ -2,7 +2,7 @@
 
 namespace spec\PhpGuard\Application;
 
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Linter\LinterInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Listen\Resource\FileResource;

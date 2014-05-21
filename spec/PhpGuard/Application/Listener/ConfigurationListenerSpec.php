@@ -4,7 +4,7 @@ namespace spec\PhpGuard\Application\Listener;
 
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Listen\Adapter\AdapterInterface;

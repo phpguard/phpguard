@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Application\ContainerAware;
+use PhpGuard\Application\Container\ContainerAware;
 
 class ContainerAwareMock extends ContainerAware
 {

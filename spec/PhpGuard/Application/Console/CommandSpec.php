@@ -25,6 +25,6 @@ class CommandSpec extends ObjectBehavior
 
     function it_should_implement_the_ContainerAwareInterface()
     {
-        $this->shouldImplement('PhpGuard\Application\Interfaces\ContainerAwareInterface');
+        $this->shouldImplement('PhpGuard\Application\Container\ContainerAwareInterface');
     }
 }

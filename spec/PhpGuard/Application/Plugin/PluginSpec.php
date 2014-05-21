@@ -2,7 +2,7 @@
 
 namespace spec\PhpGuard\Application\Plugin;
 
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;

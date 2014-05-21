@@ -13,7 +13,7 @@ namespace PhpGuard\Application\Console;
 
 use PhpGuard\Application\Container;
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;

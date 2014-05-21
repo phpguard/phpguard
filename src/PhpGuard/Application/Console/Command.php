@@ -11,8 +11,8 @@ namespace PhpGuard\Application\Console;
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Application\Interfaces\ContainerAwareInterface;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Container\ContainerAwareInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command as BaseCommand;
 
 /**

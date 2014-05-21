@@ -13,7 +13,7 @@ namespace PhpGuard\Application\Test;
 
 
 use PhpGuard\Application\Console\Shell;
-use PhpGuard\Application\Interfaces\ContainerInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
 
 /**

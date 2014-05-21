@@ -19,7 +19,7 @@ class ContainerSpec extends ObjectBehavior
 
     function it_should_implement_the_ContainerInterface()
     {
-        $this->shouldImplement('PhpGuard\Application\Interfaces\ContainerInterface');
+        $this->shouldImplement('PhpGuard\Application\Container\ContainerInterface');
     }
 
     function it_stores_parameters()
