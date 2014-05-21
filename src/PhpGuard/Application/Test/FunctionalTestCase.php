@@ -81,7 +81,6 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param   string $app
      * @return  \Symfony\Component\Console\Tester\ApplicationTester
      */
     protected function getApplicationTester()

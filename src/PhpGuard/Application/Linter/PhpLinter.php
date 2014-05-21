@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Linter;
 use PhpGuard\Application\ContainerAware;
-use PhpGuard\Application\Runner;
 use Symfony\Component\Process\Process;
 
 /**

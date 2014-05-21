@@ -21,6 +21,9 @@ class LinterException extends RuntimeException
      */
     private $linter;
 
+    /**
+     * @param string|null $output
+     */
     public function __construct(LinterInterface $linter,$output)
     {
         $this->linter = $linter;

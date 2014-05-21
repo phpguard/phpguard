@@ -27,6 +27,9 @@ abstract class ObjectBehavior extends BaseObjectBehavior
         @mkdir($dir,0755,true);
     }
 
+    /**
+     * @param string $dir
+     */
     static public function cleanDir($dir)
     {
         if (!is_dir($dir)) {

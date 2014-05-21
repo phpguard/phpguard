@@ -240,6 +240,7 @@ EOF;
 
     /**
      * Run all plugins command
+     * @param false|string $command
      */
     private function doRunAll($command)
     {
@@ -345,6 +346,9 @@ EOF;
         }
     }
 
+    /**
+     * @param string $command
+     */
     private function readlineWriteHistory($command)
     {
         if($this->hasReadline){
