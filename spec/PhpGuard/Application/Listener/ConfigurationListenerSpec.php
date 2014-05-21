@@ -2,7 +2,7 @@
 
 namespace spec\PhpGuard\Application\Listener;
 
-use PhpGuard\Application\Interfaces\PluginInterface;
+use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Interfaces\ContainerInterface;
 use PhpGuard\Application\PhpGuardEvents;

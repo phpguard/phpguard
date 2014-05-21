@@ -11,7 +11,7 @@ namespace PhpGuard\Application\Plugin;
  * file that was distributed with this source code.
  */
 use PhpGuard\Application\ContainerAware;
-use PhpGuard\Application\Interfaces\PluginInterface;
+use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Runner;
 use PhpGuard\Application\Watcher;

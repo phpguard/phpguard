@@ -5,7 +5,7 @@ namespace spec\PhpGuard\Application\Listener;
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Interfaces\ContainerInterface;
-use PhpGuard\Application\Interfaces\PluginInterface;
+use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Util\PathUtil;

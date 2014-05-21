@@ -58,7 +58,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
 
     public function postEvaluate(EvaluateEvent $event)
     {
-        /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
+        /* @var \PhpGuard\Application\Plugin\PluginInterface $plugin */
         $container = $this->container;
 
         $dispatcher = $container->get('dispatcher');
@@ -131,7 +131,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
 
     public function runAllCommand(GenericEvent $event)
     {
-        /* @var \PhpGuard\Application\Interfaces\PluginInterface $plugin */
+        /* @var \PhpGuard\Application\Plugin\PluginInterface $plugin */
 
         if(is_null($plugin = $event->getArgument('plugin'))){
             $plugins = $this->container->getByPrefix('plugins');

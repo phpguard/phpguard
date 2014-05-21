@@ -12,7 +12,7 @@ namespace PhpGuard\Application;
  */
 
 use PhpGuard\Application\Exception\ConfigurationException;
-use PhpGuard\Application\Interfaces\PluginInterface;
+use PhpGuard\Application\Plugin\PluginInterface;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -66,7 +66,7 @@ class Configuration extends ContainerAware
             ));
         }
 
-        /* @var PluginInterface $plugin */
+        /* @var \PhpGuard\Application\Plugin\PluginInterface $plugin */
         $plugin = $container->get($id);
         $plugin->setActive(true);
         if(isset($definitions['options'])){
