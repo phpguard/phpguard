@@ -10,5 +10,5 @@ phpguard:
 test:
     watch:
         - { pattern: "#^src\/(.+)\.php$#", lint: php }
-        - { pattern: "#^tag1\/(.+)$#", tags: tag1, lint: php }
-        - { pattern: "#^tag2\/(.+)$#", tags: tag2, lint: php }
+        - { pattern: "#^tag1\/(.+)$#", tags: tag1}
+        - { pattern: "#^tag2\/(.+)$#", tags: tag2}

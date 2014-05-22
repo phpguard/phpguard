@@ -148,10 +148,15 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
      */
     protected function write(array $record)
     {
+        $formatted = (string)$record['formatted'];
+        $formatted = str_replace('.COMMON','',$formatted);
+        $formatted = str_replace('[] []','',$formatted);
+        $formatted = trim($formatted)."\n";
+
         if ($record['level'] >= Logger::ERROR && $this->output instanceof ConsoleOutputInterface) {
-            $this->output->getErrorOutput()->write((string) $record['formatted']);
+            $this->output->getErrorOutput()->write($formatted);
         } else {
-            $this->output->write((string) $record['formatted']);
+            $this->output->write($formatted);
         }
     }
 

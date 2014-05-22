@@ -6,6 +6,7 @@ use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Event\EvaluateEvent;
 use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Linter\LinterInterface;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Application\Spec\ObjectBehavior;
@@ -36,8 +37,8 @@ class PhpSpecPluginSpec extends ObjectBehavior
 
     function let(
         ContainerInterface $container,
-        PhpGuard $phpGuard,
-        LinterInterface $linter
+        LinterInterface $linter,
+        Logger $logger
     )
     {
         $container->has('linters.php')
@@ -47,10 +48,11 @@ class PhpSpecPluginSpec extends ObjectBehavior
 
         // initialize default options
         $this->setOptions(array());
-        $container->get('phpguard')
-            ->willReturn($phpGuard);
+        $container->get('logger')
+            ->willReturn($logger);
 
         $this->setContainer($container);
+        $this->setLogger($logger);
 
         self::mkdir(self::$tmpDir);
         if(is_null(self::$cwd)){

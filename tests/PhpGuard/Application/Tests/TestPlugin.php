@@ -38,13 +38,22 @@ class TestPlugin extends Plugin
     }
 
     /**
+     * @return string
+     */
+    public function getTitle()
+    {
+        return 'Test';
+    }
+
+
+    /**
      * Run all command
      *
      * @return void
      */
     public function runAll()
     {
-        $this->logger->addInfo(self::RUN_ALL_MESSAGE);
+        $this->logger->addSuccess(self::RUN_ALL_MESSAGE);
     }
 
     /**
@@ -58,9 +67,9 @@ class TestPlugin extends Plugin
             throw new \RuntimeException(self::THROW_MESSAGE);
         }
         $this->runCount++;
-        $this->logger->addInfo(self::RUN_MESSAGE);
+        $this->logger->addSuccess(self::RUN_MESSAGE);
         foreach($paths as $path){
-            $this->logger->addInfo('Modified path: '.$path);
+            $this->logger->addSuccess('Modified path: '.$path);
         }
     }
 

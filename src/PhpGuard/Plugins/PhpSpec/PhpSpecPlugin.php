@@ -64,6 +64,15 @@ class PhpSpecPlugin extends Plugin
         return 'phpspec';
     }
 
+    /**
+     * @return string
+     */
+    public function getTitle()
+    {
+        return 'PhpSpec';
+    }
+
+
     public function runAll()
     {
         $options = $this->options['run_all'];
@@ -72,20 +81,21 @@ class PhpSpecPlugin extends Plugin
         $runner = $this->createRunner('phpspec',$arguments);
         $return = $runner->run();
         if($return){
-            $this->logger->addInfo('All spec pass');
+            $this->logger->addCommon('All spec pass');
         }else{
-            $this->logger->addInfo('<log-error>PhpSpec Run All failed</log-error>');
+            $this->logger->addCommon('PhpSpec Run All failed');
         }
     }
 
     public function run(array $paths = array())
     {
         $success = true;
+        $running = false;
         foreach($paths as $file)
         {
             if(!$this->hasSpecFile($file)){
                 $message = 'Spec file not found for <comment>'.$file->getRelativePathname().'</comment>';
-                $this->logger->addInfo($message);
+                $this->logger->addDebug($message);
                 continue;
             }
 
@@ -94,20 +104,22 @@ class PhpSpecPlugin extends Plugin
             $arguments[] = $classFile;
             $runner = $this->createRunner('phpspec',$arguments);
             $return = $runner->run();
+            $running = true;
             if(!$return){
                 $success = false;
             }
         }
-        if($success){
-
-            $this->logger->addInfo('Run spec success');
-            if($this->options['all_after_pass']){
-                $this->logger->addInfo('Run all specs after pass');
-                $this->runAll();
+        if($running){
+            if($success){
+                $this->logger->addFail('Run spec success');
+                if($this->options['all_after_pass']){
+                    $this->logger->addFail('Run all specs after pass');
+                    $this->runAll();
+                }
             }
-        }
-        else{
-            $this->logger->addInfo('<log-error>Run spec failed</log-error>');
+            else{
+                $this->logger->addFail('Run spec failed');
+            }
         }
     }
 
@@ -229,10 +241,13 @@ class PhpSpecPlugin extends Plugin
             $pattern = '#^'.str_replace('/','\/',$source).'(.+)\.php$#';
             $watcher = new Watcher($this->container);
             $watcher->setContainer($this->container);
-            $watcher->setOptions(array(
+            $options = array(
                 'pattern' => $pattern,
                 'tags' => $name
-            ));
+            );
+            $watcher->setOptions($options);
+            $message = 'Imported suite '.$name;
+            $this->logger->addDebug($message,$options);
             $this->addWatcher($watcher);
         }
     }

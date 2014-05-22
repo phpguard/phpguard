@@ -40,12 +40,13 @@ class TestShell extends Shell
 
     public function run()
     {
+        $this->copyContainer->get('ui.output')->write($this->getPrompt());
         return;
     }
 
     public function exitShell()
     {
-        $this->copyContainer->get('phpguard')
-            ->log(self::EXIT_SHELL_MESSAGE);
+        $this->copyContainer->get('logger')
+            ->addCommon(self::EXIT_SHELL_MESSAGE);
     }
 }

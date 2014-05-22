@@ -99,38 +99,6 @@ class PhpGuardSpec extends ObjectBehavior
         $this->listen($event);
     }
 
-    function it_should_log_null_message(ConsoleOutput $output)
-    {
-        $output->writeln("")
-            ->shouldBeCalled();
-        $this->log();
-    }
-
-    function it_should_not_log_if_verbosity_does_not_match(ConsoleOutput $output)
-    {
-        $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
-        $output->writeln(Argument::any())
-            ->shouldNotBeCalled();
-        $this->log('not_visibled',ConsoleOutput::VERBOSITY_VERY_VERBOSE);
-    }
-
-    function it_should_format_log_message(ConsoleOutput $output)
-    {
-        $output->getVerbosity()
-            ->willReturn(ConsoleOutput::VERBOSITY_DEBUG);
-
-        $output->writeln(Argument::containingString('normal'))
-            ->shouldBeCalled()
-        ;
-
-        $this->log('normal');
-
-        $output->writeln(Argument::containingString('debug'))
-            ->shouldBeCalled()
-        ;
-        $this->log('debug',ConsoleOutput::VERBOSITY_DEBUG);
-    }
-
     function it_should_load_configuration(
         ContainerInterface $container,
         Configuration $config,

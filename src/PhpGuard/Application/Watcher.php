@@ -98,7 +98,7 @@ class Watcher extends ContainerAware
 
         if($retVal && $this->options['transform']){
             $transformed = preg_replace($pattern,$this->options['transform'],$file->getRelativePathname());
-            $this->container->get('phpguard')->log('Transform: '.$file->getRelativePathname(). ' To '.$transformed,OutputInterface::VERBOSITY_DEBUG);
+            $this->container->get('logger')->addDebug('Transform: '.$file->getRelativePathname(). ' To '.$transformed);
             if(!is_file($transformed)){
                 return false;
             }
@@ -155,15 +155,16 @@ class Watcher extends ContainerAware
     public function lint($file)
     {
         /* @var \PhpGuard\Application\Linter\LinterInterface $linter */
-        /* @var \PhpGuard\Application\PhpGuard $phpguard */
-        $phpguard = $this->container->get('phpguard');
+        /* @var \PhpGuard\Application\Log\Logger $logger */
+
         $retVal = true;
+        $logger = $this->container->get('logger');
 
         foreach($this->options['lint'] as $linter){
             try{
                 $linter->check($file);
             }catch(LinterException $e){
-                $phpguard->log($e->getFormattedOutput());
+                $logger->addFail($e->getFormattedOutput());
                 $retVal = false;
             }
         }

@@ -28,6 +28,7 @@ abstract class TestCase extends FunctionalTestCase
 
     static public function rebuildApplication()
     {
+        self::$tmpDir = sys_get_temp_dir().'/phpguard-phspec';
         ob::cleanDir(self::$tmpDir);
         ob::mkdir(self::$tmpDir);
         chdir(self::$tmpDir);

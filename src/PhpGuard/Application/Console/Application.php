@@ -48,8 +48,8 @@ class Application extends BaseApplication
         $container = $this->container;
         $container->set('ui.input',$input);
         $container->set('ui.output',$output);
-        $container->get('phpguard')->loadConfiguration();
         $container->get('logger.handler')->setOutput($output);
+        $container->get('phpguard')->loadConfiguration();
 
         if($input->hasParameterOption(array('--tags','-t'))){
             $tags = $input->getParameterOption(array('--tags','-t'));

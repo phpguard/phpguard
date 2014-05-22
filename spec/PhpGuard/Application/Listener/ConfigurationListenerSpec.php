@@ -3,6 +3,7 @@
 namespace spec\PhpGuard\Application\Listener;
 
 use PhpGuard\Application\Log\ConsoleHandler;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use \PhpGuard\Application\Container\ContainerInterface;
@@ -16,25 +17,18 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 class ConfigurationListenerSpec extends ObjectBehavior
 {
     function let(
-        GenericEvent $event,
-        PhpGuard $phpGuard,
         ContainerInterface $container,
         PluginInterface $plugin,
         AdapterInterface $adapter,
         Listener $listener,
-        ConsoleHandler $handler
+        ConsoleHandler $handler,
+        Logger $logger
     )
     {
-        $event->getSubject()->willReturn($phpGuard);
-        $container->get('phpguard')
-            ->willReturn($phpGuard);
-        $phpGuard->log(Argument::cetera())
-            ->willReturn(null);
 
         $container->getByPrefix('plugins')
             ->willReturn(array($plugin))
         ;
-
         $container->getParameter(Argument::any(),Argument::any())
             ->willReturn(null);
         $container->setParameter(Argument::any(),Argument::any())
@@ -46,6 +40,10 @@ class ConfigurationListenerSpec extends ObjectBehavior
             ->willReturn($adapter);
         $container->get('logger.handler')
             ->willReturn($handler);
+
+        //$logger = new Logger('PhpGuard');
+        $container->get('logger')
+            ->willReturn($logger);
 
         $this->setContainer($container);
     }

@@ -52,34 +52,38 @@ class PhpGuardTest extends TestCase
 
     public function testShouldMonitorBasedOnTags()
     {
+
         ob::cleanDir($dirTag1 = self::$tmpDir.'/tag1');
         ob::cleanDir($dirTag2 = self::$tmpDir.'/tag2');
 
         ob::mkdir($dirTag1);
         ob::mkdir($dirTag2);
-
-        self::$tester->run(array('--tags'=>'tag1'));
-        touch($ftag1 = $dirTag1.'/test1.php');
-        touch($ftag2 = $dirTag2.'/test1.php');
-
-
-        self::getShell()->evaluate();
+        $ftag1 = $dirTag1.'/test1.php';
+        $ftag2 = $dirTag2.'/test1.php';
+        static::$tester->run(array('--tags'=>'tag1'));
+        file_put_contents($ftag1,'Hello World');
+        file_put_contents($ftag2,'Hello WOrld');
+        static::getShell()->evaluate();
         $this->assertContains($ftag1,$this->getDisplay());
         $this->assertNotContains($ftag2,$this->getDisplay());
-        self::$tester->run(array('--tags'=>'tag2'));
+
+
+        static::$tester->run(array('--tags'=>'tag2'));
         touch($ftag1 = $dirTag1.'/test2.php');
         touch($ftag2 = $dirTag2.'/test2.php');
 
-        self::getShell()->evaluate();
+        static::getShell()->evaluate();
         $this->assertContains($ftag2,$this->getDisplay());
         $this->assertNotContains($ftag1,$this->getDisplay());
 
-        self::$tester->run(array('--tags'=>'tag1,tag2'));
+        static::$tester->run(array('--tags'=>'tag1,tag2'));
         touch($ftag1 = $dirTag1.'/test3.php');
         touch($ftag2 = $dirTag2.'/test3.php');
-        self::getShell()->evaluate();
+        static::getShell()->evaluate();
+
+
         $this->assertContains($ftag2,$this->getDisplay());
-        $this->assertContains($ftag1,$this->getDisplay());
+        $this->assertContains($ftag1,$this->getDisplay());//
     }
 
 

@@ -4,6 +4,7 @@ namespace spec\PhpGuard\Application;
 
 use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Linter\LinterInterface;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Listen\Resource\FileResource;
 use PhpGuard\Application\Spec\ObjectBehavior;
@@ -13,11 +14,11 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class WatcherSpec extends ObjectBehavior
 {
-    function let(ContainerInterface $container,OutputInterface $output,PhpGuard $phpGuard)
+    function let(ContainerInterface $container,OutputInterface $output,Logger $logger)
     {
         self::mkdir(self::$tmpDir);
         $this->beConstructedWith($container);
-        $container->get('phpguard')->willReturn($phpGuard);
+        $container->get('logger')->willReturn($logger);
         $container->get('ui.output')->willReturn($output);
     }
 
@@ -83,7 +84,6 @@ class WatcherSpec extends ObjectBehavior
             'pattern' => '#^src\/(.+)\.php$#',
             'transform' => 'spec/${1}Spec.php'
         ));
-
         $spl = $this->matchFile(getcwd().'/src/PhpGuard/Application/Watcher.php');
         $spl->getRelativePathName()->shouldReturn('spec/PhpGuard/Application/WatcherSpec.php');
     }
@@ -125,9 +125,7 @@ class WatcherSpec extends ObjectBehavior
 
     function it_should_check_file_with_linter_if_defined(
         ContainerInterface $container,
-        LinterInterface $linter,
-        OutputInterface $output,
-        PhpGuard $phpGuard
+        LinterInterface $linter
     )
     {
         $container->has('linters.some')
@@ -140,16 +138,10 @@ class WatcherSpec extends ObjectBehavior
             ->willReturn('some');
         $linter->getTitle()->willReturn('SomeTitle');
 
-        $container->get('phpguard')
-            ->willReturn($phpGuard);
-        $phpGuard->setContainer($container);
-
-
         $this->setOptions(array(
             'lint'=>'some',
             'pattern'=>'some'
         ));
-
         $linter->check(__FILE__)
             ->shouldBeCalled()
             ->willReturn(true)

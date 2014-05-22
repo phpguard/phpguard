@@ -15,8 +15,14 @@ class MockPlugin extends Plugin
 {
     protected $isRunning = false;
 
+    public function getTitle()
+    {
+        return 'mock';
+    }
+
     public function getName()
     {
+        return 'Mock';
     }
 
     public function runAll()

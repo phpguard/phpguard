@@ -128,18 +128,6 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     }
 
     /**
-     * @param string $message
-     * @param int    $level
-     */
-    //public function log($message,$level=OutputInterface::VERBOSITY_NORMAL)
-    //{
-    //    $channel = strtoupper($this->getName());
-        /* @var \PhpGuard\Application\PhpGuard $phpguard */
-    //    $phpguard = $this->container->get('phpguard');
-    //    $phpguard->log($message,$level,$channel);
-    //}
-
-    /**
      * @param   string    $command
      * @param   array     $arguments
      * @return  Runner
@@ -164,7 +152,7 @@ abstract class Plugin extends ContainerAware implements PluginInterface
         $tags = $this->container->getParameter('filter.tags',array());
         /* @var Watcher $watcher */
         foreach($this->watchers as $watcher){
-            if(!$watcher->hasTag($tags)){
+            if(false===$watcher->hasTag($tags)){
                 continue;
             }
             if($matched = $watcher->matchFile($file)){

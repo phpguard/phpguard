@@ -19,6 +19,8 @@ class PhpLinterTest extends TestCase
 {
     public function testShouldCheckPhpSyntax()
     {
+        self::$tester->run(array('-vvv'=>''));
+
         $linter = new PhpLinter();
         $file = self::$tmpDir.'/src/unchecked.php';
         file_put_contents($file,'<?php errror');

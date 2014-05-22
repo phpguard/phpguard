@@ -39,10 +39,8 @@ class TestApplication extends Application
         $container->set('ui.shell',new TestShell($this->getContainer()));
         $container->setParameter('phpguard.use_tty',false);
 
-        $command = $this->getCommandName($input);
-        if($command=='evaluate'){
-            return $this->getShell()->evaluate();
-        }
+        // always clear filters
+        $container->setParameter('filter.tags',array());
         return parent::doRun($input,$output);
     }
 
@@ -58,4 +56,4 @@ class TestApplication extends Application
     {
         $this->getShell()->evaluate();
     }
-} 
+}

@@ -21,7 +21,7 @@ class PhpSpecPluginTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->rebuildApplication();
+        //$this->rebuildApplication();
         self::$tester->run(array('-vvv' => ''));
 
     }
@@ -37,18 +37,21 @@ class PhpSpecPluginTest extends TestCase
      */
     public function testShouldRunSpecs($fileName,$className,$tags=null,$assertNot=false)
     {
-        self::$app->getContainer()->setParameter('filter.tags',array());
+        //self::$app->getContainer()->setParameter('filter.tags',array());
         if(!is_null($tags)){
-            self::rebuildApplication();
             self::$tester->run(array('--tags'=>$tags,'-vvv' => ''));
         }else{
             self::$tester->run(array('-vvv'=>''));
         }
         $this->assertFileExists(getcwd().'/vendor/autoload.php');
         $file = self::$tmpDir.DIRECTORY_SEPARATOR.$fileName;
+
         $exp = explode("\\",$className);
         $namespace = $exp[0];
         $class = $exp[1];
+        unlink($file);
+        clearstatcache(true,$file);
+        $this->getShell()->evaluate(true);
         file_put_contents($file,$this->getClassContent($namespace,$class));
         $this->getShell()->evaluate(true);
         $display = $this->getDisplay(true);
@@ -70,9 +73,9 @@ class PhpSpecPluginTest extends TestCase
             array('src/PhpSpecTest1/TestClass.php','PhpSpecTest1\\TestClass','Tag1'),
             array('src/PhpSpecTest2/TestClass.php','PhpSpecTest2\\TestClass','Tag1',true),
             array('src/PhpSpecTest2/TestClass.php','PhpSpecTest3\\TestClass','Tag1',true),
-            array('src/PhpSpecTest1/TestClass.php','PhpSpecTest1\\TestClass','Tag1,Tag2'),
             array('src/PhpSpecTest2/TestClass.php','PhpSpecTest2\\TestClass','Tag1,Tag2'),
             array('src/PhpSpecTest3/TestClass.php','PhpSpecTest3\\TestClass','Tag1,Tag2',true),
+            //array('src/PhpSpecTest1/TestClass.php','PhpSpecTest1\\TestClass','Tag1,Tag2'),
         );
     }
 

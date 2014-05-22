@@ -65,19 +65,20 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     {
         $this->setupParameters();
         /* @var \PhpGuard\Application\Plugin\PluginInterface $plugin */
+        /* @var \PhpGuard\Application\Log\Logger $logger */
         $container = $this->container;
-        $phpGuard = $container->get('phpguard');
         $plugins = $container->getByPrefix('plugins');
+        $logger = $container->get('logger');
 
         foreach($plugins as $plugin){
             if(!$plugin->isActive()){
                 continue;
             }
-            $logger = new Logger($plugin->getName());
-            $logger->pushHandler($container->get('logger.handler'));
-            $plugin->setLogger($logger);
+            $plogger = new Logger($plugin->getName());
+            $plogger->pushHandler($container->get('logger.handler'));
+            $plugin->setLogger($plogger);
             $plugin->configure();
-            $phpGuard->log('Plugin <comment>'.$plugin->getName().'</comment> is running');
+            $logger->addCommon('Plugin <comment>'.$plugin->getName().'</comment> is running');
         }
 
         $this->setupListen();
@@ -97,12 +98,12 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         $container = $this->container;
         $adapter = $container->get('listen.adapter');
         $listener = $container->get('listen.listener');
-        $this->getPhpGuard()->log('Using <comment>'.get_class($adapter).'</comment>',null,'Listen');
-        $this->getPhpGuard()->log('Scanning Directory <comment>Please Wait!</comment>',null,'Listen');
+        $logger = $container->get('logger');
 
+        $logger->addCommon('Using <comment>'.get_class($adapter).'</comment>');
+        $logger->addCommon('Scanning Directory <comment>Please Wait!</comment>');
         $listener->setAdapter($adapter);
-
-        $this->getPhpGuard()->log('Start to monitor at <comment>'.getcwd().'</comment>',null,'Listen');
+        $logger->addCommon('Start to monitor at <comment>'.getcwd().'</comment>');
     }
 
     /**

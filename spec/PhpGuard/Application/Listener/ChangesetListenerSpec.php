@@ -5,6 +5,7 @@ namespace spec\PhpGuard\Application\Listener;
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Event\EvaluateEvent;
 use \PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
@@ -20,11 +21,11 @@ class ChangesetListenerSpec extends ObjectBehavior
     function let(
         ContainerInterface $container,
         PluginInterface $plugin,
-        EvaluateEvent $evaluateEvent,
         EventDispatcherInterface $dispatcher,
         Shell $shell,
         PhpGuard $phpGuard,
-        OutputInterface $output
+        OutputInterface $output,
+        Logger $logger
     )
     {
         $container->getByPrefix('plugins')
@@ -41,6 +42,9 @@ class ChangesetListenerSpec extends ObjectBehavior
 
         $container->get('phpguard')
             ->willReturn($phpGuard);
+
+        $container->get('logger')
+            ->willReturn($logger);
 
         $plugin->isActive()->willReturn(true);
         $plugin->getName()->willReturn('some');
@@ -74,7 +78,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->postEvaluate($evaluateEvent);
     }
 
-    function it_should_not_run_plugins_when_the_paths_is_no_match($plugin,$evaluateEvent)
+    function it_should_not_run_plugins_when_the_paths_is_no_match($plugin,EvaluateEvent $evaluateEvent)
     {
         $plugin->getMatchedFiles($evaluateEvent)
             ->shouldBeCalled()
@@ -122,13 +126,13 @@ class ChangesetListenerSpec extends ObjectBehavior
         GenericEvent $event,
         PluginInterface $plugin,
         Shell $shell,
-        PhpGuard $phpGuard
+        Logger $logger
     )
     {
-        $phpGuard->log(Argument::containingString('Begin'),Argument::cetera())
+        $logger->addDebug(Argument::containingString('Begin'))
             ->shouldBeCalled();
 
-        $phpGuard->log(Argument::containingString('Match file: '),Argument::cetera())
+        $logger->addDebug(Argument::containingString('Match file: '))
             ->shouldBeCalled();
         $event->getSubject()->willReturn($plugin);
         $event->getArgument('paths')
@@ -144,13 +148,13 @@ class ChangesetListenerSpec extends ObjectBehavior
         GenericEvent $event,
         PluginInterface $plugin,
         Shell $shell,
-        PhpGuard $phpGuard
+        Logger $logger
     )
     {
         $event->getSubject()
             ->willReturn($plugin);
 
-        $phpGuard->log(Argument::containingString('End'),Argument::cetera())
+        $logger->addDebug(Argument::containingString('End'))
             ->shouldBeCalled();
 
         $shell->setStreamBlocking()
@@ -162,10 +166,10 @@ class ChangesetListenerSpec extends ObjectBehavior
         GenericEvent $event,
         PluginInterface $plugin,
         Shell $shell,
-        PhpGuard $phpGuard
+        Logger $logger
     )
     {
-        $phpGuard->log(Argument::cetera())
+        $logger->addDebug(Argument::cetera())
             ->shouldBeCalled();
         $shell->setStreamBlocking()
             ->shouldBeCalled();
@@ -174,10 +178,10 @@ class ChangesetListenerSpec extends ObjectBehavior
         $shell->installReadlineCallback()
             ->shouldBeCalled();
 
-        $phpGuard->log(Argument::containingString('Start'),Argument::cetera())
+        $logger->addDebug(Argument::containingString('Start'))
             ->shouldBeCalled()
         ;
-        $phpGuard->log(Argument::containingString('End'),Argument::cetera())
+        $logger->addDebug(Argument::containingString('End'),Argument::cetera())
             ->shouldBeCalled()
         ;
         $event->getArgument('plugin')

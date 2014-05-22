@@ -32,7 +32,7 @@ class LinterException extends RuntimeException
 
     public function getFormattedOutput()
     {
-        $format = '<log-error>%s failed: <comment>%s</comment></log-error>';
+        $format = '%s failed: <comment>%s</comment>';
         $output = sprintf($format,$this->linter->getTitle(),$this->message);
         return $output;
     }

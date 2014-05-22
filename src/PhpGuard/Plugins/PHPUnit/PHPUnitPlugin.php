@@ -45,15 +45,24 @@ class PHPUnitPlugin extends Plugin
         return 'phpunit';
     }
 
+    /**
+     * @return string
+     */
+    public function getTitle()
+    {
+        return 'PHPUnit';
+    }
+
+
     public function runAll()
     {
         $arguments = $this->buildArguments();
         $runner = $this->createRunner('phpunit',$arguments);
         $return = $runner->run();
         if(!$return){
-            $this->logger->addFail('<log-error>Command all tests failed</log-error>');
+            $this->logger->addFail('All tests failed');
         }else{
-            $this->logger->addSuccess('Command all tests success');
+            $this->logger->addSuccess('All tests success');
         }
     }
 
@@ -71,13 +80,13 @@ class PHPUnitPlugin extends Plugin
         }
 
         if($success){
-            $this->logger->addSuccess('Command test success');
+            $this->logger->addSuccess('Test success');
             if($this->options['all_after_pass']){
-                $this->logger->addInfo('Run all tests after pass');
+                $this->logger->addCommon('Run all tests after pass');
                 $this->runAll();
             }
         }else{
-            $this->logger->addFail('Command test failed');
+            $this->logger->addFail('Test failed');
         }
     }
 

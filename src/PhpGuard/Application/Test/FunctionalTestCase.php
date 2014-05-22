@@ -58,18 +58,18 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     static public function createApplication()
     {
         $app = new TestApplication();
-        self::$app = $app;
-        self::$tester = new ApplicationTester(self::$app);
+        static::$app = $app;
+        static::$tester = new ApplicationTester(self::$app);
     }
 
     protected function getShell()
     {
-        return self::$app->getShell();
+        return static::$app->getShell();
     }
 
     protected function getDisplay()
     {
-        return self::$tester->getDisplay();
+        return static::$tester->getDisplay();
     }
 
     /**
@@ -77,7 +77,7 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
      */
     public function getApplication()
     {
-        return self::$app;
+        return static::$app;
     }
 
     /**
@@ -85,6 +85,6 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
      */
     protected function getApplicationTester()
     {
-        return self::$tester;
+        return static::$tester;
     }
 } 

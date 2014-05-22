@@ -23,6 +23,11 @@ interface PluginInterface extends LoggerAwareInterface
     public function getName();
 
     /**
+     * @return string
+     */
+    public function getTitle();
+
+    /**
      * @param \PhpGuard\Application\Watcher $watcher
      * @return void
      */

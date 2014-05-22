@@ -87,13 +87,12 @@ class PhpGuard
             return $dispatcher;
         });
 
-        $container->setShared('logger.handler', function(){
+        $container->setShared('logger.handler', function($c){
             $format = "%start_tag%[%datetime%][%channel%.%level_name%] %message% %context% %extra% %end_tag%\n";
-            $formatter = new ConsoleFormatter();
-
+            $formatter = new ConsoleFormatter($format);
             $handler = new ConsoleHandler();
-
-
+            $handler->setFormatter($formatter);
+            $c->get('dispatcher')->addSubscriber($handler);
             return $handler;
         });
 
@@ -207,48 +206,6 @@ class PhpGuard
                 return $value;
             }
         ));
-    }
-
-    /**
-     * @param string    $message
-     * @param int       $level
-     * @param string    $channel
-     */
-    public function log($message=null,$level=OutputInterface::VERBOSITY_NORMAL,$channel='PhpGuard')
-    {
-        if(is_null($level)){
-            $level = OutputInterface::VERBOSITY_NORMAL;
-        }
-        /* @var \Symfony\Component\Console\Output\OutputInterface $output */
-        $output = $this->container->get('ui.output');
-        if(is_null($message)){
-            $output->writeln("");
-            return;
-        }
-
-        if($level > $output->getVerbosity()){
-            return;
-        }
-
-        $time = new \DateTime();
-        $format = "[%s][%s] %s";
-        if($level==OutputInterface::VERBOSITY_DEBUG){
-            $format = '<comment>'.$format.'</comment>';
-            $channel = $channel.'.DEBUG';
-        }
-        elseif($level==self::ERROR){
-            $format = '<error>'.$format.'</error>';
-        }
-        else{
-            $format = '<info>'.$format.'</info>';
-        }
-
-        $message = sprintf($format,$time->format('H:i:s'),$channel,$message);
-        if(!$this->hasLogged){
-            $output->writeln("");
-        }
-        $output->writeln($message);
-        $this->hasLogged = true;
     }
 
     public function hasLogged()

@@ -12,6 +12,7 @@ namespace PhpGuard\Application\Listener;
  */
 
 use PhpGuard\Application\Container\ContainerAware;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Application\Event\EvaluateEvent;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -104,15 +105,13 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $shell = $this->getShell();
         $output = $this->container->get('ui.output');
         $output->writeln("");
-        $this->getPhpGuard()->log(
-            'Begin executing '.$event->getSubject()->getName(),
-            OutputInterface::VERBOSITY_DEBUG
+        $this->getLogger()->addDebug(
+            'Begin executing '.$event->getSubject()->getName()
         );
 
         foreach($event->getArgument('paths') as $path){
-            $this->getPhpGuard()->log(
-                'Match file: '.$path->getRelativePathName(),
-                OutputInterface::VERBOSITY_DEBUG
+            $this->getLogger()->addDebug(
+                'Match file: '.$path->getRelativePathName()
             );
         }
 
@@ -122,9 +121,8 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public function postRunCommand(GenericEvent $event)
     {
         $shell = $this->getShell();
-        $this->getPhpGuard()->log(
-            'End executing '.$event->getSubject()->getName(),
-            OutputInterface::VERBOSITY_DEBUG
+        $this->getLogger()->addDebug(
+            'End executing '.$event->getSubject()->getName()
         );
         $shell->setStreamBlocking();
     }
@@ -149,20 +147,18 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         }
 
         $this->getShell()->unsetStreamBlocking();
-        $this->getPhpGuard()->log();
+
         foreach($plugins as $plugin)
         {
             if(!$plugin->isActive()){
                 continue;
             }
-            $this->getPhpGuard()->log(
-                'Start running all for plugin '.$plugin->getName(),
-                OutputInterface::VERBOSITY_DEBUG
+            $this->getLogger()->addDebug(
+                'Start running all for plugin '.$plugin->getName()
             );
             $plugin->runAll();
-            $this->getPhpGuard()->log(
-                'End running all for plugin '.$plugin->getName(),
-                OutputInterface::VERBOSITY_DEBUG
+            $this->getLogger()->addDebug(
+                'End running all for plugin '.$plugin->getName()
             );
         }
 
@@ -185,5 +181,13 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     private function getPhpGuard()
     {
         return $this->container->get('phpguard');
+    }
+
+    /**
+     * @return Logger
+     */
+    public function getLogger()
+    {
+        return $this->container->get('logger');
     }
 }

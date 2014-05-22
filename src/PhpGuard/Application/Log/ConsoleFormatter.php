@@ -22,6 +22,7 @@ use Monolog\Formatter\LineFormatter;
 class ConsoleFormatter extends LineFormatter
 {
     const SIMPLE_FORMAT = "%start_tag%[%datetime%] %channel%.%level_name%:%end_tag% %message% %context% %extra%\n";
+    const SIMPLE_DATE = "H:i:s";
 
     /**
      * {@inheritdoc}
@@ -31,20 +32,26 @@ class ConsoleFormatter extends LineFormatter
         if ($record['level'] >= Logger::ERROR) {
             $record['start_tag'] = '<error>';
             $record['end_tag']   = '</error>';
+        } elseif ($record['level'] >= Logger::WARNING) {
+            $record['start_tag'] = '<info>';
+            $record['end_tag']   = '</info>';
         } elseif ($record['level'] >= Logger::NOTICE) {
             $record['start_tag'] = '<comment>';
             $record['end_tag']   = '</comment>';
         } elseif ($record['level'] == Logger::FAIL){
             $record['start_tag'] = '<fail>';
             $record['end_tag'] = '</fail>';
-        } elseif ($record['level'] >= Logger::INFO) {
+        }
+        elseif ($record['level'] >= Logger::INFO) {
             $record['start_tag'] = '<info>';
             $record['end_tag']   = '</info>';
+        } elseif ($record['level'] >= Logger::DEBUG) {
+            $record['start_tag'] = '<comment>';
+            $record['end_tag']   = '</comment>';
         } else {
             $record['start_tag'] = '';
             $record['end_tag']   = '';
         }
-
         return parent::format($record);
     }
 }
