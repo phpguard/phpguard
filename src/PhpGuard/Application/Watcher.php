@@ -158,13 +158,9 @@ class Watcher extends ContainerAware
         /* @var \PhpGuard\Application\Log\Logger $logger */
 
         $retVal = true;
-        $logger = $this->container->get('logger');
 
         foreach($this->options['lint'] as $linter){
-            try{
-                $linter->check($file);
-            }catch(LinterException $e){
-                $logger->addFail($e->getFormattedOutput());
+            if(!$linter->check($file)){
                 $retVal = false;
             }
         }

@@ -5,6 +5,7 @@ namespace spec\PhpGuard\Application\Listener;
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Event\EvaluateEvent;
 use \PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
@@ -25,7 +26,8 @@ class ChangesetListenerSpec extends ObjectBehavior
         Shell $shell,
         PhpGuard $phpGuard,
         OutputInterface $output,
-        Logger $logger
+        Logger $logger,
+        ConsoleHandler $handler
     )
     {
         $container->getByPrefix('plugins')
@@ -45,6 +47,9 @@ class ChangesetListenerSpec extends ObjectBehavior
 
         $container->get('logger')
             ->willReturn($logger);
+
+        $container->get('logger.handler')
+            ->willReturn($handler);
 
         $plugin->isActive()->willReturn(true);
         $plugin->getName()->willReturn('some');

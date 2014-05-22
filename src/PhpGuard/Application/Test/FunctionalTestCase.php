@@ -69,7 +69,7 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
 
     protected function getDisplay()
     {
-        return static::$tester->getDisplay();
+        return static::$tester->getDisplay(true);
     }
 
     /**

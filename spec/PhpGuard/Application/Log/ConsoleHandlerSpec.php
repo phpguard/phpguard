@@ -56,6 +56,8 @@ class ConsoleHandlerSpec extends ObjectBehavior
         ConsoleOutputInterface $errorOutput
     )
     {
+        $output->writeln(Argument::any())
+            ->willReturn(null);
         $output->getVerbosity()
             ->shouldBeCalled()
             ->willReturn(OutputInterface::VERBOSITY_DEBUG)
@@ -98,5 +100,25 @@ class ConsoleHandlerSpec extends ObjectBehavior
             'extra' => array(),
         );
         $this->handle($errorRecord)->shouldReturn(true);
+    }
+
+    function its_write_behavior_should_be_detected()
+    {
+        $infoRecord = array(
+            'message' => 'My info message',
+            'context' => array(),
+            'level' => Logger::INFO,
+            'level_name' => Logger::getLevelName(Logger::INFO),
+            'channel' => 'app',
+            'datetime' => new \DateTime('2013-05-29 16:21:54'),
+            'extra' => array(),
+        );
+        $this->shouldNotBeLogged();
+        $this->handle($infoRecord);
+        $this->shouldBeLogged();
+        $this->reset();
+        $this->shouldNotBeLogged();
+        $this->handle($infoRecord);
+        $this->shouldBeLogged();
     }
 }

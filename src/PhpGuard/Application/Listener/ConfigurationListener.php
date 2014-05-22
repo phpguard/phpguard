@@ -78,7 +78,7 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
             $plogger->pushHandler($container->get('logger.handler'));
             $plugin->setLogger($plogger);
             $plugin->configure();
-            $logger->addCommon('Plugin <comment>'.$plugin->getTitle().'</comment> active');
+            $plogger->addCommon('Plugin <comment>'.$plugin->getTitle().'</comment> activated');
         }
 
         $this->setupListen();

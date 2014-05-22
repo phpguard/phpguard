@@ -30,7 +30,11 @@ class TestShell extends Shell
     {
         parent::__construct($container);
         $this->copyContainer = $container;
-        $this->historyFile = ObjectBehavior::$tmpDir.'/history';
+        $file = sys_get_temp_dir().'/history_phpguard_test';
+        if(is_file($file)){
+            unlink($file);
+        }
+        $this->historyFile = $file;
     }
 
     public function installReadlineCallback()

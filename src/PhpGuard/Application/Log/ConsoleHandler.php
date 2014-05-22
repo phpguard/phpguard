@@ -56,6 +56,11 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
     );
 
     /**
+     * @var bool
+     */
+    private $logged = false;
+
+    /**
      * Constructor.
      *
      * @param OutputInterface|null $output            The console output to use (the handler remains disabled when passing null
@@ -72,6 +77,17 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
         if ($verbosityLevelMap) {
             $this->verbosityLevelMap = $verbosityLevelMap;
         }
+
+    }
+
+    public function isLogged()
+    {
+        return $this->logged;
+    }
+
+    public function reset()
+    {
+        $this->logged = false;
     }
 
     /**
@@ -154,11 +170,15 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
         $formatted = str_replace('[] []','',$formatted);
         $formatted = trim($formatted)."\n";
 
+        if(!$this->logged){
+            $this->output->writeln("\n");
+        }
         if ($record['level'] >= Logger::ERROR && $this->output instanceof ConsoleOutputInterface) {
             $this->output->getErrorOutput()->write($formatted);
         } else {
             $this->output->write($formatted);
         }
+        $this->logged = true;
     }
 
     /**

@@ -11,15 +11,81 @@
 
 namespace PhpGuard\Plugins\PhpSpec\Tests;
 
+use PhpGuard\Plugins\PhpSpec\Bridge\Console\Application as SpecApplication;
 use PhpGuard\Application\Test\FunctionalTestCase;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
 use PhpGuard\Application\Spec\ObjectBehavior as ob;
+use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
+use PhpGuard\Application\Log\Logger;
+use PhpGuard\Plugins\PhpSpec\Inspector;
 
 abstract class TestCase extends FunctionalTestCase
 {
+    /**
+     * @var SpecApplication
+     */
+    static $specApp;
+
+    /**
+     * @var ApplicationTester
+     */
+    static $specTester;
+
+    static $inspector;
+
+    /**
+     * @param bool $rebuild
+     *
+     * @return Inspector
+     */
+    protected function getInspector($rebuild=false)
+    {
+        if(!is_null(static::$inspector) && !$rebuild){
+            return static::$inspector;
+        }
+        $container = static::getApplication()->getContainer();
+        $phpspec = $container->get('plugins.phpspec');
+        $logger = new Logger('Inspector');
+        $logger->pushHandler($container->get('logger.handler'));
+
+        $inspector = new Inspector();
+        $inspector->setContainer($container);
+        $inspector->setLogger($logger);
+        $inspector->setOptions($phpspec->getOptions());
+
+        static::$inspector = $inspector;
+        return static::$inspector;
+    }
+
+    public function getSpecApplication()
+    {
+        if(is_null(static::$specApp)){
+            $app = new SpecApplication('2.0.0-DEV');
+            $app->setAutoExit(false);
+            $app->setCatchExceptions(true);
+            $app->setInspector($this->getInspector());
+            static::$specApp = $app;
+        }
+        return static::$specApp;
+    }
+
+    public function getSpecTester()
+    {
+        if(is_null(self::$specTester)){
+            $tester = new ApplicationTester($this->getSpecApplication());
+            static::$specTester = $tester;
+        }
+        return static::$specTester;
+    }
+
+    public function getSpecDisplay()
+    {
+        return $this->getSpecTester()->getDisplay();
+    }
+
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
@@ -28,17 +94,19 @@ abstract class TestCase extends FunctionalTestCase
 
     static public function rebuildApplication()
     {
-        self::$tmpDir = sys_get_temp_dir().'/phpguard-phspec';
+        self::$tmpDir = sys_get_temp_dir().'/phpguard-phpspec';
         ob::cleanDir(self::$tmpDir);
         ob::mkdir(self::$tmpDir);
         chdir(self::$tmpDir);
         self::buildFixtures();
         self::createApplication();
         $app = self::$app;
-        $app->getContainer()->setShared('plugins.phpspec',function(){
+        /*$app->getContainer()->setShared('plugins.phpspec',function($c){
             $plugin = new PhpSpecPlugin();
+            $plugin->setContainer($c);
+            $plugin->configure();
             return $plugin;
-        });
+        });*/
     }
 
     static public function buildFixtures($prefix=null)
@@ -116,5 +184,14 @@ class {$class} extends ObjectBehavior
 }
 EOF;
         return $content;
+    }
+
+    protected function createSpecFile($target,$namespace,$class)
+    {
+        $content = $this->getSpecContent($namespace,$class);
+        $target = static::$tmpDir.'/'.$target;
+        file_put_contents($target,$content);
+
+        return $target;
     }
 }

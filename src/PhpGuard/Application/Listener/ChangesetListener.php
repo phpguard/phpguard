@@ -60,13 +60,15 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public function postEvaluate(EvaluateEvent $event)
     {
         /* @var \PhpGuard\Application\Plugin\PluginInterface $plugin */
-        $container = $this->container;
+        /* @var \PhpGuard\Application\Log\ConsoleHandler $loggerHandler */
 
+        $container = $this->container;
         $dispatcher = $container->get('dispatcher');
+        $loggerHandler = $container->get('logger.handler');
 
         $exception = null;
         $pluginHasRun = false;
-        $this->getPhpGuard()->resetLog();
+        $loggerHandler->reset();
         foreach($container->getByPrefix('plugins') as $plugin){
             if(!$plugin->isActive()){
                 continue;
@@ -95,7 +97,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
             }
         }
 
-        if($pluginHasRun || $this->getPhpGuard()->hasLogged()){
+        if($pluginHasRun || $loggerHandler->isLogged()){
             $this->getShell()->installReadlineCallback();
         }
     }

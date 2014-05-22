@@ -13,6 +13,7 @@ namespace PhpGuard\Plugins\PhpSpec;
 
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
+use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
@@ -20,7 +21,13 @@ use Symfony\Component\Yaml\Yaml;
 
 class PhpSpecPlugin extends Plugin
 {
+    const CACHE_DIR = '/phpguard/cache/plugin-phpspec';
     protected $suites = array();
+
+    /**
+     * @var Inspector
+     */
+    protected $inspector;
 
     public function __construct()
     {
@@ -44,10 +51,11 @@ class PhpSpecPlugin extends Plugin
 
     public function configure()
     {
+        $container = $this->container;
         if(class_exists('PhpSpec\\Console\\Application')){
             // only load command when phpspec package exists
             /* @var \PhpGuard\Application\Console\Application $application */
-            $container = $this->container;
+
             $application = $container->get('ui.application');
             $command = new DescribeCommand();
             $command->setContainer($this->container);
@@ -57,6 +65,13 @@ class PhpSpecPlugin extends Plugin
         if($this->options['import_suites']){
             $this->importSuites();
         }
+
+        $logger = $this->logger;
+        $inspector = new Inspector();
+        $inspector->setLogger($logger);
+        $inspector->setContainer($container);
+        $inspector->setOptions($this->options);
+        $this->inspector = $inspector;
     }
 
     public function getName()
@@ -72,65 +87,39 @@ class PhpSpecPlugin extends Plugin
         return 'PhpSpec';
     }
 
-
     public function runAll()
     {
-        $options = $this->options['run_all'];
-        $options = array_merge($this->options,$options);
-        $arguments = $this->buildArguments($options);
-        $runner = $this->createRunner('phpspec',$arguments);
-        $return = $runner->run();
-        if($return){
-            $this->logger->addSuccess('All spec pass');
-        }else{
-            $this->logger->addFail('PhpSpec Run All failed');
-        }
+        $this->inspector->runAll();
     }
 
     public function run(array $paths = array())
     {
-        $success = true;
-        $running = false;
+        $specFiles = array();
         foreach($paths as $file)
         {
-            if(!$this->hasSpecFile($file)){
+            $specFile = $this->getSpecFile($file);
+            if(false===$specFile){
                 $message = 'Spec file not found for <comment>'.$file->getRelativePathname().'</comment>';
                 $this->logger->addDebug($message);
                 continue;
             }
-
-            $classFile = $this->getClassFile($file);
-            $arguments = $this->buildArguments($this->options);
-            $arguments[] = $classFile;
-            $runner = $this->createRunner('phpspec',$arguments);
-            $return = $runner->run();
-            $running = true;
-            if(!$return){
-                $success = false;
-            }
+            $spl = PathUtil::createSplFileInfo(getcwd(),$specFile);
+            $specFiles[] = $spl->getRelativePathname();
         }
-        if($running){
-            if($success){
-                $this->logger->addSuccess('Run spec success');
-                if($this->options['all_after_pass']){
-                    $this->logger->addSuccess('Run all specs after pass');
-                    $this->runAll();
-                }
-            }
-            else{
-                $this->logger->addFail('Run spec failed');
-            }
+        if(count($specFiles)>0){
+            $this->inspector->run($specFiles);
         }
     }
 
-    public function hasSpecFile(SplFileInfo $path)
+    public function getSpecFile(SplFileInfo $path)
     {
         //find by relative path first
         $absPath = realpath($path);
-        if(false!==strpos($absPath,'Spec.php')){
-            return true;
-        }
         $rpath = $path->getRelativePathname();
+        if(false!==strpos($absPath,'Spec.php')){
+            return $absPath;
+        }
+
 
         $baseDir = rtrim(str_replace($rpath,'',$absPath),'\\/');
 
@@ -139,7 +128,7 @@ class PhpSpecPlugin extends Plugin
 
         $transform = $baseDir.DIRECTORY_SEPARATOR.preg_replace($pattern,'spec/${2}Spec.php',$rpath);
         if(is_file($transform)){
-            return true;
+            return $transform;
         }
 
         // find based on suites
@@ -154,50 +143,19 @@ class PhpSpecPlugin extends Plugin
             $testPath = rtrim($testPath,'\\/');
             $testFile = $testPath.DIRECTORY_SEPARATOR.$matches[2]."Spec.php";
             if(is_file($testFile)){
-                return true;
+                return $testFile;
             }
         }
 
         return false;
     }
 
-    public function getClassFile(SplFileInfo $file)
-    {
-        $absPath = $file;
-
-        if(false===strpos($absPath,'Spec.php')){
-            return $file->getRelativePathname();
-        }
-
-        $rpath = $file->getRelativePathname();
-        $baseDir = str_replace($rpath,'',$absPath);
-        $classFile = str_replace('Spec.php','',$rpath);
-
-        $exp = explode(DIRECTORY_SEPARATOR,$classFile);
-        $class = null;
-        $i = count($exp)-1;
-
-        while(isset($exp[$i])){
-            $class = $exp[$i].'\\'.$class;
-            $class = rtrim($class,'\\');
-            if(class_exists($class,true)){
-                $r = new \ReflectionClass($class);
-                $file = str_replace($baseDir,'',$r->getFileName());
-                return $file;
-            }
-            $i--;
-        }
-
-        // class file not exists
-        // should wait until phpspec complete feature to run spec from spec file
-        return $file->getRelativePathname();
-    }
-
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
             'format' => 'pretty',
-            'ansi' => true,
+            'ansi' => false,
+            'no_interaction' => false,
             'all_on_start' => false,
             'all_after_pass' => false,
             'keep_failed' => false,
@@ -212,10 +170,10 @@ class PhpSpecPlugin extends Plugin
     public function importSuites()
     {
         $path = null;
-        if(is_file($file='phpspec.yml')){
+        if(is_file($file=getcwd().'/phpspec.yml')){
             $path = $file;
         }
-        elseif(is_file($file='phpspec.yml.dist')){
+        elseif(is_file($file=getcwd().'/phpspec.yml.dist')){
             $path = $file;
         }
         if(is_null($path)){
@@ -229,7 +187,6 @@ class PhpSpecPlugin extends Plugin
         }
 
         $this->suites = $suites = $config['suites'];
-
         foreach($suites as $name=>$definition){
             $source = 'src';
             if(isset($definition['src'])){
@@ -250,15 +207,5 @@ class PhpSpecPlugin extends Plugin
             $this->logger->addDebug($message,$options);
             $this->addWatcher($watcher);
         }
-    }
-
-    private function buildArguments($options)
-    {
-        $args = array('run');
-        if($options['ansi']){
-            $args[] = '--ansi';
-        }
-        $args[] = '--format='.$options['format'];
-        return $args;
     }
 }

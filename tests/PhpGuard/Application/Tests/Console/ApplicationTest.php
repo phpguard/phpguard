@@ -16,10 +16,9 @@ class ApplicationTest extends TestCase
 {
     public function testShouldStartShellOnRunning()
     {
-        self::$tester->run(array('-vvv'=>''));
-        $display = self::getDisplay();
+        $this->getApplicationTester()->run(array('-vvv'=>''));
+        $display = $this->getDisplay();
         $this->assertContains('Welcome',$display);
-        $this->assertContains(self::$tmpDir,$display);
     }
 
     public function testShouldRunSomeBasicCommand()

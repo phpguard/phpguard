@@ -70,11 +70,11 @@ class PhpSpecPluginTest extends TestCase
             array('src/PhpSpecTest1/TestClass.php','PhpSpecTest1\\TestClass'),
             array('src/PhpSpecTest2/TestClass.php','PhpSpecTest2\\TestClass'),
             array('src/PhpSpecTest3/TestClass.php','PhpSpecTest3\\TestClass'),
-            array('src/PhpSpecTest1/TestClass.php','PhpSpecTest1\\TestClass','Tag1'),
-            array('src/PhpSpecTest2/TestClass.php','PhpSpecTest2\\TestClass','Tag1',true),
-            array('src/PhpSpecTest2/TestClass.php','PhpSpecTest3\\TestClass','Tag1',true),
-            array('src/PhpSpecTest2/TestClass.php','PhpSpecTest2\\TestClass','Tag1,Tag2'),
-            array('src/PhpSpecTest3/TestClass.php','PhpSpecTest3\\TestClass','Tag1,Tag2',true),
+            //array('src/PhpSpecTest1/TestClass.php','PhpSpecTest1\\TestClass','Tag1'),
+            //array('src/PhpSpecTest2/TestClass.php','PhpSpecTest2\\TestClass','Tag1',true),
+            //array('src/PhpSpecTest2/TestClass.php','PhpSpecTest3\\TestClass','Tag1',true),
+            //array('src/PhpSpecTest2/TestClass.php','PhpSpecTest2\\TestClass','Tag1,Tag2'),
+            //array('src/PhpSpecTest3/TestClass.php','PhpSpecTest3\\TestClass','Tag1,Tag2',true),
             //array('src/PhpSpecTest1/TestClass.php','PhpSpecTest1\\TestClass','Tag1,Tag2'),
         );
     }
@@ -121,7 +121,7 @@ class PhpSpecPluginTest extends TestCase
         self::$tester->run(array('-vvv'=>''));
         self::getShell()->runCommand('all phpspec');
         $display = $this->getDisplay();
-        $this->assertContains('failed',$display);
+        $this->assertContains('broken',$display);
     }
 
     public function testShouldNotRunUnexistentSpecFile()

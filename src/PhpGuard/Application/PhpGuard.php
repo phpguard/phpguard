@@ -49,6 +49,8 @@ class PhpGuard
 
     private $hasLogged = false;
 
+    private $configured = false;
+
     public function __construct()
     {
         // force to setup default values
@@ -90,7 +92,8 @@ class PhpGuard
         $container->setShared('logger.handler', function($c){
             $format = "%start_tag%[%datetime%][%channel%][%level_name%] %message% %context% %extra% %end_tag%\n";
             $formatter = new ConsoleFormatter($format);
-            $handler = new ConsoleHandler();
+            $handler = new ConsoleHandler(null,false);
+
             $handler->setFormatter($formatter);
             $c->get('dispatcher')->addSubscriber($handler);
             return $handler;
@@ -113,9 +116,6 @@ class PhpGuard
             $listener->latency($options['latency']);
             $listener->callback(array($phpguard,'listen'));
 
-            //$logger = new Logger('Listen');
-            //$logger->pushHandler($c->get('logger.handler'));
-            //$listener->setLogger($logger);
             return $listener;
         });
 
@@ -144,8 +144,11 @@ class PhpGuard
         });
     }
 
-    public function loadConfiguration()
+    public function loadConfiguration($reload = false)
     {
+        if($this->configured && !$reload){
+            return;
+        }
         $configFile = null;
         if(is_file($file=getcwd().'/phpguard.yml')){
             $configFile = $file;
@@ -164,6 +167,7 @@ class PhpGuard
             ->compileFile($configFile)
         ;
         $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,$event);
+        $this->configured = true;
     }
 
     public function listen(ChangeSetEvent $event)

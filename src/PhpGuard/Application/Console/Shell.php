@@ -70,7 +70,12 @@ class Shell
     {
         $this->hasReadline = function_exists('readline');
         $this->application = $container->get('ui.application');
-        $this->historyFile = getenv('HOME').'/.history_phpguard';
+
+        $file = getenv('HOME').'/.history_phpguard';
+        if(is_file($file)){
+            unlink($file);
+        }
+        $this->historyFile = $file;
         $this->output = $container->get('ui.output');
         $this->container = $container;
         $this->application->setAutoExit(false);

@@ -7,9 +7,9 @@ use PhpGuard\Application\Event\EvaluateEvent;
 use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Linter\LinterInterface;
 use PhpGuard\Application\Log\Logger;
-use PhpGuard\Application\PhpGuard;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Application\Spec\ObjectBehavior;
+use PhpGuard\Plugins\PhpSpec\Inspector;
 use Prophecy\Argument;
 use Symfony\Component\Finder\Finder;
 
@@ -38,7 +38,8 @@ class PhpSpecPluginSpec extends ObjectBehavior
     function let(
         ContainerInterface $container,
         LinterInterface $linter,
-        Logger $logger
+        Logger $logger,
+        Inspector $inspector
     )
     {
         $container->has('linters.php')
@@ -102,58 +103,27 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $spl = PathUtil::createSplFileInfo(
             getcwd(),getcwd().'/src/Namespace3/Spec/Namespace3/TestClassSpec.php'
         );
-        $this->shouldHaveSpecFile($spl);
+        $this->getSpecFile($spl)->shouldNotReturn(false);
 
         $spl = PathUtil::createSplFileInfo(
             getcwd(),getcwd().'/src/Namespace1/TestClass.php'
         );
-        $this->shouldHaveSpecFile($spl);
+        $this->getSpecFile($spl)->shouldNotReturn(false);
 
         $spl = PathUtil::createSplFileInfo(
             getcwd(),getcwd().'/src/Namespace2/TestClass.php'
         );
-        $this->shouldHaveSpecFile($spl);
+        $this->getSpecFile($spl)->shouldNotReturn(false);
 
         $spl = PathUtil::createSplFileInfo(
             getcwd(),getcwd().'/src/Namespace3/TestClass.php'
         );
-        $this->shouldHaveSpecFile($spl);
+        $this->getSpecFile($spl)->shouldNotReturn(false);
 
         $spl = PathUtil::createSplFileInfo(
             getcwd(),getcwd().'/src/Namespace1/NotExist.php'
         );
-        $this->shouldNotHaveSpecFile($spl);
-    }
-
-    function it_getClassFile_returns_file_to_use_with_phpspec_run_command()
-    {
-        $this->buildFixtures();
-        chdir(self::$fixturesDir);
-
-        $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace1/TestClass.php'
-        );
-        $this->getClassFile($spl)->shouldReturn('src/Namespace1/TestClass.php');
-
-        $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/spec/Namespace1/TestClassSpec.php'
-        );
-        $this->getClassFile($spl)->shouldReturn('src/Namespace1/TestClass.php');
-
-        $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace2/spec/Namespace2/TestClassSpec.php'
-        );
-        $this->getClassFile($spl)->shouldReturn('src/Namespace2/TestClass.php');
-
-        $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/src/Namespace3/Spec/Namespace3/TestClassSpec.php'
-        );
-        $this->getClassFile($spl)->shouldReturn('src/Namespace3/TestClass.php');
-
-        $spl = PathUtil::createSplFileInfo(
-            getcwd(),getcwd().'/spec/Namespace1/NotDescribedSpec.php'
-        );
-        $this->getClassFile($spl)->shouldReturn($spl->getRelativePathname());
+        $this->getSpecFile($spl);
     }
 
     function it_should_configured_properly(
@@ -166,6 +136,7 @@ class PhpSpecPluginSpec extends ObjectBehavior
 
         $application->add(Argument::any())
             ->shouldBeCalled();
+
         $this->setOptions(array(
             'import_suites' => true,
         ));
@@ -211,6 +182,11 @@ EOF;
     )
     {
         chdir(self::$tmpDir);
+        $this->setOptions(array(
+            'import_suites' => true,
+        ));
+
+        @unlink(self::$tmpDir.'/phpspec.yml');
         file_put_contents(self::$tmpDir.'/phpspec.yml.dist',$this->getPhpSpecFileContent());
         $this->importSuites();
         $this->getWatchers()->shouldHaveCount(2);
