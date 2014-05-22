@@ -110,10 +110,6 @@ class Container implements ContainerInterface
         if(method_exists($value,'setContainer')){
             $value->setContainer($this);
         }
-
-        if(method_exists($value,'setLogger') && $this->has('logger')){
-            $value->setLogger($this->get('logger'));
-        }
         return $value;
     }
 

@@ -44,7 +44,7 @@ class TestPlugin extends Plugin
      */
     public function runAll()
     {
-        $this->log(self::RUN_ALL_MESSAGE);
+        $this->logger->addInfo(self::RUN_ALL_MESSAGE);
     }
 
     /**
@@ -58,9 +58,9 @@ class TestPlugin extends Plugin
             throw new \RuntimeException(self::THROW_MESSAGE);
         }
         $this->runCount++;
-        $this->log(self::RUN_MESSAGE);
+        $this->logger->addInfo(self::RUN_MESSAGE);
         foreach($paths as $path){
-            $this->log('Modified path: '.$path);
+            $this->logger->addInfo('Modified path: '.$path);
         }
     }
 

@@ -86,16 +86,6 @@ class ContainerSpec extends ObjectBehavior
         $this->get('mock')->shouldReturn($mock);
     }
 
-    function it_should_set_logger_when_service_is_an_implement_of_LoggerAwareInterface(LoggerInterface $logger, LoggerAwareInterface $aware)
-    {
-        $aware->setLogger($logger)
-            ->shouldBeCalled();
-
-        $this->set('logger',$logger);
-        $this->set('some.logger_aware',$aware);
-        $this->get('some.logger_aware');
-    }
-
     function it_evaluates_factory_function_set_as_service()
     {
         $this->set('random_number', function () { return rand(); });

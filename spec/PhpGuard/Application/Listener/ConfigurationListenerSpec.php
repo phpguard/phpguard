@@ -2,6 +2,7 @@
 
 namespace spec\PhpGuard\Application\Listener;
 
+use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use \PhpGuard\Application\Container\ContainerInterface;
@@ -20,7 +21,8 @@ class ConfigurationListenerSpec extends ObjectBehavior
         ContainerInterface $container,
         PluginInterface $plugin,
         AdapterInterface $adapter,
-        Listener $listener
+        Listener $listener,
+        ConsoleHandler $handler
     )
     {
         $event->getSubject()->willReturn($phpGuard);
@@ -42,6 +44,8 @@ class ConfigurationListenerSpec extends ObjectBehavior
             ->willReturn($listener);
         $container->get('listen.adapter')
             ->willReturn($adapter);
+        $container->get('logger.handler')
+            ->willReturn($handler);
 
         $this->setContainer($container);
     }
@@ -110,6 +114,9 @@ class ConfigurationListenerSpec extends ObjectBehavior
         ;
         $active->getName()->shouldBeCalled()
             ->willReturn('some');
+        $active->setLogger(Argument::any())
+            ->shouldBeCalled();
+
         $active->isActive()->willReturn(true);
         $active->configure()->shouldBeCalled();
 

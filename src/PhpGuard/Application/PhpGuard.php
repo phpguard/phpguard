@@ -12,6 +12,9 @@ namespace PhpGuard\Application;
  */
 
 use PhpGuard\Application\Exception\ConfigurationException;
+use PhpGuard\Application\Log\ConsoleFormatter;
+use PhpGuard\Application\Log\ConsoleHandler;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
 use PhpGuard\Application\Event\EvaluateEvent;
@@ -60,7 +63,6 @@ class PhpGuard
     public function setupServices()
     {
         $container = $this->container;
-        $container->set('phpguard',$this);
 
         $container->setShared('config',function(){
             return new Configuration();
@@ -85,6 +87,22 @@ class PhpGuard
             return $dispatcher;
         });
 
+        $container->setShared('logger.handler', function(){
+            $format = "%start_tag%[%datetime%][%channel%.%level_name%] %message% %context% %extra% %end_tag%\n";
+            $formatter = new ConsoleFormatter();
+
+            $handler = new ConsoleHandler();
+
+
+            return $handler;
+        });
+
+        $container->setShared('logger', function($c){
+            $logger = new Logger('Main');
+            $logger->pushHandler($c->get('logger.handler'));
+            return $logger;
+        });
+
         $container->setShared('listen.listener',function($c){
             $listener = Listen::to(getcwd());
             $options = $c->get('phpguard')->getOptions();
@@ -96,6 +114,9 @@ class PhpGuard
             $listener->latency($options['latency']);
             $listener->callback(array($phpguard,'listen'));
 
+            //$logger = new Logger('Listen');
+            //$logger->pushHandler($c->get('logger.handler'));
+            //$listener->setLogger($logger);
             return $listener;
         });
 
@@ -110,7 +131,8 @@ class PhpGuard
     public function loadPlugins()
     {
         $this->container->setShared('plugins.phpspec',function(){
-            return new PhpSpecPlugin();
+            $plugin = new PhpSpecPlugin();
+            return $plugin;
         });
         $this->container->setShared('plugins.phpunit',function(){
             return new PHPUnitPlugin();
@@ -119,7 +141,6 @@ class PhpGuard
         $this->container->setShared('linters.php',function($c){
             $linter = new Linter\PhpLinter();
             $linter->setContainer($c);
-
             return $linter;
         });
     }

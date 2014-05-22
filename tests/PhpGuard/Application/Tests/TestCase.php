@@ -12,6 +12,7 @@
 namespace PhpGuard\Application\Tests;
 
 
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Test\FunctionalTestCase;
 use PhpGuard\Application\Spec\ObjectBehavior as ob;
 use PHPUnit_Framework_TestCase;
@@ -24,14 +25,15 @@ class TestCase extends FunctionalTestCase
         parent::setUpBeforeClass();
         ob::mkdir(self::$tmpDir);
         self::buildFixtures();
-
         chdir(self::$tmpDir);
         self::createApplication();
-        self::$app->getContainer()->setShared('plugins.test',function(){
+        self::$app->getContainer()->setShared('plugins.test',function($c){
             $plugin = new TestPlugin();
+            $logger = new Logger('TestPlugin');
+            $logger->pushHandler($c->get('logger.handler'));
+            $plugin->setLogger($logger);
             return $plugin;
         });
-
         self::$tester->run(array());
     }
 

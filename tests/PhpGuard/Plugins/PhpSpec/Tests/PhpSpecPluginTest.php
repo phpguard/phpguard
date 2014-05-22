@@ -11,6 +11,11 @@
 
 namespace PhpGuard\Plugins\PhpSpec\Tests;
 
+/**
+ * Class PhpSpecPluginTest
+ *
+ * @package PhpGuard\Plugins\PhpSpec\Tests
+ */
 class PhpSpecPluginTest extends TestCase
 {
     protected function setUp()
@@ -18,6 +23,7 @@ class PhpSpecPluginTest extends TestCase
         parent::setUp();
         $this->rebuildApplication();
         self::$tester->run(array('-vvv' => ''));
+
     }
 
     /**
@@ -73,7 +79,6 @@ class PhpSpecPluginTest extends TestCase
     /**
      * @param $specFile
      * @param $specClass
-     * @group current
      * @dataProvider getTestSpecFile
      */
     public function testShouldRunFromSpecFile($specFile,$className)

@@ -32,6 +32,7 @@ class PhpGuardTest extends TestCase
             'ignores' => $ignores
         ));
         $options = $phpGuard->getOptions();
+
         $this->assertSame($ignores,$options['ignores']);
     }
 
@@ -51,27 +52,32 @@ class PhpGuardTest extends TestCase
 
     public function testShouldMonitorBasedOnTags()
     {
-        ob::mkdir($dirTag1 = self::$tmpDir.'/tag1');
-        ob::mkdir($dirTag2 = self::$tmpDir.'/tag2');
+        ob::cleanDir($dirTag1 = self::$tmpDir.'/tag1');
+        ob::cleanDir($dirTag2 = self::$tmpDir.'/tag2');
+
+        ob::mkdir($dirTag1);
+        ob::mkdir($dirTag2);
 
         self::$tester->run(array('--tags'=>'tag1'));
         touch($ftag1 = $dirTag1.'/test1.php');
         touch($ftag2 = $dirTag2.'/test1.php');
-        $this->getShell()->evaluate();
+
+
+        self::getShell()->evaluate();
         $this->assertContains($ftag1,$this->getDisplay());
         $this->assertNotContains($ftag2,$this->getDisplay());
-
         self::$tester->run(array('--tags'=>'tag2'));
         touch($ftag1 = $dirTag1.'/test2.php');
         touch($ftag2 = $dirTag2.'/test2.php');
-        $this->getShell()->evaluate();
+
+        self::getShell()->evaluate();
         $this->assertContains($ftag2,$this->getDisplay());
         $this->assertNotContains($ftag1,$this->getDisplay());
 
         self::$tester->run(array('--tags'=>'tag1,tag2'));
         touch($ftag1 = $dirTag1.'/test3.php');
         touch($ftag2 = $dirTag2.'/test3.php');
-        $this->getShell()->evaluate();
+        self::getShell()->evaluate();
         $this->assertContains($ftag2,$this->getDisplay());
         $this->assertContains($ftag1,$this->getDisplay());
     }

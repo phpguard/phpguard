@@ -72,9 +72,9 @@ class PhpSpecPlugin extends Plugin
         $runner = $this->createRunner('phpspec',$arguments);
         $return = $runner->run();
         if($return){
-            $this->log('All spec pass');
+            $this->logger->addInfo('All spec pass');
         }else{
-            $this->log('<log-error>PhpSpec Run All failed</log-error>');
+            $this->logger->addInfo('<log-error>PhpSpec Run All failed</log-error>');
         }
     }
 
@@ -84,7 +84,8 @@ class PhpSpecPlugin extends Plugin
         foreach($paths as $file)
         {
             if(!$this->hasSpecFile($file)){
-                $this->log('Spec file not found for <comment>'.$file->getRelativePathname().'</comment>');
+                $message = 'Spec file not found for <comment>'.$file->getRelativePathname().'</comment>';
+                $this->logger->addInfo($message);
                 continue;
             }
 
@@ -98,14 +99,15 @@ class PhpSpecPlugin extends Plugin
             }
         }
         if($success){
-            $this->log('Run spec success');
+
+            $this->logger->addInfo('Run spec success');
             if($this->options['all_after_pass']){
-                $this->log('Run all specs after pass');
+                $this->logger->addInfo('Run all specs after pass');
                 $this->runAll();
             }
         }
         else{
-            $this->log('<log-error>Run spec failed</log-error>');
+            $this->logger->addInfo('<log-error>Run spec failed</log-error>');
         }
     }
 

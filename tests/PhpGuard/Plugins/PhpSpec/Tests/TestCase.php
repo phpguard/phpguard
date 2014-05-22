@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Plugins\PhpSpec\Tests;
 
-
 use PhpGuard\Application\Test\FunctionalTestCase;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
 use PhpGuard\Application\Spec\ObjectBehavior as ob;

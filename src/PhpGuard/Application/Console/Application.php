@@ -42,11 +42,14 @@ class Application extends BaseApplication
         $this->setupContainer();
     }
 
+
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $container = $this->container;
         $container->set('ui.input',$input);
         $container->set('ui.output',$output);
+        $container->get('phpguard')->loadConfiguration();
+        $container->get('logger.handler')->setOutput($output);
 
         if($input->hasParameterOption(array('--tags','-t'))){
             $tags = $input->getParameterOption(array('--tags','-t'));
@@ -71,7 +74,7 @@ class Application extends BaseApplication
         parent::configureIO($input, $output);
 
         $formatter = $output->getFormatter();
-        $formatter->setStyle('log-error',new OutputFormatterStyle('red'));
+        $formatter->setStyle('fail',new OutputFormatterStyle('red'));
     }
 
     public function setContainer(ContainerInterface $container)
@@ -108,17 +111,19 @@ class Application extends BaseApplication
     private function setupContainer()
     {
         $container = new Container();
+        $container->set('ui.application',$this);
         $container->setShared('ui.shell',function($c){
             $shell = new Shell($c);
             return $shell;
         });
-        $container->set('ui.application',$this);
-        $container->setShared('phpguard',function($c){
-            $phpGuard = new PhpGuard();
-            $phpGuard->setContainer($c);
-            return $phpGuard;
-        });
+
+
+        $phpGuard = new PhpGuard();
+        $phpGuard->setContainer($container);
+        $phpGuard->setupServices();
+        $phpGuard->loadPlugins();
+        $container->set('phpguard',$phpGuard);
+        $this->setDispatcher($container->get('dispatcher'));
         $this->container = $container;
     }
-
 }

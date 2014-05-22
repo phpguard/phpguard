@@ -10,9 +10,9 @@ namespace PhpGuard\Application\Plugin;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 use PhpGuard\Application\Container\ContainerAware;
-use PhpGuard\Application\Plugin\PluginInterface;
-use PhpGuard\Application\PhpGuard;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Runner;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
@@ -28,12 +28,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 abstract class Plugin extends ContainerAware implements PluginInterface
 {
+
     protected $watchers = array();
 
     protected $options = array();
 
     /**
-     * @var LoggerInterface
+     * @var Logger
      */
     protected $logger;
 
@@ -115,16 +116,28 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     }
 
     /**
+     * Sets a logger instance on the object
+     *
+     * @param LoggerInterface $logger
+     *
+     * @return null
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
+    /**
      * @param string $message
      * @param int    $level
      */
-    public function log($message,$level=OutputInterface::VERBOSITY_NORMAL)
-    {
-        $channel = strtoupper($this->getName());
+    //public function log($message,$level=OutputInterface::VERBOSITY_NORMAL)
+    //{
+    //    $channel = strtoupper($this->getName());
         /* @var \PhpGuard\Application\PhpGuard $phpguard */
-        $phpguard = $this->container->get('phpguard');
-        $phpguard->log($message,$level,$channel);
-    }
+    //    $phpguard = $this->container->get('phpguard');
+    //    $phpguard->log($message,$level,$channel);
+    //}
 
     /**
      * @param   string    $command

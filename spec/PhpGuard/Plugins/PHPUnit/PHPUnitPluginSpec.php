@@ -2,7 +2,8 @@
 
 namespace spec\PhpGuard\Plugins\PHPUnit;
 
-use \PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Log\Logger;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Runner;
 use PhpGuard\Listen\Util\PathUtil;
@@ -37,7 +38,8 @@ class PHPUnitPluginSpec extends ObjectBehavior
         Runner $runner,
         ContainerInterface $container,
         OutputInterface $output,
-        PhpGuard $phpGuard
+        PhpGuard $phpGuard,
+        $logger
     )
     {
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPhpUnitPlugin');
@@ -46,7 +48,11 @@ class PHPUnitPluginSpec extends ObjectBehavior
             ->willReturn($output);
         $container->get('phpguard')
             ->willReturn($phpGuard);
+
+        $logger = new Logger('PhpUnit');
+        $this->setLogger($logger);
         $this->setContainer($container);
+
     }
 
     function it_is_initializable()
@@ -59,105 +65,5 @@ class PHPUnitPluginSpec extends ObjectBehavior
         $this->setOptions(array());
         $options = $this->getOptions();
         $options->shouldHaveKey('cli');
-    }
-
-    function it_should_run_properly(Runner $runner,PhpGuard $phpGuard)
-    {
-        $runner->setCommand('phpunit')
-            ->shouldBeCalled();
-
-        $runner->run()
-            ->shouldBeCalled()
-            ->willReturn(true);
-
-        $spl = PathUtil::createSplFileInfo(getcwd(),'PhpGuard\\Application\\PhpGuard');
-        $runner->setArguments(Argument::containing($spl))
-            ->shouldBeCalled();
-
-        $phpGuard->log(Argument::containingString('success'),Argument::cetera())
-            ->shouldBeCalled();
-        $this->run(array($spl));
-    }
-
-    function it_should_log_error_when_run_command_failed(Runner $runner,PhpGuard $phpGuard)
-    {
-        $runner->setCommand('phpunit')
-            ->shouldBeCalled();
-
-        $runner->run()
-            ->shouldBeCalled()
-            ->willReturn(false);
-
-        $spl = PathUtil::createSplFileInfo(getcwd(),'PhpGuard\\Application\\PhpGuard');
-        $runner->setArguments(Argument::containing($spl))
-            ->shouldBeCalled();
-
-        $phpGuard->log(Argument::containingString('failed'),Argument::cetera())
-            ->shouldBeCalled();
-        $this->run(array($spl));
-    }
-
-    function it_should_run_all_after_pass_if_defined_in_options(
-        Runner $runner,
-        PhpGuard $phpGuard
-    )
-    {
-        $this->setOptions(array(
-            'all_after_pass' => true,
-            'cli' => '--exclude-group phpspec'
-        ));
-        $runner->setCommand('phpunit')
-            ->shouldBeCalled();
-
-        $runner->run()
-            ->shouldBeCalled()
-            ->willReturn(true);
-
-        $spl = PathUtil::createSplFileInfo(getcwd(),'PhpGuard\\Application\\PhpGuard');
-        $runner->setArguments(Argument::cetera())
-            ->shouldBeCalled();
-
-        $phpGuard->log(Argument::containingString('success'),Argument::cetera())
-            ->shouldBeCalled();
-        $phpGuard->log(Argument::containingString('after pass'),Argument::cetera())
-            ->shouldBeCalled();
-
-        $this->run(array($spl));
-    }
-
-    function it_should_run_all_properly(Runner $runner,PhpGuard $phpGuard)
-    {
-        $runner->setCommand('phpunit')
-            ->shouldBeCalled();
-
-        $runner->setArguments(array())
-            ->shouldBeCalled();
-
-        $runner->run()
-            ->shouldBeCalled()
-            ->willReturn(true);
-
-        $phpGuard->log(Argument::containingString('success'),Argument::cetera())
-            ->shouldBeCalled();
-
-        $this->runAll();
-    }
-
-    function it_should_log_error_when_run_all_failed(Runner $runner,PhpGuard $phpGuard)
-    {
-        $runner->setCommand('phpunit')
-            ->shouldBeCalled();
-
-        $runner->setArguments(array())
-            ->shouldBeCalled();
-
-        $runner->run()
-            ->shouldBeCalled()
-            ->willReturn(false);
-
-        $phpGuard->log(Argument::containingString('failed'),Argument::cetera())
-            ->shouldBeCalled();
-
-        $this->runAll();
     }
 }

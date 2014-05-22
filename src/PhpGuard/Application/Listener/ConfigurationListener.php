@@ -12,6 +12,7 @@ namespace PhpGuard\Application\Listener;
  */
 
 use PhpGuard\Application\Container\ContainerAware;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Listen\Listen;
@@ -72,9 +73,13 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
             if(!$plugin->isActive()){
                 continue;
             }
+            $logger = new Logger($plugin->getName());
+            $logger->pushHandler($container->get('logger.handler'));
+            $plugin->setLogger($logger);
             $plugin->configure();
             $phpGuard->log('Plugin <comment>'.$plugin->getName().'</comment> is running');
         }
+
         $this->setupListen();
     }
 

@@ -63,8 +63,6 @@ class PhpGuardSpec extends ObjectBehavior
 
     function it_setup_services(ContainerInterface $container)
     {
-        $container->set('phpguard',$this)
-            ->shouldBeCalled();
         $container->setShared('config',Argument::cetera())
             ->shouldBeCalled();
         $container->setShared('dispatcher',Argument::cetera())
@@ -72,6 +70,11 @@ class PhpGuardSpec extends ObjectBehavior
         $container->setShared('dispatcher.listeners.config',Argument::cetera())
             ->shouldBeCalled();
         $container->setShared('dispatcher.listeners.changeset',Argument::cetera())
+            ->shouldBeCalled();
+
+        $container->setShared('logger.handler',Argument::cetera())
+            ->shouldBeCalled();
+        $container->setShared('logger',Argument::cetera())
             ->shouldBeCalled();
 
         $container->setShared('listen.listener',Argument::cetera())
