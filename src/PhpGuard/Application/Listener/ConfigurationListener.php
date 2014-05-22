@@ -74,11 +74,11 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
             if(!$plugin->isActive()){
                 continue;
             }
-            $plogger = new Logger($plugin->getName());
+            $plogger = new Logger($plugin->getTitle());
             $plogger->pushHandler($container->get('logger.handler'));
             $plugin->setLogger($plogger);
             $plugin->configure();
-            $logger->addCommon('Plugin <comment>'.$plugin->getName().'</comment> is running');
+            $logger->addCommon('Plugin <comment>'.$plugin->getTitle().'</comment> active');
         }
 
         $this->setupListen();
@@ -101,7 +101,7 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         $logger = $container->get('logger');
 
         $logger->addCommon('Using <comment>'.get_class($adapter).'</comment>');
-        $logger->addCommon('Scanning Directory <comment>Please Wait!</comment>');
+        $logger->addCommon('Scanning current working directory <comment>Please Wait!</comment>');
         $listener->setAdapter($adapter);
         $logger->addCommon('Start to monitor at <comment>'.getcwd().'</comment>');
     }

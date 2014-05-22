@@ -36,6 +36,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * This mapping can be customized with the $verbosityLevelMap constructor parameter.
  *
  * @author Tobias Schultze <http://tobion.de>
+ * @author Anthonius Munthi <me@itstoni.com>
  */
 class ConsoleHandler extends AbstractProcessingHandler implements EventSubscriberInterface
 {
@@ -149,7 +150,7 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
     protected function write(array $record)
     {
         $formatted = (string)$record['formatted'];
-        $formatted = str_replace('.COMMON','',$formatted);
+        $formatted = str_replace('[COMMON]','',$formatted);
         $formatted = str_replace('[] []','',$formatted);
         $formatted = trim($formatted)."\n";
 

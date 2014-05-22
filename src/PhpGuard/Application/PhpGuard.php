@@ -88,7 +88,7 @@ class PhpGuard
         });
 
         $container->setShared('logger.handler', function($c){
-            $format = "%start_tag%[%datetime%][%channel%.%level_name%] %message% %context% %extra% %end_tag%\n";
+            $format = "%start_tag%[%datetime%][%channel%][%level_name%] %message% %context% %extra% %end_tag%\n";
             $formatter = new ConsoleFormatter($format);
             $handler = new ConsoleHandler();
             $handler->setFormatter($formatter);

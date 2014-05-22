@@ -110,8 +110,8 @@ class ConfigurationListenerSpec extends ObjectBehavior
             ->shouldBeCalled()
             ->willReturn(array($active,$inactive))
         ;
-        $active->getName()->shouldBeCalled()
-            ->willReturn('some');
+        $active->getTitle()->shouldBeCalled()
+            ->willReturn('Some');
         $active->setLogger(Argument::any())
             ->shouldBeCalled();
 

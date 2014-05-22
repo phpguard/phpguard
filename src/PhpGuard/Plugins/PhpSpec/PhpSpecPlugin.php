@@ -81,9 +81,9 @@ class PhpSpecPlugin extends Plugin
         $runner = $this->createRunner('phpspec',$arguments);
         $return = $runner->run();
         if($return){
-            $this->logger->addCommon('All spec pass');
+            $this->logger->addSuccess('All spec pass');
         }else{
-            $this->logger->addCommon('PhpSpec Run All failed');
+            $this->logger->addFail('PhpSpec Run All failed');
         }
     }
 
@@ -111,9 +111,9 @@ class PhpSpecPlugin extends Plugin
         }
         if($running){
             if($success){
-                $this->logger->addFail('Run spec success');
+                $this->logger->addSuccess('Run spec success');
                 if($this->options['all_after_pass']){
-                    $this->logger->addFail('Run all specs after pass');
+                    $this->logger->addSuccess('Run all specs after pass');
                     $this->runAll();
                 }
             }
