@@ -16,14 +16,14 @@ class LocatorSpec extends ObjectBehavior
     {
         $this->findClassFile('PhpGuard\Application\Container')->shouldHaveType('SplFileInfo');
         $spl = $this->findClassFile('PhpGuard\Application\Container');
-        $spl->getRelativePathname()->shouldReturn('src/PhpGuard/Application/Container.php');
+        $spl->getRelativePathname()->shouldReturn('src/Container.php');
 
         $this->findClassFile('Foo\\Bar')->shouldReturn(false);
     }
 
     function it_should_find_class_from_file()
     {
-        $this->findClass(getcwd().'/src/PhpGuard/Application/Container.php')
+        $this->findClass(getcwd().'/src/Container.php')
             ->shouldReturn('PhpGuard\\Application\\Container');
     }
 

@@ -15,7 +15,8 @@
             <directory>./tests/spec</directory>
         </testsuite>
         <testsuite name="PhpGuard Application Functional">
-            <directory>./tests/PhpGuard</directory>
+            <directory>./tests/application</directory>
+            <directory>./plugins/phpspec/tests</directory>
         </testsuite>
     </testsuites>
 

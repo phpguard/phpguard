@@ -82,9 +82,9 @@ class WatcherSpec extends ObjectBehavior
     {
         $this->setOptions(array(
             'pattern' => '#^src\/(.+)\.php$#',
-            'transform' => 'spec/${1}Spec.php'
+            'transform' => 'spec/PhpGuard/Application/${1}Spec.php'
         ));
-        $spl = $this->matchFile(getcwd().'/src/PhpGuard/Application/Watcher.php');
+        $spl = $this->matchFile(getcwd().'/src/Watcher.php');
         $spl->getRelativePathName()->shouldReturn('spec/PhpGuard/Application/WatcherSpec.php');
     }
 

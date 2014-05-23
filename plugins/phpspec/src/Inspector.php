@@ -75,7 +75,7 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
 
     public function setOptions(array $options)
     {
-        $cmd = realpath(__DIR__.'/Resources/bin/phpspec').' run';
+        $cmd = realpath(__DIR__.'/../bin/phpspec').' run';
         $this->options = $options;
         $this->cmdRun = $cmd.' '.$options['cli'];
         $allOptions = $options['run_all'];

@@ -91,6 +91,12 @@ class Application extends BaseApplication
         return $this->container;
     }
 
+    public function renderException($e, $output)
+    {
+        parent::renderException($e, $output);
+        $this->container->get('ui.shell')->installReadlineCallback();
+    }
+
     protected function getDefaultInputDefinition()
     {
         $definition = parent::getDefaultInputDefinition();

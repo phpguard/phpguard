@@ -20,12 +20,14 @@
         "symfony/yaml": "*"
     },
     "require-dev": {
-        "phpspec/phpspec": "~2.0",
+        "phpspec/phpspec": "~2.1@dev",
         "phpunit/phpunit": "*"
     },
     "autoload": {
-        "psr-0": {
-            "PhpGuard": "src/"
+        "psr-4": {
+            "PhpGuard\\Application\\": "src/",
+            "PhpGuard\\Plugins\\PhpSpec\\": "plugins/phpspec/src",
+            "PhpGuard\\Plugins\\PHPUnit\\": "plugins/phpunit/src"
         }
     },
     "bin": ["bin/phpguard"],

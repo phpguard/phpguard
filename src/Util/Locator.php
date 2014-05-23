@@ -56,7 +56,6 @@ class Locator
     {
         $this->mainLoader->add($prefix,$path,$prepend);
         $this->prefixes = array_merge($this->prefixes,$this->mainLoader->getPrefixes());
-
         return $this;
     }
 
@@ -109,9 +108,9 @@ class Locator
         $class = array_pop($exp);
         $dir = implode(DIRECTORY_SEPARATOR,$exp);
 
-        $testClass = $this->getClassPsr4($dir,$class,$checkExistence);
+        $testClass = $this->getClass($dir,$class,$checkExistence);
         if(false===$testClass){
-            $testClass = $this->getClass($dir,$class,$checkExistence);
+            $testClass = $this->getClassPsr4($dir,$class,$checkExistence);
         }
 
         return $testClass;
@@ -130,6 +129,7 @@ class Locator
     private function checkPrefix(array $prefixes,$dir,$class,$checkExistence=false)
     {
         $absPath = realpath($dir);
+
         $testClass = false;
 
         foreach($prefixes as $ns=>$prefix){

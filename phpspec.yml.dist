@@ -1,1 +1,13 @@
 formatter.name: pretty
+suites:
+    Application:
+        namespace:   PhpGuard\Application
+        psr4_prefix: PhpGuard\Application
+    PhpSpecPlugin:
+        namespace:   PhpGuard\Plugins\PhpSpec
+        psr4_prefix: PhpGuard\Plugins\PhpSpec
+        spec_path:   plugins/phpspec
+    PHPUnitPlugin:
+        namespace:   PhpGuard\Plugins\PHPUnit
+        psr4_prefix: PhpGuard\Plugins\PHPUnit
+        spec_path:   plugins/phpunit
