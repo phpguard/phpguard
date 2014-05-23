@@ -23,7 +23,6 @@ use PhpGuard\Application\Listener\ConfigurationListener;
 use PhpGuard\Application\Listener\ChangesetListener;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
 use PhpGuard\Plugins\PHPUnit\PHPUnitPlugin;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\OptionsResolver\Options;

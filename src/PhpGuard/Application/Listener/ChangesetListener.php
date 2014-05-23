@@ -15,7 +15,6 @@ use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuardEvents;
 use PhpGuard\Application\Event\EvaluateEvent;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
@@ -175,14 +174,6 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     private function getShell()
     {
         return $this->container->get('ui.shell');
-    }
-
-    /**
-     * @return \PhpGuard\Application\PhpGuard
-     */
-    private function getPhpGuard()
-    {
-        return $this->container->get('phpguard');
     }
 
     /**

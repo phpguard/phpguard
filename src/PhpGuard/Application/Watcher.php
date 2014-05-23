@@ -13,11 +13,9 @@ namespace PhpGuard\Application;
 
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Container\ContainerInterface;
-use PhpGuard\Application\Linter\LinterException;
 use PhpGuard\Listen\Exception\InvalidArgumentException;
 use PhpGuard\Listen\Resource\FileResource;
 use PhpGuard\Listen\Util\PathUtil;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;

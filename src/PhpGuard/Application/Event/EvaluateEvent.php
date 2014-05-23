@@ -1,7 +1,5 @@
 <?php
 
-namespace PhpGuard\Application\Event;
-
 /*
  * This file is part of the PhpGuard project.
  *
@@ -10,6 +8,9 @@ namespace PhpGuard\Application\Event;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace PhpGuard\Application\Event;
+
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use Symfony\Component\EventDispatcher\Event;
 

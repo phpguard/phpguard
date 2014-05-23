@@ -10,6 +10,7 @@
  */
 
 namespace PhpGuard\Application\Linter;
+
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Log\Logger;

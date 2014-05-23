@@ -1,7 +1,5 @@
 <?php
 
-namespace PhpGuard\Application;
-
 /*
  * This file is part of the PhpGuard project.
  *
@@ -10,6 +8,8 @@ namespace PhpGuard\Application;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace PhpGuard\Application;
 
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Exception\ConfigurationException;
