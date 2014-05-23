@@ -3,11 +3,13 @@
 namespace spec\PhpGuard\Application\Plugin;
 
 use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -43,15 +45,18 @@ class MockPlugin extends Plugin
 
 class PluginSpec extends ObjectBehavior
 {
-    function let(Watcher $watcher,ContainerInterface $container)
+    function let(Watcher $watcher,ContainerInterface $container,Logger $logger)
     {
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPlugin');
         $this->addWatcher($watcher);
         $this->setContainer($container);
+
         $watcher->hasTag(null)
             ->willReturn(true);
         $watcher->lint(Argument::any())
             ->willReturn(true);
+
+        $this->setLogger($logger);
     }
 
     function it_is_initializable()
@@ -158,6 +163,9 @@ class PluginSpec extends ObjectBehavior
         $watcher->matchFile(__FILE__)
             ->shouldNotBeCalled()
         ;
+        $watcher->getOptions()
+            ->willReturn(array('tags'=>$tags));
+
         $event->getFiles()
             ->willReturn(array(__FILE__));
 

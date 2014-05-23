@@ -38,6 +38,10 @@ class PhpSpecPlugin extends Plugin
     public function addWatcher(Watcher $watcher)
     {
         parent::addWatcher($watcher);
+        if(!is_null($this->logger)){
+            $this->logger->addDebug('added watcher ',$watcher->getOptions());
+        }
+
         if($this->options['always_lint']){
             $options = $watcher->getOptions();
             $linters = array_keys($options['lint']);
@@ -65,6 +69,7 @@ class PhpSpecPlugin extends Plugin
         if($this->options['import_suites']){
             $this->importSuites();
         }
+
 
         $logger = $this->logger;
         $inspector = new Inspector();
@@ -207,5 +212,6 @@ class PhpSpecPlugin extends Plugin
             $this->logger->addDebug($message,$options);
             $this->addWatcher($watcher);
         }
+        return $suites;
     }
 }

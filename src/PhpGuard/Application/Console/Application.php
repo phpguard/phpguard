@@ -55,6 +55,7 @@ class Application extends BaseApplication
             $tags = $input->getParameterOption(array('--tags','-t'));
             $tags = explode(',',$tags);
             $container->setParameter('filter.tags',$tags);
+            $container->get('logger')->addDebug('Filtered using tags',array('tags'=>$tags));
         }
 
         $command = $this->getCommandName($input);

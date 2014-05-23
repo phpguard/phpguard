@@ -186,43 +186,9 @@ EOF;
             'import_suites' => true,
         ));
 
-        @unlink(self::$tmpDir.'/phpspec.yml');
-        file_put_contents(self::$tmpDir.'/phpspec.yml.dist',$this->getPhpSpecFileContent());
+        file_put_contents(self::$tmpDir.'/phpspec.yml.dist',$this->getPhpSpecFileContent(),LOCK_EX);
+
         $this->importSuites();
         $this->getWatchers()->shouldHaveCount(2);
-
-        self::mkdir($dir1 = self::$tmpDir.'/src/Namespace1');
-        self::mkdir($dir2 = self::$tmpDir.'/src/Namespace2');
-        touch($file1 = $dir1.'/Class.php');
-        touch($file2 = $dir2.'/Class.php');
-
-        $container->getParameter('filter.tags',Argument::any())
-            ->willReturn(array())
-        ;
-        $event->getFiles()
-            ->willReturn(array($file1,$file2));
-        $this->getMatchedFiles($event)->shouldHaveCount(2);
-
-        // edge cases section
-
-        // test for Namespace1
-        $container->getParameter('filter.tags',Argument::any())
-            ->willReturn(array('Namespace1'))
-        ;
-        $event->getFiles()
-            ->willReturn(array($file1,$file2));
-        $this->getMatchedFiles($event)->shouldHaveCount(1);
-        $matched = $this->getMatchedFiles($event);
-        $matched[0]->getRelativePathname()->shouldReturn('src/Namespace1/Class.php');
-
-        // test for Namespace2
-        $container->getParameter('filter.tags',Argument::any())
-            ->willReturn(array('Namespace2'))
-        ;
-        $event->getFiles()
-            ->willReturn(array($file1,$file2));
-        $this->getMatchedFiles($event)->shouldHaveCount(1);
-        $matched = $this->getMatchedFiles($event);
-        $matched[0]->getRelativePathname()->shouldReturn('src/Namespace2/Class.php');
-    }
+   }
 }

@@ -153,6 +153,8 @@ abstract class Plugin extends ContainerAware implements PluginInterface
         /* @var Watcher $watcher */
         foreach($this->watchers as $watcher){
             if(false===$watcher->hasTag($tags)){
+                $options = $watcher->getOptions();
+                $this->logger->debug('Unmatched tags',array('watcher.tags'=>$options['tags'],'app.tags'=>$tags));
                 continue;
             }
             if($matched = $watcher->matchFile($file)){

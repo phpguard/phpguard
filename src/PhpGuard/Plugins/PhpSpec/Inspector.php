@@ -57,7 +57,7 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
 
     static public function getCacheFileName()
     {
-        $dir = realpath(sys_get_temp_dir().'/phpguard/cache/plugins/phpspec');
+        $dir = sys_get_temp_dir().'/phpguard/cache/plugins/phpspec';
         @mkdir($dir,0755,true);
         return $dir.DIRECTORY_SEPARATOR.'inspector.dat';
     }
@@ -135,9 +135,10 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         $exitCode = $this->process($command);
 
         if($exitCode===0 && $this->options['all_after_pass']){
+            $this->logger->addDebug('Run all after pass');
             $this->runAll();
         }
-
+        return $exitCode;
     }
 
     private function process($command)
