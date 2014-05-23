@@ -5,4 +5,9 @@ tools:
   external_code_coverage: true
 
 filter:
-  excluded-paths: [ spec/*, vendor/*, tests/* ]
+  excluded-paths:
+    - spec/*
+    - vendor/*
+    - tests/*
+    - plugins/*/spec
+    - plugins/*/tests
