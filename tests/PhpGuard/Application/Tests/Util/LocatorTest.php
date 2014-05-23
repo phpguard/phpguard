@@ -11,10 +11,7 @@
 
 namespace PhpGuard\Application\Tests\Util;
 
-
-use Composer\Autoload\ClassLoader;
 use PhpGuard\Application\Util\Locator;
-use PhpGuard\Listen\Util\PathUtil;
 
 class TestLocator extends Locator
 {
@@ -23,16 +20,7 @@ class TestLocator extends Locator
         ksort($this->prefixes,SORT_ASC);
         ksort($this->prefixesPsr4,SORT_ASC);
         return parent::findClass($file, $checkExistence);
-
     }
-
-    public function findClassFile($class, $baseDir = null)
-    {
-        ksort($this->prefixes,SORT_ASC);
-        ksort($this->prefixesPsr4,SORT_ASC);
-        return parent::findClassFile($class, $baseDir);
-    }
-
 }
 class LocatorTest extends \PHPUnit_Framework_TestCase
 {
@@ -93,6 +81,27 @@ class LocatorTest extends \PHPUnit_Framework_TestCase
             array('src/A/Bar/Test.php','A\\Bar\\Test'),
             array('src/A/Bar/Hello.php','A\\Bar\\Hello'),
             array('src/Foo/Bar/A.php','Foo\\Bar\\A')
+        );
+    }
+
+    /**
+     * @dataProvider getTestClass
+     */
+    public function testShouldFindClassFile($class,$file)
+    {
+        $dir = __DIR__.'/fixtures';
+        $locator = new TestLocator();
+        $locator->addPsr4('Custom\\A\\B\\',$dir.'/custom');
+
+        $spl = $locator->findClassFile($class,__DIR__.'/fixtures');
+        $this->assertNotFalse($spl);
+        $this->assertEquals($file,$spl->getRelativePathname());
+    }
+
+    public function getTestClass()
+    {
+        return array(
+            array('Custom\\A\\B\\TestClass','custom/TestClass.php')
         );
     }
 }

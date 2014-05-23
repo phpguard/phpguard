@@ -82,13 +82,20 @@ class Locator
         $autoLoaders = $this->autoLoaders;
         $baseDir = is_null($baseDir) ? getcwd():$baseDir;
 
-        foreach($autoLoaders as $loader)
-        {
-            $file = $loader->findFile($class);
-            if(is_file($file)){
-                $spl = PathUtil::createSplFileInfo($baseDir,$file);
-                return $spl;
+        $file = $this->mainLoader->findFile($class);
+        if(!is_file($file)){
+            foreach($autoLoaders as $loader)
+            {
+                $file = $loader->findFile($class);
+                if(is_file($file)){
+                    break;
+                }
             }
+        }
+
+        if(is_file($file)){
+            $spl = PathUtil::createSplFileInfo($baseDir,$file);
+            return $spl;
         }
 
         return false;
@@ -124,7 +131,6 @@ class Locator
     {
         $absPath = realpath($dir);
         $testClass = false;
-        //ksort($prefixes,SORT_ASC);
 
         foreach($prefixes as $ns=>$prefix){
             foreach($prefix as $nsDir){
