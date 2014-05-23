@@ -170,8 +170,8 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
         $formatted = str_replace('[] []','',$formatted);
         $formatted = trim($formatted)."\n";
 
-        if(!$this->logged){
-            $this->output->writeln("\n");
+        if(!$this->logged && $this->isHandling($record)){
+            $this->output->writeln("");
         }
         if ($record['level'] >= Logger::ERROR && $this->output instanceof ConsoleOutputInterface) {
             $this->output->getErrorOutput()->write($formatted);

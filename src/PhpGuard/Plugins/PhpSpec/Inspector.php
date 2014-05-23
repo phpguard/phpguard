@@ -20,12 +20,9 @@ use Symfony\Component\Process\Process;
 
 /**
  * Class Inspector
- *
  */
 class Inspector extends ContainerAware implements LoggerAwareInterface
 {
-    const CACHE_FILE = 'phpguard/cache/plugins/phpspec/inspector.dat';
-
     /**
      * @var Logger
      */
@@ -45,10 +42,12 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
     protected $commandLine;
 
     protected $cmdRunAll;
+
     protected $cmdRun;
 
     public function __construct()
     {
+        // always clear serialized result when Inspector object created
         $file = $this->getCacheFileName();
         if(is_file($file)){
             unlink($file);
@@ -121,8 +120,14 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         }
 
         $this->process($command);
-
         $this->checkResult();
+
+        $cFailed = count($this->failed);
+        if($cFailed===0){
+            $this->logger->addSuccess('Run all specs success');
+        }else{
+            $this->logger->addFail('Run all specs '.count($this->failed).' failed');
+        }
     }
 
     public function run($specFiles)
@@ -132,9 +137,13 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         $command = $this->cmdRun.' --spec-files='.$specFiles;
         $exitCode = $this->process($command);
 
-        if($exitCode===0 && $this->options['all_after_pass']){
-            $this->logger->addDebug('Run all after pass');
-            $this->runAll();
+        if($exitCode===0){
+            $this->logger->addSuccess('Run specs success');
+            if($this->options['all_after_pass']){
+                $this->logger->addSuccess('Run all specs after pass');
+
+                $this->runAll();
+            }
         }
         return $exitCode;
     }
@@ -152,6 +161,7 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
             $writer->write($output);
         });
         $this->checkResult();
+
 
         return $process->getExitCode();
     }
@@ -179,19 +189,5 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
                 unset($this->failed[$title]);
             }
         }
-    }
-
-    private function buildArguments($options)
-    {
-        /*$cmd = realpath(__DIR__.'/Resources/bin/phpspec');
-        $args = array($cmd.' run');
-        if($options['ansi']){
-            $args[] = '--ansi';
-        }
-        if($options['no_interaction']){
-            $args[] = '--no-interaction';
-        }
-        $args[] = '--format='.$options['format'];*/
-
     }
 }

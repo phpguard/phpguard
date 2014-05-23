@@ -32,7 +32,6 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
  * Class PhpGuard
- *
  */
 class PhpGuard
 {
