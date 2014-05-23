@@ -5,7 +5,7 @@ namespace spec\PhpGuard\Application;
 use PhpGuard\Application\Configuration;
 use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\PhpGuardEvents;
+use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
@@ -94,7 +94,7 @@ class PhpGuardSpec extends ObjectBehavior
     {
         $event->getFiles()
             ->willReturn(array('some_file'));
-        $dispatcher->dispatch(PhpGuardEvents::postEvaluate,Argument::cetera())
+        $dispatcher->dispatch(ApplicationEvents::postEvaluate,Argument::cetera())
             ->shouldBeCalled();
         $this->listen($event);
     }
@@ -111,10 +111,10 @@ class PhpGuardSpec extends ObjectBehavior
         $container->get('config')
             ->willReturn($config);
 
-        $dispatcher->dispatch(PhpGuardEvents::preLoadConfig,Argument::any())
+        $dispatcher->dispatch(ApplicationEvents::preLoadConfig,Argument::any())
             ->shouldBeCalled();
 
-        $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,Argument::any())
+        $dispatcher->dispatch(ApplicationEvents::postLoadConfig,Argument::any())
             ->shouldBeCalled();
 
         $config->compileFile(Argument::containingString('phpguard.yml.dist'))

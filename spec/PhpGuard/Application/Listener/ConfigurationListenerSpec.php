@@ -7,7 +7,7 @@ use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use \PhpGuard\Application\Container\ContainerInterface;
-use PhpGuard\Application\PhpGuardEvents;
+use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Listen\Adapter\AdapterInterface;
 use PhpGuard\Listen\Listener;
@@ -55,12 +55,12 @@ class ConfigurationListenerSpec extends ObjectBehavior
 
     function it_should_subscribe_config_preLoad_event()
     {
-        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::preLoadConfig);
+        $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::preLoadConfig);
     }
 
     function it_should_subscribe_config_postLoad_event()
     {
-        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::postLoadConfig);
+        $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::postLoadConfig);
     }
 
     function it_should_pre_load_configuration_properly(

@@ -14,7 +14,7 @@ namespace PhpGuard\Application\Listener;
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\PhpGuardEvents;
+use PhpGuard\Application\ApplicationEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
@@ -47,8 +47,8 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     public static function getSubscribedEvents()
     {
         return array(
-            PhpGuardEvents::preLoadConfig => 'preLoad',
-            PhpGuardEvents::postLoadConfig => 'postLoad',
+            ApplicationEvents::preLoadConfig => 'preLoad',
+            ApplicationEvents::postLoadConfig => 'postLoad',
         );
     }
 

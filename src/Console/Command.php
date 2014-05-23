@@ -21,6 +21,9 @@ use Symfony\Component\Console\Command\Command as BaseCommand;
  */
 abstract class Command extends BaseCommand implements ContainerAwareInterface
 {
+    /**
+     * @var ContainerInterface
+     */
     protected $container;
 
     public function setContainer(ContainerInterface $container)

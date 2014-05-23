@@ -27,14 +27,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Application extends BaseApplication
 {
     /**
-     * @var PhpGuard
-     */
-    private $guard;
-
-    /**
      * @var ContainerInterface
      */
     private $container;
+
+    private $running = false;
 
     public function __construct()
     {
@@ -42,14 +39,17 @@ class Application extends BaseApplication
         $this->setupContainer();
     }
 
-
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $container = $this->container;
         $container->set('ui.input',$input);
         $container->set('ui.output',$output);
         $container->get('logger.handler')->setOutput($output);
-        $container->get('phpguard')->loadConfiguration();
+
+
+        foreach ($container->getByPrefix('commands') as $command) {
+            $this->add($command);
+        }
 
         if($input->hasParameterOption(array('--tags','-t'))){
             $tags = $input->getParameterOption(array('--tags','-t'));
@@ -59,13 +59,14 @@ class Application extends BaseApplication
         }
 
         $command = $this->getCommandName($input);
-        if($command==''){
+        if($command == '' ){
+            $command = 'all';
             /* @var Shell $shell */
-            $shell = $container->get('ui.shell');
-            if(!$shell->isRunning()){
-                $shell->start();
-            }
-            return 0;
+            //$shell = $container->get('ui.shell');
+            //if(!$shell->isRunning()){
+            //    $shell->start();
+            //}
+            //return 0;
         }
         return parent::doRun($input, $output);
     }
@@ -73,7 +74,6 @@ class Application extends BaseApplication
     protected function configureIO(InputInterface $input, OutputInterface $output)
     {
         parent::configureIO($input, $output);
-
         $formatter = $output->getFormatter();
         $formatter->setStyle('fail',new OutputFormatterStyle('red'));
     }
@@ -95,6 +95,11 @@ class Application extends BaseApplication
     {
         parent::renderException($e, $output);
         $this->container->get('ui.shell')->installReadlineCallback();
+    }
+
+    public function start()
+    {
+
     }
 
     protected function getDefaultInputDefinition()
@@ -128,6 +133,7 @@ class Application extends BaseApplication
         $phpGuard = new PhpGuard();
         $phpGuard->setContainer($container);
         $phpGuard->setupServices();
+        $phpGuard->setupCommands();
         $phpGuard->loadPlugins();
         $container->set('phpguard',$phpGuard);
         $this->setDispatcher($container->get('dispatcher'));

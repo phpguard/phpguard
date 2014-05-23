@@ -13,7 +13,7 @@ namespace PhpGuard\Application\Listener;
 
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Log\Logger;
-use PhpGuard\Application\PhpGuardEvents;
+use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Event\EvaluateEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
@@ -49,10 +49,10 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public static function getSubscribedEvents()
     {
         return array(
-            PhpGuardEvents::postEvaluate => 'postEvaluate',
-            PhpGuardEvents::preRunCommand => 'preRunCommand',
-            PhpGuardEvents::postRunCommand => 'postRunCommand',
-            PhpGuardEvents::runAllCommands => 'runAllCommand',
+            ApplicationEvents::postEvaluate => 'postEvaluate',
+            ApplicationEvents::preRunCommand => 'preRunCommand',
+            ApplicationEvents::postRunCommand => 'postRunCommand',
+            ApplicationEvents::runAllCommands => 'runAllCommand',
         );
     }
 
@@ -77,7 +77,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
                 $pluginHasRun = true;
                 $runEvent = new GenericEvent($plugin,array('paths' =>$paths));
                 $dispatcher->dispatch(
-                    PhpGuardEvents::preRunCommand,
+                    ApplicationEvents::preRunCommand,
                     $runEvent
                 );
                 try{
@@ -87,7 +87,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
                 }
 
                 $dispatcher->dispatch(
-                    PhpGuardEvents::postRunCommand,
+                    ApplicationEvents::postRunCommand,
                     $runEvent
                 );
                 if(!is_null($exception)){

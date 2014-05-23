@@ -13,7 +13,7 @@ namespace PhpGuard\Application\Console;
 
 use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\PhpGuardEvents;
+use PhpGuard\Application\ApplicationEvents;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
@@ -88,7 +88,7 @@ class Shell
      */
     public function run()
     {
-        stream_set_blocking(STDIN,0);
+        /*stream_set_blocking(STDIN,0);
         while ($this->running) {
             $r = array(STDIN);
             $w = array();
@@ -105,7 +105,17 @@ class Shell
                 $this->application->renderException($e,$this->output);
                 $this->installReadlineCallback();
             }
+        }*/
+
+        stream_set_blocking(STDIN,0);
+        $r = array(STDIN);
+        $w = array();
+        $e = array();
+        $n = @stream_select($r,$w,$e,3);
+        if ($n && in_array(STDIN, $r)) {
+            $this->readline();
         }
+        return;
     }
 
     public function start()
@@ -123,13 +133,10 @@ class Shell
     public function evaluate()
     {
         try{
-            /* @var \PhpGuard\Listen\Listener $listener */
-            $listener = $this->container->get('listen.listener');
-            $listener->evaluate();
+            $this->container->get('listen.listener')->evaluate();
         }catch(\Exception $e){
-            $this->application->renderException($e,$this->output);
+            $this->container->get('ui.application')->renderException($e);
         }
-
     }
 
     /**
@@ -211,7 +218,6 @@ class Shell
         exit(0);
     }
 
-
     /**
      * Returns the shell header.
      *
@@ -267,7 +273,7 @@ EOF;
             // dispatch run all events
             $event = new GenericEvent($this,array('plugin' => $plugin));
             $dispatcher = $this->container->get('dispatcher');
-            $dispatcher->dispatch(PhpGuardEvents::runAllCommands,$event);
+            $dispatcher->dispatch(ApplicationEvents::runAllCommands,$event);
         }catch(\Exception $e){
             $this->application->renderException($e,$this->output);
         }
@@ -321,11 +327,9 @@ EOF;
         if($this->initialized){
             return;
         }
-        $this->output->writeln($this->getHeader());
         if ($this->hasReadline) {
             readline_read_history($this->historyFile);
             readline_completion_function(array($this, 'autocompleter'));
-            $this->installReadlineCallback();
         }
         $this->initialized = true;
     }

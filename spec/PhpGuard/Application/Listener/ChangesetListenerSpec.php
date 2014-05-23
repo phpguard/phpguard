@@ -9,7 +9,7 @@ use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\PhpGuardEvents;
+use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
@@ -64,7 +64,7 @@ class ChangesetListenerSpec extends ObjectBehavior
 
     function it_should_subscribe_postEvaluate_event()
     {
-        $this->getSubscribedEvents()->shouldHaveKey(PhpGuardEvents::postEvaluate);
+        $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::postEvaluate);
     }
 
     function it_should_run_plugins_when_the_paths_is_matched(

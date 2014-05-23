@@ -11,6 +11,7 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Application\Console\Command\StartCommand;
 use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Log\ConsoleFormatter;
 use PhpGuard\Application\Log\ConsoleHandler;
@@ -36,8 +37,6 @@ class PhpGuard
 {
     const VERSION = '1.0.0-dev';
 
-    const ERROR = 'error';
-
     /**
      * @var Container
      */
@@ -45,9 +44,9 @@ class PhpGuard
 
     private $options = array();
 
-    private $hasLogged = false;
-
     private $configured = false;
+
+    private $running = true;
 
     public function __construct()
     {
@@ -125,6 +124,16 @@ class PhpGuard
         $this->container = $container;
     }
 
+    public function setupCommands()
+    {
+        $container = $this->container;
+        $container->setShared('commands.start',function($c){
+            $command = new StartCommand();
+            return $command;
+        });
+
+    }
+
     public function loadPlugins()
     {
         $this->container->setShared('plugins.phpspec',function(){
@@ -159,12 +168,12 @@ class PhpGuard
 
         $event = new GenericEvent($this);
         $dispatcher = $this->container->get('dispatcher');
-        $dispatcher->dispatch(PhpGuardEvents::preLoadConfig,$event);
+        $dispatcher->dispatch(ApplicationEvents::preLoadConfig,$event);
 
         $this->container->get('config')
             ->compileFile($configFile)
         ;
-        $dispatcher->dispatch(PhpGuardEvents::postLoadConfig,$event);
+        $dispatcher->dispatch(ApplicationEvents::postLoadConfig,$event);
         $this->configured = true;
     }
 
@@ -175,7 +184,7 @@ class PhpGuard
             $dispatcher = $this->container->get('dispatcher');
             $evaluateEvent = new EvaluateEvent($event);
             $dispatcher->dispatch(
-                PhpGuardEvents::postEvaluate,
+                ApplicationEvents::postEvaluate,
                 $evaluateEvent
             );
         }
@@ -191,6 +200,39 @@ class PhpGuard
     public function getOptions()
     {
         return $this->options;
+    }
+
+    public function start()
+    {
+        $this->loadConfiguration();
+
+        $container = $this->container;
+        $dispatcher = $container->get('dispatcher');
+        $event = new GenericEvent($container);
+        $dispatcher->dispatch(ApplicationEvents::started,$event);
+
+
+        $shell = $container->get('ui.shell');
+        $container->get('ui.output')->writeln($shell->getHeader());
+        $shell->installReadlineCallback();
+        while($this->running){
+            $shell->run();
+            $this->evaluate();
+        }
+    }
+
+    public function evaluate()
+    {
+        try{
+            $this->container->get('listen.listener')->evaluate();
+        }catch(\Exception $e){
+            $this->container->get('ui.application')->renderException($e);
+        }
+    }
+
+    public function stop()
+    {
+        $this->running = false;
     }
 
     private function setDefaultOptions(OptionsResolverInterface $resolver)
@@ -209,15 +251,4 @@ class PhpGuard
             }
         ));
     }
-
-    public function hasLogged()
-    {
-        return $this->hasLogged;
-    }
-
-    public function resetLog()
-    {
-        $this->hasLogged = false;
-    }
-
 }

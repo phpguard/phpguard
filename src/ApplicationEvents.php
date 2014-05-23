@@ -11,12 +11,16 @@
 
 namespace PhpGuard\Application;
 
-
-final class PhpGuardEvents
+final class ApplicationEvents
 {
+    const started           = 'phpguard.started';
+    const terminated        = 'phpguard.terminated';
+
     const preLoadConfig     = 'config.preLoad';
     const postLoadConfig    = 'config.postLoad';
 
+    const preEvaluate       = 'listen.preEvaluate';
+    const evaluate          = 'listen.evaluate';
     const postEvaluate      = 'listen.postEvaluate';
 
     const preRunCommand     = 'plugin.preRunCommand';
