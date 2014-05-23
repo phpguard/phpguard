@@ -1,0 +1,11 @@
+phpspec:
+    options:
+        cli: "--format=pretty -n"
+        keep_failed:        true
+        all_after_pass:     true
+        import_suites:      true
+        run_all:
+            cli: "--format=dot -n"
+
+    watch:
+        - { pattern: "#^spec.*\.php$#", tags: Tag1 }

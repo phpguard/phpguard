@@ -1,0 +1,14 @@
+# fixtures/phpguard.yml
+phpguard:
+    latency: 0.01
+    ignores:
+        - foo
+        - bar
+        - hello
+        - world
+
+test:
+    watch:
+        - { pattern: "#^src\/(.+)\.php$#", lint: php }
+        - { pattern: "#^tag1\/(.+)$#", tags: tag1}
+        - { pattern: "#^tag2\/(.+)$#", tags: tag2}
