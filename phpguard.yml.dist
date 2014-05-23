@@ -1,19 +1,21 @@
 phpunit:
     options:
         cli: "--exclude-group phpspec"
-        all_after_pass: true
+        all_on_start:   false
+        all_after_pass: false
+        keep_failed:    true
     watch:
         - { pattern: "#^src\/PhpGuard\/Application\/(.+)\.php$#", transform: "tests/PhpGuard/Application/Tests/${1}Test.php" }
+        - { pattern: "#^src\/PhpGuard\/Plugins\/(\w+)\/(.+)\.php$#", transform: "tests/PhpGuard/Plugins/${1}/Tests/${2}Test.php" }
         - { pattern: "#^tests\/.*Test\.php$#" }
 
 phpspec:
     options:
-        format:             pretty
-        ansi:               true
+        cli: "--format=pretty --ansi"
         all_after_pass:     true
+        keep_failed:        true
         run_all:
-            format: progress
-
+            cli: "--format=dot --ansi"
     watch:
-        - { pattern: "#^src\/(.+)\.php$#", transform: "spec/${1}Spec.php" }
+        - { pattern: "#^src\/(.+)\.php$#" }
         - { pattern: "#^spec.*\.php$#" }

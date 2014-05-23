@@ -76,15 +76,13 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
 
     public function setOptions(array $options)
     {
+        $cmd = realpath(__DIR__.'/Resources/bin/phpspec').' run';
         $this->options = $options;
-        $args = $this->buildArguments($options);
-        $this->cmdRun = implode(' ',$args);
-
+        $this->cmdRun = $cmd.' '.$options['cli'];
         $allOptions = $options['run_all'];
         unset($options['run_all']);
         $allOptions = array_merge($options,$allOptions);
-        $args = $this->buildArguments($allOptions);
-        $this->cmdRunAll = implode(' ',$args);
+        $this->cmdRunAll = $cmd.' '.$allOptions['cli'];
     }
 
     public function setResult($success, $failed)
@@ -185,7 +183,7 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
 
     private function buildArguments($options)
     {
-        $cmd = realpath(__DIR__.'/Resources/bin/phpspec');
+        /*$cmd = realpath(__DIR__.'/Resources/bin/phpspec');
         $args = array($cmd.' run');
         if($options['ansi']){
             $args[] = '--ansi';
@@ -193,7 +191,7 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         if($options['no_interaction']){
             $args[] = '--no-interaction';
         }
-        $args[] = '--format='.$options['format'];
-        return $args;
+        $args[] = '--format='.$options['format'];*/
+
     }
 }

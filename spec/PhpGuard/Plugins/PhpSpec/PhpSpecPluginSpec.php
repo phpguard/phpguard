@@ -89,8 +89,10 @@ class PhpSpecPluginSpec extends ObjectBehavior
         $options = $this->getOptions();
 
         $options->shouldHaveKey('run_all');
-        $options->shouldHaveKey('format');
+        $options->shouldHaveKey('cli');
         $options->shouldHaveKey('all_after_pass');
+        $options->shouldHaveKey('keep_failed');
+        $options->shouldHaveKey('all_on_start');
     }
 
     function it_hasSpecFile_returns_true_if_spec_file_exists()
