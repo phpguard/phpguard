@@ -15,16 +15,21 @@
             <directory>./tests/spec</directory>
         </testsuite>
         <testsuite name="PhpGuard Application Functional">
-            <directory>./tests/application</directory>
+            <directory>./tests/functional</directory>
             <directory>./plugins/phpspec/tests</directory>
+            <directory>./plugins/phpunit/tests</directory>
         </testsuite>
     </testsuites>
 
     <filter>
         <whitelist>
             <directory>./src</directory>
+            <directory>./plugins/phpspec/src</directory>
+            <directory>./plugins/phpunit/src</directory>
             <exclude>
                 <directory>./tests</directory>
+                <directory>./plugins/phpspec/tests</directory>
+                <directory>./plugins/phpunit/tests</directory>
             </exclude>
         </whitelist>
     </filter>
