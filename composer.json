@@ -8,7 +8,6 @@
             "email": "me@itstoni.com"
         }
     ],
-    "prefer-stable": true,
     "require": {
         "symfony/console":  "*",
         "symfony/finder":   "*",
@@ -17,8 +16,7 @@
         "phpguard/listen":  "0.1.*@dev",
         "symfony/options-resolver": "*",
         "symfony/event-dispatcher": "*",
-        "symfony/yaml":     "*",
-        "psy/psysh":        "*"
+        "symfony/yaml":     "*"
     },
     "require-dev": {
         "phpspec/phpspec": "~2.1@dev",
