@@ -11,7 +11,9 @@
 
 namespace PhpGuard\Application\Console;
 
+use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Container;
+use PhpGuard\Application\Event\GenericEvent;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Container\ContainerInterface;
 use Symfony\Component\Console\Application as BaseApplication;
@@ -31,12 +33,10 @@ class Application extends BaseApplication
      */
     private $container;
 
-    private $running = false;
-
     public function __construct()
     {
         parent::__construct('phpguard',PhpGuard::VERSION);
-        $this->setupContainer();
+        $this->setupContainer(new Container());
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)
@@ -46,6 +46,9 @@ class Application extends BaseApplication
         $container->set('ui.output',$output);
         $container->get('logger.handler')->setOutput($output);
 
+        $event = new GenericEvent($container);
+        $container->get('dispatcher')->dispatch(ApplicationEvents::initialize,$event);
+
 
         foreach ($container->getByPrefix('commands') as $command) {
             $this->add($command);
@@ -54,13 +57,14 @@ class Application extends BaseApplication
         if($input->hasParameterOption(array('--tags','-t'))){
             $tags = $input->getParameterOption(array('--tags','-t'));
             $tags = explode(',',$tags);
+
             $container->setParameter('filter.tags',$tags);
             $container->get('logger')->addDebug('Filtered using tags',array('tags'=>$tags));
         }
 
         $command = $this->getCommandName($input);
         if($command == '' ){
-            $command = 'all';
+            $command = 'start';
             /* @var Shell $shell */
             //$shell = $container->get('ui.shell');
             //if(!$shell->isRunning()){
@@ -97,11 +101,6 @@ class Application extends BaseApplication
         $this->container->get('ui.shell')->installReadlineCallback();
     }
 
-    public function start()
-    {
-
-    }
-
     protected function getDefaultInputDefinition()
     {
         $definition = parent::getDefaultInputDefinition();
@@ -120,9 +119,8 @@ class Application extends BaseApplication
         return $definition;
     }
 
-    private function setupContainer()
+    public function setupContainer($container)
     {
-        $container = new Container();
         $container->set('ui.application',$this);
         $container->setShared('ui.shell',function($c){
             $shell = new Shell($c);
@@ -132,9 +130,10 @@ class Application extends BaseApplication
 
         $phpGuard = new PhpGuard();
         $phpGuard->setContainer($container);
-        $phpGuard->setupServices();
-        $phpGuard->setupCommands();
-        $phpGuard->loadPlugins();
+        $phpGuard->setupServices($container);
+        $phpGuard->setupCommands($container);
+        $phpGuard->setupListeners($container);
+        $phpGuard->loadPlugins($container);
         $container->set('phpguard',$phpGuard);
         $this->setDispatcher($container->get('dispatcher'));
         $this->container = $container;

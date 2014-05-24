@@ -15,10 +15,6 @@ class LocatorSpec extends ObjectBehavior
     function it_should_locate_class_file()
     {
         $this->findClassFile('PhpGuard\Application\Container')->shouldHaveType('SplFileInfo');
-        $spl = $this->findClassFile('PhpGuard\Application\Container');
-        $spl->getRelativePathname()->shouldReturn('src/Container.php');
-
-        $this->findClassFile('Foo\\Bar')->shouldReturn(false);
     }
 
     function it_should_find_class_from_file()

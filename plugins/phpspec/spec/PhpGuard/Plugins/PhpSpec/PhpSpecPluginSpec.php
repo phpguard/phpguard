@@ -7,6 +7,7 @@ use PhpGuard\Application\Event\EvaluateEvent;
 use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Linter\LinterInterface;
 use PhpGuard\Application\Log\Logger;
+use PhpGuard\Application\Util\Locator;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Plugins\PhpSpec\Inspector;
@@ -39,13 +40,16 @@ class PhpSpecPluginSpec extends ObjectBehavior
         ContainerInterface $container,
         LinterInterface $linter,
         Logger $logger,
-        Inspector $inspector
+        Locator $locator
     )
     {
         $container->has('linters.php')
             ->willReturn(true);
         $container->get('linters.php')
             ->willReturn($linter);
+        $container->get('locator')
+            ->willReturn($locator)
+        ;
 
         // initialize default options
         $this->setOptions(array());

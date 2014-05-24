@@ -40,8 +40,8 @@ interface PluginInterface extends LoggerAwareInterface
     public function runAll();
 
     /**
-     * @param array $paths
-     * @return void
+     * @param   array $paths
+     * @return  array An array of CommandEvent
      */
     public function run(array $paths = array());
 

@@ -11,12 +11,11 @@
 
 namespace PhpGuard\Application\Console;
 
-use \PhpGuard\Application\Container\ContainerInterface;
-use PhpGuard\Application\PhpGuard;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\ApplicationEvents;
+use PhpGuard\Application\Event\GenericEvent;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * A Shell wraps an PhpGuard to add shell capabilities to it.
@@ -25,7 +24,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  * with readline support (either --with-readline or --with-libedit)
  *
  */
-class Shell
+class Shell implements ShellInterface
 {
 
     /**
@@ -63,6 +62,8 @@ class Shell
      */
     private $container;
 
+    private $command;
+
     /**
      * @param ContainerInterface $container
      */
@@ -78,6 +79,7 @@ class Shell
         $this->historyFile = $file;
         $this->output = $container->get('ui.output');
         $this->container = $container;
+        $this->initialize();
         $this->application->setAutoExit(false);
         $this->application->setCatchExceptions(true);
     }
@@ -108,19 +110,26 @@ class Shell
         }*/
 
         stream_set_blocking(STDIN,0);
+
         $r = array(STDIN);
         $w = array();
         $e = array();
-        $n = @stream_select($r,$w,$e,3);
+
+        $n = @stream_select($r,$w,$e,1);
+
         if ($n && in_array(STDIN, $r)) {
             $this->readline();
         }
-        return;
+        return true;
+    }
+
+    public function showPrompt()
+    {
+        $this->installReadlineCallback();
     }
 
     public function start()
     {
-        $this->initialize();
         $this->running = true;
         $this->run();
     }
@@ -130,11 +139,17 @@ class Shell
         $this->running = false;
     }
 
+    public function setOptions(array $options = array())
+    {
+        // TODO: Implement setOptions() method.
+    }
+
     public function evaluate()
     {
         try{
             $this->container->get('listen.listener')->evaluate();
-        }catch(\Exception $e){
+        }
+        catch(\Exception $e){
             $this->container->get('ui.application')->renderException($e);
         }
     }
@@ -185,16 +200,15 @@ class Shell
     public function runCommand($command)
     {
         if($command==false){
-            $this->doRunAll($command);
+            $this->runAll(false);
             return;
         }
-
         $command = trim($command);
         if($command=='quit'){
-            $this->exitShell();
+            $this->container->get('phpguard')->stop();
         }
         elseif(0===strpos($command,'all')){
-            $this->doRunAll($command);
+            $this->runAll($command);
         }
         else{
             $this->unsetStreamBlocking();
@@ -205,37 +219,6 @@ class Shell
             $this->setStreamBlocking();
             return $retVal;
         }
-    }
-
-    /**
-     * Exiting shell
-     * @codeCoverageIgnore
-     */
-    public function exitShell()
-    {
-        $this->output->writeln('');
-        $this->output->writeln('Exit PhpGuard. <comment>bye... bye...!</comment>');
-        exit(0);
-    }
-
-    /**
-     * Returns the shell header.
-     *
-     * @return string The header string
-     */
-    protected function getHeader()
-    {
-        return <<<EOF
-
-Welcome to the <info>PhpGuard</info> (<comment>{$this->application->getVersion()}</comment>).
-
-At the prompt, type <comment>help</comment> for some help,
-or <comment>list</comment> to get a list of available commands.
-
-To exit the shell, type <comment>quit</comment>.
-To run all commands, type <comment>Control+D</comment> or <comment>run-all</comment>
-
-EOF;
     }
 
     /**
@@ -253,12 +236,11 @@ EOF;
      * Run all plugins command
      * @param false|string $command
      */
-    private function doRunAll($command)
+    private function runAll($command)
     {
         $plugin = null;
 
         if(false!==$command){
-            $command = str_replace('\040',' ',$command);
             $command = trim($command);
             if($command!=''){
                 $this->readlineWriteHistory($command);
@@ -268,15 +250,20 @@ EOF;
                 $plugin=null;
             }
         }
-
+        $this->unsetStreamBlocking();
+        $this->output->writeln('');
         try{
             // dispatch run all events
-            $event = new GenericEvent($this,array('plugin' => $plugin));
+            $event = new GenericEvent($this->container,array('plugin' => $plugin));
+            $event->setArguments(array('plugin'=>$plugin));
             $dispatcher = $this->container->get('dispatcher');
             $dispatcher->dispatch(ApplicationEvents::runAllCommands,$event);
         }catch(\Exception $e){
             $this->application->renderException($e,$this->output);
         }
+        $this->installReadlineCallback();
+        $this->setStreamBlocking();
+
     }
 
     /**
@@ -322,7 +309,7 @@ EOF;
     /**
      * Runs on shell first start
      */
-    private function initialize()
+    public function initialize()
     {
         if($this->initialized){
             return;
@@ -334,14 +321,16 @@ EOF;
         $this->initialized = true;
     }
 
-    private function readline()
+    public function readline($prompt=true)
     {
         if($this->hasReadline){
             // read a character, will call the callback when a newline is entered
             readline_callback_read_char();
         }
         else{
-            $this->output->write($this->getPrompt());
+            if($prompt){
+                $this->output->write($this->getPrompt());
+            }
             $line = fgets(STDIN, 1024);
             $line = (!$line && strlen($line) == 0) ? false : rtrim($line);
             $this->runCommand($line);

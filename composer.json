@@ -17,7 +17,8 @@
         "phpguard/listen":  "0.1.*@dev",
         "symfony/options-resolver": "*",
         "symfony/event-dispatcher": "*",
-        "symfony/yaml": "*"
+        "symfony/yaml":     "*",
+        "psy/psysh":        "*"
     },
     "require-dev": {
         "phpspec/phpspec": "~2.1@dev",
@@ -25,9 +26,10 @@
     },
     "autoload": {
         "psr-4": {
-            "PhpGuard\\Application\\": "src/",
-            "PhpGuard\\Plugins\\PhpSpec\\": "plugins/phpspec/src",
-            "PhpGuard\\Plugins\\PHPUnit\\": "plugins/phpunit/src"
+            "PhpGuard\\Application\\":      "src/",
+            "PhpGuard\\Plugins\\PhpSpec\\": "plugins/phpspec/src/",
+            "PhpGuard\\Plugins\\PHPUnit\\": "plugins/phpunit/src/",
+            "PhpGuard\\Shell\\":            "plugins/shell/src/"
         }
     },
     "bin": ["bin/phpguard"],

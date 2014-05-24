@@ -21,9 +21,4 @@ class InspectorSpec extends ObjectBehavior
     {
         $this->shouldImplement('Psr\\Log\\LoggerAwareInterface');
     }
-
-    function its_result_should_be_mutable()
-    {
-        $this->setResult(array('success'),array('failed'));
-    }
 }

@@ -3,11 +3,14 @@
 namespace spec\PhpGuard\Application;
 
 use PhpGuard\Application\Configuration;
+use PhpGuard\Application\Console\Application;
+use PhpGuard\Application\Console\ShellInterface;
 use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Application\Spec\ObjectBehavior;
+use PhpGuard\Listen\Listener;
 use Prophecy\Argument;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -20,20 +23,37 @@ class PhpGuardSpec extends ObjectBehavior
     function let(
         ContainerInterface $container,
         ConsoleOutput $output,
-        OutputFormatter $formatter,
-        EventDispatcherInterface $dispatcher
+        EventDispatcherInterface $dispatcher,
+        ShellInterface $shell,
+        Configuration $configuration,
+        Application $application,
+        Listener $listener
     )
     {
+        $container->get('ui.application')
+            ->willReturn($application)
+        ;
         $container->get('ui.output')
             ->willReturn($output);
+        $container->get('ui.shell')
+            ->willReturn($shell)
+        ;
+        $container->get('listen.listener')
+            ->willReturn($listener);
+
         $container->get('dispatcher')
             ->willReturn($dispatcher)
         ;
+
+        $container->get('config')
+            ->willReturn($configuration)
+        ;
+
         $output->getVerbosity()
             ->willReturn(ConsoleOutput::VERBOSITY_NORMAL);
 
         $this->setContainer($container);
-        $output->writeln('')
+        $output->writeln(Argument::any())
             ->willReturn(null);
 
         if(!is_dir(self::$cwd)){
@@ -61,35 +81,9 @@ class PhpGuardSpec extends ObjectBehavior
         $options->shouldHaveKey('latency');
     }
 
-    function it_setup_services(ContainerInterface $container)
-    {
-        $container->setShared('config',Argument::cetera())
-            ->shouldBeCalled();
-        $container->setShared('dispatcher',Argument::cetera())
-            ->shouldBeCalled();
-        $container->setShared('dispatcher.listeners.config',Argument::cetera())
-            ->shouldBeCalled();
-        $container->setShared('dispatcher.listeners.changeset',Argument::cetera())
-            ->shouldBeCalled();
-
-        $container->setShared('logger.handler',Argument::cetera())
-            ->shouldBeCalled();
-        $container->setShared('logger',Argument::cetera())
-            ->shouldBeCalled();
-
-        $container->setShared('listen.listener',Argument::cetera())
-            ->shouldBeCalled();
-        $container->setShared('listen.adapter',Argument::cetera())
-            ->shouldBeCalled();
-
-        $this->setupServices();
-    }
-
     function it_should_listen_properly(
-        ContainerInterface $container,
         EventDispatcherInterface $dispatcher,
-        ChangeSetEvent $event,
-        ConsoleOutput $output
+        ChangeSetEvent $event
     )
     {
         $event->getFiles()
@@ -99,41 +93,15 @@ class PhpGuardSpec extends ObjectBehavior
         $this->listen($event);
     }
 
-    function it_should_load_configuration(
-        ContainerInterface $container,
-        Configuration $config,
-        EventDispatcherInterface $dispatcher
-    )
+    function it_should_run_shell_when_started(ShellInterface $shell)
     {
-        self::mkdir($dir = self::$tmpDir.'/test-config');
-        chdir($dir);
-
-        $container->get('config')
-            ->willReturn($config);
-
-        $dispatcher->dispatch(ApplicationEvents::preLoadConfig,Argument::any())
-            ->shouldBeCalled();
-
-        $dispatcher->dispatch(ApplicationEvents::postLoadConfig,Argument::any())
-            ->shouldBeCalled();
-
-        $config->compileFile(Argument::containingString('phpguard.yml.dist'))
-            ->shouldBeCalled();
-        touch($dir.'/phpguard.yml.dist');
-        $this->loadConfiguration();
-
-        touch($dir.'/phpguard.yml');
-        $config->compileFile(Argument::containingString('phpguard.yml'))
-            ->shouldBeCalled();
-
-        $this->loadConfiguration();
-    }
-
-    function it_throws_when_configuration_file_not_exists()
-    {
-        chdir(self::$tmpDir);
-        $this->shouldThrow('InvalidArgumentException')
-            ->duringLoadConfiguration()
+        $shell->run()
+            ->shouldBeCalled()
+            ->willReturn(false)
         ;
+        $shell->showPrompt()
+            ->shouldBeCalled();
+
+        $this->start();
     }
 }

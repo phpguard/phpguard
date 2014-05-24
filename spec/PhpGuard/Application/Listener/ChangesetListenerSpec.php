@@ -3,6 +3,7 @@
 namespace spec\PhpGuard\Application\Listener;
 
 use PhpGuard\Application\Console\Shell;
+use PhpGuard\Application\Event\CommandEvent;
 use PhpGuard\Application\Event\EvaluateEvent;
 use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Log\ConsoleHandler;
@@ -95,6 +96,48 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->postEvaluate($evaluateEvent);
     }
 
+    function it_should_render_result_after_running_plugin(
+        PluginInterface $plugin,
+        CommandEvent $succeed,
+        CommandEvent $failed,
+        CommandEvent $broken,
+        EvaluateEvent $event,
+        ContainerInterface $container,
+        Logger $logger
+    )
+    {
+        $container->get('logger')
+            ->willReturn($logger);
+        $plugin->run(Argument::any())
+            ->willReturn(array($succeed,$failed,$broken))
+        ;
+        $plugin->getMatchedFiles(Argument::any())
+            ->willReturn(array('some_path'))
+        ;
+        $succeed->getMessage()
+            ->shouldBeCalled();
+        $succeed->getResult()
+            ->shouldBeCalled()
+            ->willReturn(CommandEvent::SUCCEED)
+        ;
+
+        $failed->getResult()
+            ->shouldBeCalled()
+            ->willReturn(CommandEvent::FAILED)
+        ;
+        $failed->getMessage()
+            ->shouldBeCalled();
+
+        $broken->getResult()
+            ->shouldBeCalled()
+            ->willReturn(CommandEvent::BROKEN)
+        ;
+        $broken->getMessage()
+            ->shouldBeCalled();
+
+        $this->postEvaluate($event);
+    }
+
     function it_plugin_should_not_run_if_not_active(
         ContainerInterface $container,
         PluginInterface $active,
@@ -170,19 +213,11 @@ class ChangesetListenerSpec extends ObjectBehavior
     function it_should_handle_runAllCommand_events(
         GenericEvent $event,
         PluginInterface $plugin,
-        Shell $shell,
         Logger $logger
     )
     {
         $logger->addDebug(Argument::cetera())
             ->shouldBeCalled();
-        $shell->setStreamBlocking()
-            ->shouldBeCalled();
-        $shell->unsetStreamBlocking()
-            ->shouldBeCalled();
-        $shell->installReadlineCallback()
-            ->shouldBeCalled();
-
         $logger->addDebug(Argument::containingString('Start'))
             ->shouldBeCalled()
         ;
@@ -270,6 +305,7 @@ class ChangesetListenerSpec extends ObjectBehavior
             ->willReturn(true)
         ;
         $inactive->getName()->willReturn('inactive');
+        $inactive->getTitle()->willReturn('Inactive');
         $inactive->isActive()
             ->shouldBeCalled()
             ->willReturn(false)

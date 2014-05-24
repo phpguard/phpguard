@@ -15,8 +15,8 @@ use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\ApplicationEvents;
+use PhpGuard\Application\Event\GenericEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class ConfigurationListener
@@ -55,9 +55,19 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     public function preLoad(GenericEvent $event)
     {
         /* @var PhpGuard $guard */
-        $guard = $event->getSubject();
-        $guard->loadPlugins();
+        $guard = $event->getContainer()->get('phpguard');
         $guard->setOptions(array());
+
+        $configFile = null;
+        if(is_file($file=getcwd().'/phpguard.yml')){
+            $configFile = $file;
+        }elseif(is_file($file = getcwd().'/phpguard.yml.dist')){
+            $configFile = $file;
+        }
+        if(is_null($configFile)){
+            throw new ConfigurationException('Can not find configuration file "phpguard.yml" or "phpguard.yml.dist" in the current directory');
+        }
+        $event->getContainer()->setParameter('config.file',$configFile);
     }
 
     public function postLoad()
@@ -68,7 +78,6 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         $container = $this->container;
         $plugins = $container->getByPrefix('plugins');
         $logger = $container->get('logger');
-
         foreach($plugins as $plugin){
             if(!$plugin->isActive()){
                 continue;
@@ -79,8 +88,6 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
             $plugin->configure();
             $plogger->addCommon('Plugin <comment>'.$plugin->getTitle().'</comment> activated');
         }
-
-        $this->setupListen();
     }
 
     private function setupParameters()
@@ -90,26 +97,5 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         if(is_null($container->getParameter('phpguard.use_tty',null))){
             $container->setParameter('phpguard.use_tty',true);
         }
-    }
-
-    private function setupListen()
-    {
-        $container = $this->container;
-        $adapter = $container->get('listen.adapter');
-        $listener = $container->get('listen.listener');
-        $logger = $container->get('logger');
-
-        $logger->addCommon('Using <comment>'.get_class($adapter).'</comment>');
-        $logger->addCommon('Scanning current working directory <comment>Please Wait!</comment>');
-        $listener->setAdapter($adapter);
-        $logger->addCommon('Start to monitor at <comment>'.getcwd().'</comment>');
-    }
-
-    /**
-     * @return \PhpGuard\Application\PhpGuard
-     */
-    private function getPhpGuard()
-    {
-        return $this->container->get('phpguard');
     }
 }

@@ -50,6 +50,7 @@ class Locator
                 return true;
             }
         }
+        return $this->mainLoader->loadClass($class);
     }
 
     public function add($prefix,$path,$prepend=false)
@@ -105,9 +106,8 @@ class Locator
         $test = str_replace('.php','',$file);
         $test = str_replace(DIRECTORY_SEPARATOR,'\\',$test);
         $exp = explode('\\',$test);
-        $class = array_pop($exp);
+        $class = array_pop($exp);//
         $dir = implode(DIRECTORY_SEPARATOR,$exp);
-
         $testClass = $this->getClass($dir,$class,$checkExistence);
         if(false===$testClass){
             $testClass = $this->getClassPsr4($dir,$class,$checkExistence);

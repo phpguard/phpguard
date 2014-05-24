@@ -12,6 +12,8 @@ namespace PhpGuard\Application\Listener;
  */
 
 use PhpGuard\Application\Container\ContainerAware;
+use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Event\CommandEvent;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Event\EvaluateEvent;
@@ -66,22 +68,27 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $loggerHandler = $container->get('logger.handler');
 
         $exception = null;
-        $pluginHasRun = false;
         $loggerHandler->reset();
+        $results = array();
         foreach($container->getByPrefix('plugins') as $plugin){
             if(!$plugin->isActive()){
                 continue;
             }
             $paths = $plugin->getMatchedFiles($event);
             if(count($paths) > 0){
-                $pluginHasRun = true;
                 $runEvent = new GenericEvent($plugin,array('paths' =>$paths));
                 $dispatcher->dispatch(
                     ApplicationEvents::preRunCommand,
                     $runEvent
                 );
                 try{
-                    $plugin->run($paths);
+                    $result = $plugin->run($paths);
+                    if($result){
+                        if(!is_array($result)){
+                            $result = array($result);
+                        }
+                        $results = array_merge($results,$result);
+                    }
                 }catch(\Exception $e){
                     $exception = $e;
                 }
@@ -95,9 +102,9 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
                 }
             }
         }
-
-        if($pluginHasRun || $loggerHandler->isLogged()){
-            $this->getShell()->installReadlineCallback();
+        $this->renderResults($container,$results);
+        if(count($results) > 0){
+            $container->get('ui.shell')->installReadlineCallback();
         }
     }
 
@@ -146,26 +153,28 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
                 ));
             }
         }
-
-        $this->getShell()->unsetStreamBlocking();
-
+        $results = array();
         foreach($plugins as $plugin)
         {
             if(!$plugin->isActive()){
+                $this->getLogger()->addFail(sprintf('Plugin "%s" is not active',$plugin->getTitle()));
                 continue;
             }
             $this->getLogger()->addDebug(
                 'Start running all for plugin '.$plugin->getName()
             );
-            $plugin->runAll();
+            $result = $plugin->runAll();
+            if($result){
+                $result = is_array($result) ? $result:array($result);
+                $results = array_merge($results,$result);
+            }
             $this->getLogger()->addDebug(
                 'End running all for plugin '.$plugin->getName()
             );
         }
-
-        // restore shell behavior
-        $this->getShell()->setStreamBlocking();
-        $this->getShell()->installReadlineCallback();
+        if(count($results) > 0){
+            $this->renderResults($event->getSubject(),$results);
+        }
     }
 
     /**
@@ -182,5 +191,28 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public function getLogger()
     {
         return $this->container->get('logger');
+    }
+
+    private function renderResults(ContainerInterface $container,$results)
+    {
+        /* @var \PhpGuard\Application\Log\Logger $logger */
+        /* @var \PhpGuard\Application\Event\CommandEvent $event */
+        $logger = $container->get('logger');
+
+        foreach($results as $event)
+        {
+            $status = $event->getResult();
+            switch($status){
+                case CommandEvent::SUCCEED:
+                    $logger->addSuccess($event->getMessage());
+                    break;
+                case CommandEvent::FAILED:
+                    $logger->addFail($event->getMessage());
+                    break;
+                case CommandEvent::BROKEN:
+                    $logger->addFail($event->getMessage());
+                    break;
+            }
+        }
     }
 }

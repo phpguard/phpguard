@@ -12,6 +12,7 @@
 namespace PhpGuard\Plugins\PhpSpec;
 
 use PhpGuard\Application\Container\ContainerAware;
+use PhpGuard\Application\Event\CommandEvent;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Plugins\PhpSpec\Bridge\Console\Application;
 use Psr\Log\LoggerAwareInterface;
@@ -28,8 +29,6 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
      */
     protected $logger;
 
-    protected $success = array();
-
     protected $failed = array();
 
     /**
@@ -44,6 +43,8 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
     protected $cmdRunAll;
 
     protected $cmdRun;
+
+    protected $results = array();
 
     public function __construct()
     {
@@ -84,20 +85,6 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         $this->cmdRunAll = $cmd.' '.$allOptions['cli'];
     }
 
-    public function setResult($success, $failed)
-    {
-        foreach($success as $name=>$event){
-            if(isset($this->failed[$name])){
-                unset($this->failed[$name]);
-            }
-        }
-        foreach($failed as $name=>$event){
-            if(!isset($this->failed[$name])){
-                $this->failed[$name] = $event;
-            }
-        }
-    }
-
     public function runAll()
     {
         $command = $this->cmdRunAll;
@@ -118,34 +105,64 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
                 $this->logger->debug('Keep failed spec run');
             }
         }
+        $this->logger->addCommon('Running all specs');
+        $exitCode = $this->process($command);
+        if(0===$exitCode){
+            $plugin = $this->container->get('plugins.phpspec');
+            $message = 'Running All success';
+            return array(new CommandEvent($plugin,CommandEvent::SUCCEED,$message));
 
-        $this->process($command);
-        $this->checkResult();
-
-        $cFailed = count($this->failed);
-        if($cFailed===0){
-            $this->logger->addSuccess('Run all specs success');
         }else{
-            $this->logger->addFail('Run all specs '.count($this->failed).' failed');
+            return $this->renderResult(true);
         }
     }
 
-    public function run($specFiles)
+    public function run($files)
     {
-        $specFiles = implode(',',$specFiles);
+        $this->results = array();
+        $specFiles = implode(',',$files);
 
         $command = $this->cmdRun.' --spec-files='.$specFiles;
-        $exitCode = $this->process($command);
+        $this->logger->addCommon('Running for files',$files);
 
+        $exitCode = $this->process($command);
+        $results = $this->renderResult();
         if($exitCode===0){
-            $this->logger->addSuccess('Run specs success');
             if($this->options['all_after_pass']){
                 $this->logger->addSuccess('Run all specs after pass');
-
-                $this->runAll();
+                $allSpecs = $this->runAll();
+                $results = array_merge($results,$allSpecs);
             }
         }
-        return $exitCode;
+        return $results;
+    }
+
+    /**
+     * @return array
+     */
+    private function renderResult($runAll=false)
+    {
+        $plugin = $this->container->get('plugins.phpspec');
+        $data = $this->checkResult();
+        $results = array();
+
+        foreach($data['success'] as $title=>$file)
+        {
+            if(isset($this->failed[$title])){
+                $this->failed[$title] = $file;
+            }
+            if(!$runAll) continue;
+            $message = 'Running: '.$file.' success';
+            $event = new CommandEvent($plugin,CommandEvent::SUCCEED,$message);
+            $results[] = $event;
+        }
+        foreach($data['failed'] as $title=>$file){
+            $prefix = $runAll ? 'Running All: ':'Running: ';
+            $message = $prefix.$file.' failed';
+            $event = new CommandEvent($plugin,CommandEvent::FAILED,$message);
+            $results[] = $event;
+        }
+        return $results;
     }
 
     private function process($command)
@@ -160,9 +177,6 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         $process->run(function($type,$output) use($writer){
             $writer->write($output);
         });
-        $this->checkResult();
-
-
         return $process->getExitCode();
     }
 
@@ -177,17 +191,6 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
 
         $data = unserialize($contents);
 
-        foreach($data['failed'] as $title=>$file){
-            if(!isset($this->failed[$title])){
-                $this->failed[$title] = $file;
-            }
-            $this->logger->addFail('Spec failed <comment>'.$title.'</comment>');
-        }
-
-        foreach($data['success'] as $title=>$file){
-            if(array_key_exists($title,$this->failed)){
-                unset($this->failed[$title]);
-            }
-        }
+        return $data;
     }
 }

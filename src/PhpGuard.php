@@ -12,10 +12,12 @@ namespace PhpGuard\Application;
  */
 
 use PhpGuard\Application\Console\Command\StartCommand;
-use PhpGuard\Application\Exception\ConfigurationException;
+use PhpGuard\Application\Listener\ApplicationListener;
 use PhpGuard\Application\Log\ConsoleFormatter;
 use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
+use PhpGuard\Application\Util\Locator;
+use PhpGuard\Application\Event\GenericEvent;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
 use PhpGuard\Application\Event\EvaluateEvent;
@@ -25,7 +27,6 @@ use PhpGuard\Application\Listener\ChangesetListener;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
 use PhpGuard\Plugins\PHPUnit\PHPUnitPlugin;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
@@ -44,8 +45,6 @@ class PhpGuard
 
     private $options = array();
 
-    private $configured = false;
-
     private $running = true;
 
     public function __construct()
@@ -59,12 +58,10 @@ class PhpGuard
         $this->container = $container;
     }
 
-    public function setupServices()
+    public function setupListeners(ContainerInterface $container)
     {
-        $container = $this->container;
-
-        $container->setShared('config',function(){
-            return new Configuration();
+        $container->setShared('dispatcher.listeners.application',function(){
+            return new ApplicationListener();
         });
 
         $container->setShared('dispatcher.listeners.config',function(){
@@ -73,6 +70,15 @@ class PhpGuard
 
         $container->setShared('dispatcher.listeners.changeset',function(){
             return new ChangesetListener();
+        });
+    }
+
+    public function setupServices(ContainerInterface $container)
+    {
+        $container = $container;
+
+        $container->setShared('config',function(){
+            return new Configuration();
         });
 
         $container->setShared('dispatcher', function ($c) {
@@ -89,8 +95,7 @@ class PhpGuard
         $container->setShared('logger.handler', function($c){
             $format = "%start_tag%[%datetime%][%channel%][%level_name%] %message% %context% %extra% %end_tag%\n";
             $formatter = new ConsoleFormatter($format);
-            $handler = new ConsoleHandler(null,false);
-
+            $handler = new ConsoleHandler(null,true);
             $handler->setFormatter($formatter);
             $c->get('dispatcher')->addSubscriber($handler);
             return $handler;
@@ -112,7 +117,6 @@ class PhpGuard
             $phpguard = $c->get('phpguard');
             $listener->latency($options['latency']);
             $listener->callback(array($phpguard,'listen'));
-
             return $listener;
         });
 
@@ -121,60 +125,43 @@ class PhpGuard
             return $adapter;
         });
 
-        $this->container = $container;
+        $container->setShared('locator',function(){
+            $locator = new Locator();
+            $cwd = getcwd();
+            // TODO: load this automatically
+            $locator->addPsr4('spec\\',array(
+                $cwd.'/spec',
+                $cwd.'/plugins/phpspec/spec',
+                $cwd.'/plugins/phpunit/spec'
+            ));
+
+            return $locator;
+        });
     }
 
-    public function setupCommands()
+    public function setupCommands($container)
     {
-        $container = $this->container;
         $container->setShared('commands.start',function($c){
             $command = new StartCommand();
             return $command;
         });
-
     }
 
-    public function loadPlugins()
+    public function loadPlugins(ContainerInterface $container)
     {
-        $this->container->setShared('plugins.phpspec',function(){
+        $container->setShared('plugins.phpspec',function(){
             $plugin = new PhpSpecPlugin();
             return $plugin;
         });
-        $this->container->setShared('plugins.phpunit',function(){
+        $container->setShared('plugins.phpunit',function(){
             return new PHPUnitPlugin();
         });
 
-        $this->container->setShared('linters.php',function($c){
+        $container->setShared('linters.php',function($c){
             $linter = new Linter\PhpLinter();
             $linter->setContainer($c);
             return $linter;
         });
-    }
-
-    public function loadConfiguration($reload = false)
-    {
-        if($this->configured && !$reload){
-            return;
-        }
-        $configFile = null;
-        if(is_file($file=getcwd().'/phpguard.yml')){
-            $configFile = $file;
-        }elseif(is_file($file = getcwd().'/phpguard.yml.dist')){
-            $configFile = $file;
-        }
-        if(is_null($configFile)){
-            throw new ConfigurationException('Can not find configuration file "phpguard.yml" or "phpguard.yml.dist" in the current directory');
-        }
-
-        $event = new GenericEvent($this);
-        $dispatcher = $this->container->get('dispatcher');
-        $dispatcher->dispatch(ApplicationEvents::preLoadConfig,$event);
-
-        $this->container->get('config')
-            ->compileFile($configFile)
-        ;
-        $dispatcher->dispatch(ApplicationEvents::postLoadConfig,$event);
-        $this->configured = true;
     }
 
     public function listen(ChangeSetEvent $event)
@@ -204,21 +191,48 @@ class PhpGuard
 
     public function start()
     {
-        $this->loadConfiguration();
-
         $container = $this->container;
         $dispatcher = $container->get('dispatcher');
+
         $event = new GenericEvent($container);
         $dispatcher->dispatch(ApplicationEvents::started,$event);
 
 
         $shell = $container->get('ui.shell');
-        $container->get('ui.output')->writeln($shell->getHeader());
-        $shell->installReadlineCallback();
+        $this->showHeader();
+        $shell->showPrompt();
+
         while($this->running){
-            $shell->run();
+            $return = $shell->run();
+            if(!$return){
+                $this->stop();
+            }
             $this->evaluate();
         }
+    }
+
+    /**
+     * Returns the shell header.
+     *
+     * @return string The header string
+     */
+    public function showHeader()
+    {
+        $version = static::VERSION;
+        $header = <<<EOF
+
+Welcome to the <info>PhpGuard</info> (<comment>{$version}</comment>).
+
+At the prompt, type <comment>help</comment> for some help,
+or <comment>list</comment> to get a list of available commands.
+
+To exit the shell, type <comment>quit</comment>.
+To run all commands, type <comment>Control+D</comment> or <comment>run-all</comment>
+
+EOF;
+
+        $this->container->get('ui.output')
+            ->writeln($header);
     }
 
     public function evaluate()
@@ -226,13 +240,18 @@ class PhpGuard
         try{
             $this->container->get('listen.listener')->evaluate();
         }catch(\Exception $e){
-            $this->container->get('ui.application')->renderException($e);
+            $this->container->get('ui.application')->renderException($e,$this->container->get('ui.output'));
+            throw $e;
         }
     }
 
     public function stop()
     {
         $this->running = false;
+        $container = $this->container;
+        $dispatcher = $container->get('dispatcher');
+        $event = new GenericEvent($container);
+        $dispatcher->dispatch(ApplicationEvents::terminated,$event);
     }
 
     private function setDefaultOptions(OptionsResolverInterface $resolver)

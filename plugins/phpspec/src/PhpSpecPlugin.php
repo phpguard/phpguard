@@ -12,6 +12,7 @@
 namespace PhpGuard\Plugins\PhpSpec;
 
 use PhpGuard\Application\Plugin\Plugin;
+use PhpGuard\Application\Util\Locator;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
@@ -94,7 +95,7 @@ class PhpSpecPlugin extends Plugin
 
     public function runAll()
     {
-        $this->inspector->runAll();
+        return $this->inspector->runAll();
     }
 
     public function run(array $paths = array())
@@ -112,47 +113,26 @@ class PhpSpecPlugin extends Plugin
             $specFiles[] = $spl->getRelativePathname();
         }
         if(count($specFiles)>0){
-            $this->inspector->run($specFiles);
+            return $this->inspector->run($specFiles);
         }
     }
 
     public function getSpecFile(SplFileInfo $path)
     {
-        //find by relative path first
-        $absPath = realpath($path);
-        $rpath = $path->getRelativePathname();
-        if(false!==strpos($absPath,'Spec.php')){
-            return $absPath;
+        if(false!==strpos($path,'Spec.php')){
+            return $path;
         }
+        /* @var \PhpGuard\Application\Util\Locator $locator */
+        $locator = $this->container->get('locator');
+        $class = $locator->findClass($path->getRealPath(),false);
 
+        $spec = 'spec\\'.$class.'Spec';
+        $this->logger->debug('locator: '.$class);
 
-        $baseDir = rtrim(str_replace($rpath,'',$absPath),'\\/');
+        $specFile = $locator->findClassFile($spec,getcwd());
 
-        $pattern = '#^(\w+)\/(.*)\.php$#';
-        preg_match($pattern,$rpath,$matches);
-
-        $transform = $baseDir.DIRECTORY_SEPARATOR.preg_replace($pattern,'spec/${2}Spec.php',$rpath);
-        if(is_file($transform)){
-            return $transform;
-        }
-
-        // find based on suites
-        foreach($this->suites as $suite){
-            $specPrefix = isset($suite['spec_prefix']) ? $suite['spec_prefix']:'spec';
-            if(isset($suite['spec_path'])){
-                $specPath = $suite['spec_path'].DIRECTORY_SEPARATOR.$specPrefix;
-            }else{
-                $specPath = 'spec';
-            }
-            $testPath = $baseDir.DIRECTORY_SEPARATOR.$specPath;
-            $testPath = rtrim($testPath,'\\/');
-            $testFile = $testPath.DIRECTORY_SEPARATOR.$matches[2]."Spec.php";
-            if(is_file($testFile)){
-                return $testFile;
-            }
-        }
-
-        return false;
+        $this->logger->addDebug($spec." file:".$specFile);
+        return $specFile;
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
@@ -191,6 +171,7 @@ class PhpSpecPlugin extends Plugin
         }
 
         $this->suites = $suites = $config['suites'];
+
         foreach($suites as $name=>$definition){
             $source = 'src';
             if(isset($definition['src'])){
@@ -199,6 +180,7 @@ class PhpSpecPlugin extends Plugin
             elseif(isset($definition['spec_path'])){
                 $source = $definition['spec_path'];
             }
+
             $pattern = '#^'.str_replace('/','\/',$source).'(.+)\.php$#';
             $watcher = new Watcher($this->container);
             $watcher->setContainer($this->container);
@@ -206,6 +188,7 @@ class PhpSpecPlugin extends Plugin
                 'pattern' => $pattern,
                 'tags' => $name
             );
+
             $watcher->setOptions($options);
             $message = 'Imported suite '.$name;
             $this->logger->addDebug($message,$options);

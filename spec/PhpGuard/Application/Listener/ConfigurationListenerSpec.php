@@ -6,13 +6,14 @@ use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
-use \PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Listen\Adapter\AdapterInterface;
 use PhpGuard\Listen\Listener;
+use PhpGuard\Application\Event\GenericEvent;
+
 use Prophecy\Argument;
-use Symfony\Component\EventDispatcher\GenericEvent;
 
 class ConfigurationListenerSpec extends ObjectBehavior
 {
@@ -22,7 +23,8 @@ class ConfigurationListenerSpec extends ObjectBehavior
         AdapterInterface $adapter,
         Listener $listener,
         ConsoleHandler $handler,
-        Logger $logger
+        Logger $logger,
+        GenericEvent $event
     )
     {
 
@@ -44,6 +46,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
         //$logger = new Logger('PhpGuard');
         $container->get('logger')
             ->willReturn($logger);
+        $event->getContainer()->willReturn($container);
 
         $this->setContainer($container);
     }
@@ -65,38 +68,15 @@ class ConfigurationListenerSpec extends ObjectBehavior
 
     function it_should_pre_load_configuration_properly(
         GenericEvent $event,
+        ContainerInterface $container,
         PhpGuard $guard
     )
     {
-        $event->getSubject()->willReturn($guard);
+        $container->get('phpguard')->willReturn($guard);
 
-        $guard->loadPlugins()
-            ->shouldBeCalled();
         $guard->setOptions(array())
             ->shouldBeCalled();
         $this->preLoad($event);
-    }
-
-    function its_postLoad_should_configure_listen(
-        ContainerInterface $container,
-        AdapterInterface $adapter,
-        Listener $listener
-    )
-    {
-        // listen specs
-        $container->get('listen.listener')
-            ->shouldBeCalled()
-            ->willReturn($listener)
-        ;
-        $container->get('listen.adapter')
-            ->shouldBeCalled()
-            ->willReturn($adapter)
-        ;
-
-        $listener->setAdapter($adapter)
-            ->shouldBeCalled();
-
-        $this->postLoad();
     }
 
     function it_postLoad_should_configure_only_active_plugin(
