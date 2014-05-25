@@ -18,8 +18,10 @@ use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Container\ContainerInterface;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -33,10 +35,15 @@ class Application extends BaseApplication
      */
     private $container;
 
-    public function __construct()
+    public function __construct(ContainerInterface $container = null)
     {
         parent::__construct('phpguard',PhpGuard::VERSION);
-        $this->setupContainer(new Container());
+
+        if(is_null($container)){
+            $container = new Container();
+        }
+        $this->setupContainer($container);
+        $this->container = $container;
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)
@@ -44,11 +51,9 @@ class Application extends BaseApplication
         $container = $this->container;
         $container->set('ui.input',$input);
         $container->set('ui.output',$output);
-        $container->get('logger.handler')->setOutput($output);
 
         $event = new GenericEvent($container);
         $container->get('dispatcher')->dispatch(ApplicationEvents::initialize,$event);
-
 
         foreach ($container->getByPrefix('commands') as $command) {
             $this->add($command);
@@ -63,15 +68,12 @@ class Application extends BaseApplication
         }
 
         $command = $this->getCommandName($input);
-        if($command == '' ){
-            $command = 'start';
-            /* @var Shell $shell */
-            //$shell = $container->get('ui.shell');
-            //if(!$shell->isRunning()){
-            //    $shell->start();
-            //}
-            //return 0;
+        if(!$command){
+            $input = new StringInput('start');
+        }else{
+            $container->get('logger')->addCommon($command);
         }
+
         return parent::doRun($input, $output);
     }
 
@@ -80,6 +82,7 @@ class Application extends BaseApplication
         parent::configureIO($input, $output);
         $formatter = $output->getFormatter();
         $formatter->setStyle('fail',new OutputFormatterStyle('red'));
+        $formatter->setStyle('highlight',new OutputFormatterStyle('blue'));
     }
 
     public function setContainer(ContainerInterface $container)
@@ -119,7 +122,7 @@ class Application extends BaseApplication
         return $definition;
     }
 
-    public function setupContainer($container)
+    public function setupContainer(ContainerInterface $container)
     {
         $container->set('ui.application',$this);
         $container->setShared('ui.shell',function($c){
@@ -137,5 +140,14 @@ class Application extends BaseApplication
         $container->set('phpguard',$phpGuard);
         $this->setDispatcher($container->get('dispatcher'));
         $this->container = $container;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function exitShell()
+    {
+        $this->container->get('phpguard')->stop();
+        exit(0);
     }
 }

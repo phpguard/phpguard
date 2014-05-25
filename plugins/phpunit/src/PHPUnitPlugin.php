@@ -11,6 +11,7 @@
 
 namespace PhpGuard\Plugins\PHPUnit;
 
+use PhpGuard\Application\Event\CommandEvent;
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
@@ -60,34 +61,39 @@ class PHPUnitPlugin extends Plugin
         $runner = $this->createRunner('phpunit',$arguments);
         $return = $runner->run();
         if(!$return){
-            $this->logger->addFail('All tests failed');
+            return array(new CommandEvent($this,CommandEvent::FAILED,'Running All Failed'));
         }else{
-            $this->logger->addSuccess('All tests success');
+            return array(new CommandEvent($this,CommandEvent::SUCCEED,'Running All Success'));
         }
     }
 
     public function run(array $paths = array())
     {
         $success = true;
+        $results = array();
         foreach($paths as $path){
             $arguments = $this->buildArguments();
             $arguments[] = $path;
             $runner = $this->createRunner('phpunit',$arguments);
             $return = $runner->run();
+
             if(!$return){
                 $success = false;
+                $results[] = new CommandEvent($this,CommandEvent::FAILED,'Running Failed for file: <highlight>'.$path->getRelativePathname().'</highlight>');
+            }else{
+                $results[] = new CommandEvent($this,CommandEvent::SUCCEED,'Running Success for file: <highlight>'.$path->getRelativePathname().'</highlight>');
             }
         }
-
         if($success){
-            $this->logger->addSuccess('Test success');
             if($this->options['all_after_pass']){
                 $this->logger->addCommon('Run all tests after pass');
-                $this->runAll();
+                $return = $this->runAll();
+                $results = array_merge($results,$return);
             }
         }else{
-            $this->logger->addFail('Test failed');
+            $results[] = new CommandEvent($this,CommandEvent::FAILED,'Running Failed');
         }
+        return $results;
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)

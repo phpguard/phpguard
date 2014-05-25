@@ -20,5 +20,12 @@ if (is_dir($vendor = __DIR__ . '/../vendor')) {
 }
 
 set_time_limit(0);
-$app = new \PhpGuard\Application\Console\Application();
-$app->run();
+try{
+    $app = new \PhpGuard\Application\Console\Application();
+    $app->setCatchExceptions(true);
+    $exit = $app->run();
+}catch(\Exception $e){
+    $exit = 1;
+    //exit($exit);
+}
+exit($exit);

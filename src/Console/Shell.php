@@ -50,19 +50,12 @@ class Shell implements ShellInterface
     /**
      * @var bool
      */
-    private $running = false;
-
-    /**
-     * @var bool
-     */
     private $initialized = false;
 
     /**
      * @var \PhpGuard\Application\Container\ContainerInterface
      */
-    private $container;
-
-    private $command;
+    protected $container;
 
     /**
      * @param ContainerInterface $container
@@ -80,8 +73,6 @@ class Shell implements ShellInterface
         $this->output = $container->get('ui.output');
         $this->container = $container;
         $this->initialize();
-        $this->application->setAutoExit(false);
-        $this->application->setCatchExceptions(true);
     }
 
     /**
@@ -126,17 +117,6 @@ class Shell implements ShellInterface
     public function showPrompt()
     {
         $this->installReadlineCallback();
-    }
-
-    public function start()
-    {
-        $this->running = true;
-        $this->run();
-    }
-
-    public function stop()
-    {
-        $this->running = false;
     }
 
     public function setOptions(array $options = array())
@@ -200,15 +180,11 @@ class Shell implements ShellInterface
     public function runCommand($command)
     {
         if($command==false){
-            $this->runAll(false);
-            return;
+            $command='all';
         }
         $command = trim($command);
         if($command=='quit'){
             $this->container->get('phpguard')->stop();
-        }
-        elseif(0===strpos($command,'all')){
-            $this->runAll($command);
         }
         else{
             $this->unsetStreamBlocking();
@@ -232,39 +208,6 @@ class Shell implements ShellInterface
         return $this->output->getFormatter()->format("\n".$this->application->getName().'>> ');
     }
 
-    /**
-     * Run all plugins command
-     * @param false|string $command
-     */
-    private function runAll($command)
-    {
-        $plugin = null;
-
-        if(false!==$command){
-            $command = trim($command);
-            if($command!=''){
-                $this->readlineWriteHistory($command);
-            }
-            $plugin = trim(substr($command,4));
-            if($plugin == ''){
-                $plugin=null;
-            }
-        }
-        $this->unsetStreamBlocking();
-        $this->output->writeln('');
-        try{
-            // dispatch run all events
-            $event = new GenericEvent($this->container,array('plugin' => $plugin));
-            $event->setArguments(array('plugin'=>$plugin));
-            $dispatcher = $this->container->get('dispatcher');
-            $dispatcher->dispatch(ApplicationEvents::runAllCommands,$event);
-        }catch(\Exception $e){
-            $this->application->renderException($e,$this->output);
-        }
-        $this->installReadlineCallback();
-        $this->setStreamBlocking();
-
-    }
 
     /**
      * Tries to return autocompletion for the current entered text.

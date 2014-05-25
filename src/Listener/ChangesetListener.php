@@ -27,27 +27,6 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  */
 class ChangesetListener extends ContainerAware implements EventSubscriberInterface
 {
-
-    /**
-     * Returns an array of event names this subscriber wants to listen to.
-     *
-     * The array keys are event names and the value can be:
-     *
-     *  * The method name to call (priority defaults to 0)
-     *  * An array composed of the method name to call and the priority
-     *  * An array of arrays composed of the method names to call and respective
-     *    priorities, or 0 if unset
-     *
-     * For instance:
-     *
-     *  * array('eventName' => 'methodName')
-     *  * array('eventName' => array('methodName', $priority))
-     *  * array('eventName' => array(array('methodName1', $priority), array('methodName2'))
-     *
-     * @return array The event names to listen to
-     *
-     * @api
-     */
     public static function getSubscribedEvents()
     {
         return array(
@@ -90,20 +69,17 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
                         $results = array_merge($results,$result);
                     }
                 }catch(\Exception $e){
-                    $exception = $e;
+                    $results[] = new CommandEvent($plugin,CommandEvent::BROKEN,$e->getMessage(),$e);
                 }
 
                 $dispatcher->dispatch(
                     ApplicationEvents::postRunCommand,
                     $runEvent
                 );
-                if(!is_null($exception)){
-                    throw $exception;
-                }
             }
         }
         $this->renderResults($container,$results);
-        if(count($results) > 0){
+        if(count($results) > 0 || $loggerHandler->isLogged()){
             $container->get('ui.shell')->installReadlineCallback();
         }
     }
@@ -111,8 +87,6 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public function preRunCommand(GenericEvent $event)
     {
         $shell = $this->getShell();
-        $output = $this->container->get('ui.output');
-        $output->writeln("");
         $this->getLogger()->addDebug(
             'Begin executing '.$event->getSubject()->getName()
         );

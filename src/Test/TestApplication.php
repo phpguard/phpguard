@@ -11,9 +11,13 @@
 
 namespace PhpGuard\Application\Test;
 
+use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Console\Application;
-use PhpGuard\Application\Console\Shell;
+use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Container;
+use PhpGuard\Application\Event\GenericEvent;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -24,36 +28,38 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class TestApplication extends Application
 {
-    public function __construct()
+    public function __construct(ContainerInterface $container = null)
     {
-        parent::__construct();
-        $this->setCatchExceptions(true);
+        parent::__construct($container);
         $this->setAutoExit(false);
+        $this->setCatchExceptions(true);
+
+    }
+
+    public function setupContainer(ContainerInterface $container)
+    {
+        parent::setupContainer($container);
+        $container->setShared('tester',function($c){
+            return new ApplicationTester($c->get('ui.application'));
+        });
+        $container->setShared('ui.shell',function($c){
+            return new TestShell($c);
+        });
+    }
+
+    public function boot()
+    {
+        $event = new GenericEvent($this->getContainer());
+        $this->getContainer()->get('dispatcher')
+            ->dispatch(ApplicationEvents::initialize,$event)
+        ;
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $container = $this->getContainer();
-        $container->set('ui.input',$input);
-        $container->set('ui.output',$output);
-        $container->set('ui.shell',new TestShell($this->getContainer()));
-        $container->setParameter('phpguard.use_tty',false);
-
-        // always clear filters
-        $container->setParameter('filter.tags',array());
+        $this->getContainer()->get('logger.handler')->setOutput($output);
         return parent::doRun($input,$output);
     }
 
-    /**
-     * @return Shell
-     */
-    public function getShell()
-    {
-        return $this->getContainer()->get('ui.shell');
-    }
 
-    public function evaluate()
-    {
-        $this->getShell()->evaluate();
-    }
 }

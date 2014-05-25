@@ -24,8 +24,8 @@ use PhpGuard\Application\Spec\ObjectBehavior;
  */
 class TestShell extends Shell
 {
-    const EXIT_SHELL_MESSAGE = 'shell exit';
-    protected $copyContainer;
+    const EXIT_SHELL_MESSAGE = 'Exit PhpGuard. Bye... Bye...';
+
     public function __construct(ContainerInterface $container)
     {
         parent::__construct($container);
@@ -37,20 +37,22 @@ class TestShell extends Shell
         $this->historyFile = $file;
     }
 
-    public function installReadlineCallback()
-    {
-        return;
-    }
-
     public function run()
     {
-        $this->copyContainer->get('ui.output')->write($this->getPrompt());
-        return;
+        return false;
     }
 
     public function exitShell()
     {
         $this->copyContainer->get('logger')
             ->addCommon(self::EXIT_SHELL_MESSAGE);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function installReadlineCallback()
+    {
+        return;
     }
 }

@@ -62,6 +62,13 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         return $dir.DIRECTORY_SEPARATOR.'inspector.dat';
     }
 
+    static public function getErrorFileName()
+    {
+        $dir = sys_get_temp_dir().'/phpguard/cache/plugins/phpspec';
+        @mkdir($dir,0755,true);
+        return $dir.DIRECTORY_SEPARATOR.'error.dat';
+    }
+
     /**
      * Sets a logger instance on the object
      *
@@ -138,27 +145,37 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
     }
 
     /**
-     * @return array
+     * @param   bool $runAll
+     * @return  array
      */
     private function renderResult($runAll=false)
     {
         $plugin = $this->container->get('plugins.phpspec');
+        $prefix = $runAll ? 'Running All':'Running';
+        if(is_file($file=static::getErrorFileName())){
+            $message = $prefix.' is broken with message: '.file_get_contents($file);
+            $event = new CommandEvent($plugin,CommandEvent::BROKEN,$message);
+            return array($event);
+        }
+
         $data = $this->checkResult();
         $results = array();
-
         foreach($data['success'] as $title=>$file)
         {
             if(isset($this->failed[$title])){
                 $this->failed[$title] = $file;
+                unset($this->failed[$title]);
             }
-            if(!$runAll) continue;
-            $message = 'Running: '.$file.' success';
+            if($runAll) continue;
+            $format = 'Running Success For: <highlight>%s</highlight>';
+
+            $message = sprintf($format,$title);
+
             $event = new CommandEvent($plugin,CommandEvent::SUCCEED,$message);
             $results[] = $event;
         }
         foreach($data['failed'] as $title=>$file){
-            $prefix = $runAll ? 'Running All: ':'Running: ';
-            $message = $prefix.$file.' failed';
+            $message = $prefix.': '.$title.' spec failed';
             $event = new CommandEvent($plugin,CommandEvent::FAILED,$message);
             $results[] = $event;
         }
@@ -174,8 +191,14 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
 
         $process = new Process($command);//
         $process->setTty($container->getParameter('phpguard.use_tty'));
-        $process->run(function($type,$output) use($writer){
-            $writer->write($output);
+        $errors = null;
+
+        $process->run(function($type,$output) use($writer,&$errors){
+            if(Process::ERR===$type){
+                $errors .= $output;
+            }else{
+                $writer->write($output);
+            }
         });
         return $process->getExitCode();
     }

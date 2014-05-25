@@ -11,6 +11,7 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Application\Console\Command\RunAllCommand;
 use PhpGuard\Application\Console\Command\StartCommand;
 use PhpGuard\Application\Listener\ApplicationListener;
 use PhpGuard\Application\Log\ConsoleFormatter;
@@ -37,15 +38,16 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 class PhpGuard
 {
     const VERSION = '1.0.0-dev';
+    const EXIT_MESSAGE = 'Exit PhpGuard. <comment>Bye... Bye...</comment>';
 
     /**
      * @var Container
      */
-    private $container;
+    protected $container;
 
-    private $options = array();
+    protected $options = array();
 
-    private $running = true;
+    protected $running = true;
 
     public function __construct()
     {
@@ -75,8 +77,6 @@ class PhpGuard
 
     public function setupServices(ContainerInterface $container)
     {
-        $container = $container;
-
         $container->setShared('config',function(){
             return new Configuration();
         });
@@ -141,9 +141,13 @@ class PhpGuard
 
     public function setupCommands($container)
     {
-        $container->setShared('commands.start',function($c){
+        $container->setShared('commands.start',function(){
             $command = new StartCommand();
             return $command;
+        });
+
+        $container->setShared('commands.run_all',function(){
+            return new RunAllCommand();
         });
     }
 
@@ -197,6 +201,9 @@ class PhpGuard
         $event = new GenericEvent($container);
         $dispatcher->dispatch(ApplicationEvents::started,$event);
 
+        $application = $container->get('ui.application');
+        $application->setAutoExit(false);
+        $application->setCatchExceptions(true);
 
         $shell = $container->get('ui.shell');
         $this->showHeader();
@@ -241,7 +248,6 @@ EOF;
             $this->container->get('listen.listener')->evaluate();
         }catch(\Exception $e){
             $this->container->get('ui.application')->renderException($e,$this->container->get('ui.output'));
-            throw $e;
         }
     }
 
@@ -252,6 +258,9 @@ EOF;
         $dispatcher = $container->get('dispatcher');
         $event = new GenericEvent($container);
         $dispatcher->dispatch(ApplicationEvents::terminated,$event);
+        /*$container->get('ui.output')->writeln('');
+        $container->get('ui.output')->writeln(static::EXIT_MESSAGE);
+        $container->get('ui.output')->writeln('');*/
     }
 
     private function setDefaultOptions(OptionsResolverInterface $resolver)

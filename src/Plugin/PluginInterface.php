@@ -75,7 +75,7 @@ interface PluginInterface extends LoggerAwareInterface
 
     /**
      * @param EvaluateEvent $event
-     * @return void
+     * @return array Matched files
      */
     public function getMatchedFiles(EvaluateEvent $event);
 

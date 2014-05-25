@@ -104,4 +104,12 @@ class PhpGuardSpec extends ObjectBehavior
 
         $this->start();
     }
+
+    function it_should_stop_application(EventDispatcherInterface $dispatcher)
+    {
+        $dispatcher->dispatch(ApplicationEvents::terminated,Argument::any())
+            ->shouldBeCalled();
+
+        $this->stop();
+    }
 }

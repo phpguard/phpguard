@@ -111,5 +111,6 @@ class CommandEvent
         $format = '[%s] %s';
         $message = sprintf($format,$this->plugin->getTitle(),$message);
         $this->message      = $message;
+
     }
 }

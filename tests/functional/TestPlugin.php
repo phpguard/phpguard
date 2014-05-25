@@ -9,9 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Tests;
+namespace PhpGuard\Application\Functional;
 
 
+use PhpGuard\Application\Event\CommandEvent;
 use PhpGuard\Application\Plugin\Plugin;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -47,30 +48,36 @@ class TestPlugin extends Plugin
 
 
     /**
-     * Run all command
-     *
-     * @return void
+     * @return CommandEvent
      */
     public function runAll()
     {
-        $this->logger->addSuccess(self::RUN_ALL_MESSAGE);
+        if($this->throwException){
+            throw new \RuntimeException(self::THROW_MESSAGE);
+        }
+        return new CommandEvent($this,CommandEvent::SUCCEED,self::RUN_ALL_MESSAGE);
     }
 
     /**
      * @param array $paths
      *
-     * @return void
+     * @return array
+     * @throws \RuntimeException
      */
     public function run(array $paths = array())
     {
+        $this->logger->addDebug('Fooo bar');
         if($this->throwException){
             throw new \RuntimeException(self::THROW_MESSAGE);
         }
         $this->runCount++;
-        $this->logger->addSuccess(self::RUN_MESSAGE);
+        $results = array();
         foreach($paths as $path){
-            $this->logger->addSuccess('Modified path: '.$path);
+            $message =  self::RUN_MESSAGE.' Modified path: '.$path;
+            $event = new CommandEvent($this,CommandEvent::SUCCEED,$message);
+            $results[] = $event;
         }
+        return $results;
     }
 
     /**

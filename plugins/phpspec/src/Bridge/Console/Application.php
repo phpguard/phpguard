@@ -11,9 +11,12 @@
 
 namespace PhpGuard\Plugins\PhpSpec\Bridge\Console;
 
-use PhpGuard\Plugins\PhpSpec\Bridge\Loader\ResourceLoader;
+use Monolog\ErrorHandler;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Handler\StreamHandler;
+use PhpGuard\Application\Log\ConsoleFormatter;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Plugins\PhpSpec\Bridge\PhpGuardExtension;
-use PhpGuard\Plugins\PhpSpec\Bridge\Console\RunCommand;
 use PhpGuard\Plugins\PhpSpec\Inspector;
 use PhpSpec\Console\Application as BaseApplication;
 use PhpSpec\Console\Command;
@@ -32,6 +35,13 @@ class Application extends BaseApplication
      * @var Inspector
      */
     protected $inspector;
+
+    public function __construct()
+    {
+        parent::__construct('PhpGuard-Spec');
+        $this->configureErrorHandler();
+    }
+
 
     protected function loadConfigurationFile(ServiceContainer $container)
     {
@@ -63,4 +73,20 @@ class Application extends BaseApplication
         });
     }
 
+    private function configureErrorHandler()
+    {
+        @unlink(Inspector::getErrorFileName());
+        ini_set('display_errors', 0);
+        ini_set('error_log',sys_get_temp_dir().'/phpspec_error.log');
+        $logger = new Logger('PhpSpec');
+
+        $format = $format = "%message% %context%\n";
+        $formatter = new ConsoleFormatter($format);
+
+        $handler = new StreamHandler(Inspector::getErrorFileName(),Logger::ERROR);
+        $handler->setFormatter($formatter);
+        $logger->pushHandler($handler);
+        $errorHandler = new ErrorHandler($logger);
+        $errorHandler->registerFatalHandler();
+    }
 }

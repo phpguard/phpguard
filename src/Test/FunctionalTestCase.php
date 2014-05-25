@@ -11,9 +11,9 @@
 
 namespace PhpGuard\Application\Test;
 
-use PhpGuard\Application\Spec\ObjectBehavior as ob;
+use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\PhpGuard;
 use PHPUnit_Framework_TestCase;
-use Symfony\Component\Console\Tester\ApplicationTester;
 
 /**
  * Class FunctionalTestCase
@@ -23,53 +23,96 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  */
 abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var ContainerInterface
+     */
+    static $container;
+
     static $tmpDir;
+
     static $cwd;
-
-    /**
-     * @var TestApplication
-     */
-    static $app;
-
-    /**
-     * @var ApplicationTester
-     */
-    static $tester;
 
     public static function setUpBeforeClass()
     {
-        parent::setUpBeforeClass();
-        if(!is_dir(self::$tmpDir)){
-            self::$tmpDir = ob::$tmpDir;
+        static::createApplication();
+        static::$tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpguard');
+        static::mkdir(static::$tmpDir);
+        if(is_null(static::$cwd)){
+            static::$cwd = getcwd();
         }
-        if(!is_dir(self::$cwd)){
-            self::$cwd = getcwd();
-        }
-        ob::mkdir(self::$tmpDir);
+        chdir(static::$tmpDir);
     }
 
     public static function tearDownAfterClass()
     {
         parent::tearDownAfterClass();
-        chdir(self::$cwd);
-        ob::cleanDir(self::$tmpDir);
+        static::cleanDir(static::$tmpDir);
+        chdir(static::$cwd);
     }
+
+
+    static public function mkdir($dir)
+    {
+        @mkdir($dir,0755,true);
+    }
+
+    /**
+     * @param string $dir
+     */
+    static public function cleanDir($dir)
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $flags = \FilesystemIterator::SKIP_DOTS;
+        $iterator = new \RecursiveDirectoryIterator($dir, $flags);
+        $iterator = new \RecursiveIteratorIterator(
+            $iterator, \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $path) {
+            if ($path->isDir()) {
+                @rmdir((string) $path);
+            } else {
+                @unlink((string) $path);
+            }
+        }
+
+        @rmdir($dir);
+    }
+
 
     static public function createApplication()
     {
         $app = new TestApplication();
-        static::$app = $app;
-        static::$tester = new ApplicationTester(self::$app);
+        static::$container = $app->getContainer();
     }
 
+    protected function evaluate()
+    {
+        static::$container->get('listen.listener')->evaluate();
+    }
+
+    /**
+     * @return PhpGuard
+     */
+    protected function getPhpGuard()
+    {
+        return static::$container->get('phpguard');
+    }
+
+    /**
+     * @return TestShell
+     */
     protected function getShell()
     {
-        return static::$app->getShell();
+        return static::$container->get('ui.shell');
     }
 
     protected function getDisplay()
     {
-        return static::$tester->getDisplay(true);
+        return $this->getTester()->getDisplay();
     }
 
     /**
@@ -77,14 +120,21 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
      */
     public function getApplication()
     {
-        return static::$app;
+        return static::$container->get('ui.application');
     }
 
     /**
-     * @return  \Symfony\Component\Console\Tester\ApplicationTester
+     * @return  ApplicationTester
      */
-    protected function getApplicationTester()
+    protected function getTester()
     {
-        return static::$tester;
+        return static::$container->get('tester');
+    }
+
+    protected function assertDisplayContains($expected,$message=null)
+    {
+
+        $display = $this->getDisplay();
+        $this->assertContains($expected,$display,$message);
     }
 } 

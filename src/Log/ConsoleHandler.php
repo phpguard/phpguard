@@ -146,7 +146,7 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
      */
     public function onTerminate(ConsoleTerminateEvent $event)
     {
-        $this->close();
+        //$this->close();
     }
 
     /**
@@ -155,8 +155,8 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
     public static function getSubscribedEvents()
     {
         return array(
-            ConsoleEvents::COMMAND => 'onCommand',
-            ConsoleEvents::TERMINATE => 'onTerminate'
+            //ConsoleEvents::COMMAND => 'onCommand',
+            //ConsoleEvents::TERMINATE => 'onTerminate'
         );
     }
 
@@ -167,6 +167,7 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
     {
         $formatted = (string)$record['formatted'];
         $formatted = str_replace('[COMMON]','',$formatted);
+        $formatted = str_replace('[Main][SUCCESS] ','[Main]',$formatted);
         $formatted = str_replace('[] []','',$formatted);
         $formatted = trim($formatted)."\n";
 
