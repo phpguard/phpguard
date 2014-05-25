@@ -87,6 +87,7 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     {
         $app = new TestApplication();
         static::$container = $app->getContainer();
+        static::$container->setParameter('phpguard.use_tty',false);
     }
 
     protected function evaluate()
@@ -133,8 +134,14 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
 
     protected function assertDisplayContains($expected,$message=null)
     {
-
         $display = $this->getDisplay();
         $this->assertContains($expected,$display,$message);
+    }
+
+    protected function assertNotDisplayContains($expected,$message=null)
+    {
+
+        $display = $this->getDisplay();
+        $this->assertNotContains($expected,$display,$message);
     }
 } 

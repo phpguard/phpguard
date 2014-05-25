@@ -130,7 +130,7 @@ class Shell implements ShellInterface
             $this->container->get('listen.listener')->evaluate();
         }
         catch(\Exception $e){
-            $this->container->get('ui.application')->renderException($e);
+            $this->container->get('ui.application')->renderException($e,$this->output);
         }
     }
 

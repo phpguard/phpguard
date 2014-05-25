@@ -26,6 +26,10 @@ class ApplicationTester
     private $output;
     private $statusCode;
 
+    private $decorated;
+
+    private $verbosity;
+
     /**
      * Constructor.
      *
@@ -57,7 +61,8 @@ class ApplicationTester
             $this->input->setInteractive($options['interactive']);
         }
 
-        $this->output = new StreamOutput(fopen('php://memory', 'w', false));
+        $this->resetDisplay();
+
         if (isset($options['decorated'])) {
             $this->output->setDecorated($options['decorated']);
         }
@@ -66,6 +71,11 @@ class ApplicationTester
         }
 
         return $this->statusCode = $this->application->run($this->input, $this->output);
+    }
+
+    public function resetDisplay()
+    {
+        $this->output = new StreamOutput(fopen('php://memory', 'w', false));
     }
 
     /**

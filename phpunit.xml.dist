@@ -16,8 +16,8 @@
         </testsuite>
         <testsuite name="PhpGuard Application Functional">
             <directory>./tests/functional</directory>
-            <directory>./plugins/phpspec/tests</directory>
-            <directory>./plugins/phpunit/tests</directory>
+            <directory>./plugins/phpspec/functional</directory>
+            <directory>./plugins/phpunit/functional</directory>
         </testsuite>
     </testsuites>
 
@@ -28,8 +28,8 @@
             <directory>./plugins/phpunit/src</directory>
             <exclude>
                 <directory>./tests</directory>
-                <directory>./plugins/phpspec/tests</directory>
-                <directory>./plugins/phpunit/tests</directory>
+                <directory>./plugins/phpspec/functional</directory>
+                <directory>./plugins/phpunit/functional</directory>
             </exclude>
         </whitelist>
     </filter>

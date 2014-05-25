@@ -96,15 +96,19 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
     {
         $command = $this->cmdRunAll;
         if($this->options['keep_failed']){
+
             $files = array();
-            foreach($this->failed as $failed){
+
+            foreach($this->failed as $failed)
+            {
                 $file = getcwd().DIRECTORY_SEPARATOR.$failed;
+                // spec file should be deleted
                 if(!is_file($file)){
-                    // spec file should be deleted
                     continue;
                 }
                 $files[] = $failed;
             }
+
             if(!empty($files)){
                 $command = $this->cmdRun;
                 $specFiles = implode(',',$files);
@@ -207,7 +211,10 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
     {
         $file = $this->getCacheFileName();
         if(!is_file($file)){
-            return;
+            return array(
+                'failed' => array(),
+                'success' => array(),
+            );
         }
         clearstatcache(true,$file);
         $contents = file_get_contents($file);

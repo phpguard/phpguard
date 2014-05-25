@@ -9,7 +9,8 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Plugins\PhpSpec\Tests;
+namespace PhpGuard\Plugins\PhpSpec\Functional;
+use PhpGuard\Plugins\PhpSpec\Inspector;
 
 /**
  * Class PhpSpecPluginTest
@@ -28,28 +29,27 @@ class PhpSpecPluginTest extends TestCase
      */
     public function testShouldRunSpecs($fileName,$className,$tags=null,$assertNot=false)
     {
-        $args = array('-vvv'=>'');
+        $args = '-vvv';
         if(!is_null($tags)){
-            static::createApplication();
-            $args['--tags']=$tags;
+            $args .= ' --tags='.$tags;
         }
-        self::$tester->run($args);
+        //static::createApplication();
+        $this->getTester()->run($args);
 
         $file = self::$tmpDir.DIRECTORY_SEPARATOR.$fileName;
 
         $exp = explode("\\",$className);
         $namespace = $exp[0];
         $class = $exp[1];
-        $this->getShell()->evaluate(true);
         file_put_contents($file,$this->getClassContent($namespace,$class));
-        $this->getShell()->evaluate(true);
+        $this->evaluate();
         $display = $this->getDisplay(true);
         if($assertNot){
             $this->assertNotContains($fileName,$display);
-            //$this->assertNotContains($className,$display);
+            ///$this->assertNotContains($className,$display);
         }else{
-            $this->assertContains($fileName,$display);
-            //$this->assertContains($className,$display);
+            $this->assertDisplayContains($fileName);
+            ///$this->assertContains($className,$display);
         }
     }
 
@@ -75,7 +75,8 @@ class PhpSpecPluginTest extends TestCase
      */
     public function testShouldRunFromSpecFile($specFile,$className)
     {
-        self::$tester->run(array('-vvv'=>''));
+        static::createApplication();
+        $this->getTester()->run('-vvv');
         $file = self::$tmpDir.DIRECTORY_SEPARATOR.$specFile;
         $exp = explode('\\',$className);
         $class = array_pop($exp).'Spec';
@@ -101,26 +102,27 @@ class PhpSpecPluginTest extends TestCase
 
     public function testShouldLogFailedMessage()
     {
-        $file = self::$tmpDir.'/spec/PhpSpecTest1/NotExistSpec.php';
+        $file = static::$tmpDir.'/spec/PhpSpecTest1/NotExistSpec.php';
         $content = $this->getSpecContent('spec\\PhpSpecTest1','NotExistSpec');
         file_put_contents($file,$content);
-        self::getShell()->evaluate();
+        $this->evaluate();
         $display = $this->getDisplay();
         $this->assertContains('failed',$display);
 
-        self::$tester->run(array('-vvv'=>''));
-        self::getShell()->runCommand('all phpspec');
-        $display = $this->getDisplay();
-        $this->assertContains('broken',$display);
+        $this->getTester()->run('all phpspec');
+        $this->assertDisplayContains('broken',$display);
     }
 
     public function testShouldNotRunUnexistentSpecFile()
     {
-        $file = self::$tmpDir.'/src/PhpSpecTest1/TestClass2.php';
+        @unlink(Inspector::getCacheFileName());
+        @unlink(Inspector::getErrorFileName());
+        $this->getTester()->run('-vvv');
+
+        $file = static::$tmpDir.'/src/PhpSpecTest1/TestClass2.php';
         file_put_contents($file,$this->getClassContent('PhpSpecTest1','TestClass2'));
-        $this->getShell()->evaluate();
-        $display = $this->getDisplay();
-        $this->assertContains('file not found',$display);
-        $this->assertContains('src/PhpSpecTest1/TestClass2.php',$display);
+        $this->evaluate();
+        $this->assertDisplayContains('file not found');
+        $this->assertDisplayContains('src/PhpSpecTest1/TestClass2.php');
     }
 }

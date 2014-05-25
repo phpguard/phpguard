@@ -12,10 +12,10 @@ namespace PhpGuard\Application\Listener;
  */
 
 use PhpGuard\Application\Configuration\ConfigEvents;
+use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Event\GenericEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
