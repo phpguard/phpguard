@@ -270,10 +270,6 @@ EOF;
     public function stop()
     {
         $this->running = false;
-        $container = $this->container;
-        $dispatcher = $container->get('dispatcher');
-        $event = new GenericEvent($container);
-        $dispatcher->dispatch(ApplicationEvents::terminated,$event);
     }
 
     public function isRunning()

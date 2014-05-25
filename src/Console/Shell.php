@@ -81,25 +81,6 @@ class Shell implements ShellInterface
      */
     public function run()
     {
-        /*stream_set_blocking(STDIN,0);
-        while ($this->running) {
-            $r = array(STDIN);
-            $w = array();
-            $e = array();
-            $n = @stream_select($r,$w,$e,2);
-            try{
-                if ($n && in_array(STDIN, $r)) {
-                    $this->readline();
-                }
-                else{
-                    $this->evaluate();
-                }
-            }catch(\Exception $e){
-                $this->application->renderException($e,$this->output);
-                $this->installReadlineCallback();
-            }
-        }*/
-
         stream_set_blocking(STDIN,0);
 
         $r = array(STDIN);
@@ -184,7 +165,10 @@ class Shell implements ShellInterface
         }
         $command = trim($command);
         if($command=='quit'){
-            $this->container->get('phpguard')->stop();
+            $event = new GenericEvent($this->container);
+            $this->container->get('dispatcher')
+                ->dispatch(ApplicationEvents::terminated,$event)
+            ;
         }
         else{
             $this->unsetStreamBlocking();

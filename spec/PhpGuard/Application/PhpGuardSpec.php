@@ -7,16 +7,13 @@ use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Console\ShellInterface;
 use \PhpGuard\Application\Container\ContainerInterface;
-use PhpGuard\Application\Event\GenericEvent;
 use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
-use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Listen\Listener;
 use Prophecy\Argument;
-use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -144,9 +141,7 @@ class PhpGuardSpec extends ObjectBehavior
 
     function it_should_stop_application(EventDispatcherInterface $dispatcher)
     {
-        $dispatcher->dispatch(ApplicationEvents::terminated,Argument::any())
-            ->shouldBeCalled();
-
         $this->stop();
+        $this->shouldNotBeRunning();
     }
 }

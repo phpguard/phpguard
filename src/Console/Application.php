@@ -145,9 +145,12 @@ class Application extends BaseApplication
     /**
      * @codeCoverageIgnore
      */
-    public function exitShell()
+    public function exitApplication()
     {
-        $this->container->get('phpguard')->stop();
+        $this->container->get('ui.output')->writeln('');
+        $this->container->get('logger')
+            ->addCommon(PhpGuard::EXIT_MESSAGE);
+        $this->container->get('ui.output')->writeln('');
         exit(0);
     }
 }

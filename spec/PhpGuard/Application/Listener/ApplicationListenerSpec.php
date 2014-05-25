@@ -5,9 +5,11 @@ namespace spec\PhpGuard\Application\Listener;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Configuration\Processor;
+use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Event\GenericEvent;
 use PhpGuard\Application\Log\Logger;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Listen\Listener;
 use Prophecy\Argument;
@@ -29,6 +31,8 @@ class ApplicationListenerSpec extends ObjectBehavior
     function it_should_listen_to_application_events()
     {
         $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::initialize);
+        $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::terminated);
+        $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::started);
     }
 
     function it_should_not_initialize_application_if_application_have_initialized(
@@ -88,5 +92,28 @@ class ApplicationListenerSpec extends ObjectBehavior
             ->shouldBeCalled();
 
         $this->started($event);
+    }
+
+    function it_should_terminate_application(
+        GenericEvent $event,
+        ContainerInterface $container,
+        Application $application,
+        PhpGuard $phpGuard
+    )
+    {
+        $container->get('ui.application')
+            ->shouldBeCalled()
+            ->willReturn($application);
+        $container->get('phpguard')
+            ->shouldBeCalled()
+            ->willReturn($phpGuard)
+        ;
+        $application
+            ->exitApplication()
+            ->shouldBeCalled();
+        $phpGuard->stop()
+            ->shouldBeCalled()
+        ;
+        $this->terminated($event);
     }
 }

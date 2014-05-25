@@ -2,6 +2,7 @@
 
 namespace spec\PhpGuard\Application\Console;
 
+use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Spec\ObjectBehavior;
@@ -9,6 +10,7 @@ use PhpSpec\Console\Application;
 use Prophecy\Argument;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ShellSpec extends ObjectBehavior
 {
@@ -17,12 +19,14 @@ class ShellSpec extends ObjectBehavior
         PhpGuard $phpGuard,
         Application $application,
         OutputInterface $output,
-        OutputFormatterInterface $outputFormatter
+        OutputFormatterInterface $outputFormatter,
+        EventDispatcherInterface $dispatcher
     )
     {
         $container->get('phpguard')->willReturn($phpGuard);
         $container->get('ui.application')->willReturn($application);
         $container->get('ui.output')->willReturn($output);
+        $container->get('dispatcher')->willReturn($dispatcher);
         $output->getFormatter()->willreturn($outputFormatter);
         $this->beConstructedWith($container);
     }
@@ -40,9 +44,12 @@ class ShellSpec extends ObjectBehavior
         $this->runCommand('help');
     }
 
-    function it_should_quit_application($phpGuard)
+    function it_should_quit_application(
+        EventDispatcherInterface $dispatcher
+    )
     {
-        $phpGuard->stop()->shouldBeCalled();
+        $dispatcher->dispatch(ApplicationEvents::terminated,Argument::any())
+            ->shouldBeCalled();
         $this->runCommand('quit');
     }
 }
