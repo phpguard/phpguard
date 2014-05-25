@@ -3,7 +3,8 @@
 namespace spec\PhpGuard\Application\Listener;
 
 use PhpGuard\Application\ApplicationEvents;
-use PhpGuard\Application\Configuration;
+use PhpGuard\Application\Configuration\ConfigEvents;
+use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Event\GenericEvent;
 use PhpGuard\Application\Log\Logger;
@@ -48,38 +49,17 @@ class ApplicationListenerSpec extends ObjectBehavior
 
     function it_should_initialize_application(
         GenericEvent $event,
-        ContainerInterface $container,
-        Configuration $config,
-        EventDispatcherInterface $dispatcher
+        EventDispatcherInterface $dispatcher,
+        ContainerInterface $container
     )
     {
-        $configFile = getcwd().'/phpguard.yml.dist';
-
+        $dispatcher->dispatch(ConfigEvents::LOAD,Argument::any())
+            ->shouldBeCalled();
         $container->getParameter('app.initialized',false)
             ->shouldBeCalled()
             ->willReturn(false);
-
-        $container->get('config')
-            ->shouldBeCalled()
-            ->willReturn($config)
-        ;
-
-        $container->getParameter('config.file')
-            ->shouldBeCalled()
-            ->willReturn($configFile)
-        ;
-
         $container->setParameter('app.initialized',true)
             ->shouldBeCalled();
-
-        $dispatcher->dispatch(ApplicationEvents::preLoadConfig,$event)
-            ->shouldBeCalled();
-        $config->compileFile($configFile)
-            ->shouldBeCalled()
-        ;
-        $dispatcher->dispatch(ApplicationEvents::postLoadConfig,$event)
-            ->shouldBeCalled();
-
         $this->initialize($event,'initialize',$dispatcher);
     }
 

@@ -11,6 +11,8 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Application\Configuration\ConfigEvents;
+use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Console\Command\RunAllCommand;
 use PhpGuard\Application\Console\Command\StartCommand;
 use PhpGuard\Application\Listener\ApplicationListener;
@@ -78,7 +80,7 @@ class PhpGuard
     public function setupServices(ContainerInterface $container)
     {
         $container->setShared('config',function(){
-            return new Configuration();
+            return new Processor();
         });
 
         $container->setShared('dispatcher', function ($c) {
@@ -160,7 +162,6 @@ class PhpGuard
         $container->setShared('plugins.phpunit',function(){
             return new PHPUnitPlugin();
         });
-
         $container->setShared('linters.php',function($c){
             $linter = new Linter\PhpLinter();
             $linter->setContainer($c);
@@ -171,14 +172,29 @@ class PhpGuard
     public function listen(ChangeSetEvent $event)
     {
         $files = $event->getFiles();
-        if(!empty($files)){
-            $dispatcher = $this->container->get('dispatcher');
-            $evaluateEvent = new EvaluateEvent($event);
-            $dispatcher->dispatch(
-                ApplicationEvents::postEvaluate,
-                $evaluateEvent
-            );
+        if(empty($files)){
+            return;
         }
+
+        $container = $this->container;
+        $dispatcher = $container->get('dispatcher');
+        $configFile = $container->getParameter('config.file');
+
+        if(in_array($configFile,$files)){
+            $container->get('logger.handler')->reset();
+            $container->get('logger')->addCommon("Reloading Configuration");
+            $reloadEvent = new GenericEvent($container);
+            $dispatcher->dispatch(ConfigEvents::RELOAD,$reloadEvent);
+            $container->get('logger')->addCommon('Configuration Reloaded');
+            $container->get('ui.shell')->showPrompt();
+        }
+
+
+        $evaluateEvent = new EvaluateEvent($event);
+        $dispatcher->dispatch(
+            ApplicationEvents::postEvaluate,
+            $evaluateEvent
+        );
     }
 
     public function setOptions(array $options=array())
@@ -258,9 +274,11 @@ EOF;
         $dispatcher = $container->get('dispatcher');
         $event = new GenericEvent($container);
         $dispatcher->dispatch(ApplicationEvents::terminated,$event);
-        /*$container->get('ui.output')->writeln('');
-        $container->get('ui.output')->writeln(static::EXIT_MESSAGE);
-        $container->get('ui.output')->writeln('');*/
+    }
+
+    public function isRunning()
+    {
+        return $this->running;
     }
 
     private function setDefaultOptions(OptionsResolverInterface $resolver)

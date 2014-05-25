@@ -9,24 +9,25 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application;
+namespace PhpGuard\Application\Configuration;
 
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Plugin\PluginInterface;
+use PhpGuard\Application\Watcher;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Class Configuration
+ * Class Processor
  *
  */
-class Configuration extends ContainerAware
+class Processor extends ContainerAware
 {
     public function compileFile($file)
     {
         if(!is_file($file)){
             throw new \RuntimeException(sprintf(
-                'Configuration file: "%s" not exist.',
+                'Processor file: "%s" not exist.',
                 $file
             ));
         }

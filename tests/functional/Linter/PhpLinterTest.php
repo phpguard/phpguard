@@ -13,13 +13,13 @@ namespace PhpGuard\Application\Tests\Linter;
 
 
 use PhpGuard\Application\Linter\PhpLinter;
-use PhpGuard\Application\Tests\TestCase;
+use PhpGuard\Application\Functional\TestCase;
 
 class PhpLinterTest extends TestCase
 {
     public function testShouldCheckPhpSyntax()
     {
-        self::$tester->run(array('-vvv'=>''));
+        $this->getTester()->run('-vvv');
 
         $linter = new PhpLinter();
         $file = self::$tmpDir.'/src/unchecked.php';

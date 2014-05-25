@@ -18,7 +18,6 @@ use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Listen\Util\PathUtil;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -28,9 +27,14 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 abstract class Plugin extends ContainerAware implements PluginInterface
 {
-
+    /**
+     * @var array
+     */
     protected $watchers = array();
 
+    /**
+     * @var array
+     */
     protected $options = array();
 
     /**
@@ -43,16 +47,36 @@ abstract class Plugin extends ContainerAware implements PluginInterface
      */
     protected $active = false;
 
+    /**
+     * @return void
+     */
     public function configure(){}
 
+    /**
+     * @param Watcher $watcher
+     */
     public function addWatcher(Watcher $watcher)
     {
         $this->watchers[] = $watcher;
     }
 
+    /**
+     * @return array
+     * @author Anthonius Munthi <me@itstoni.com>
+     */
     public function getWatchers()
     {
         return $this->watchers;
+    }
+
+    /**
+     * Reset watchers into an empty array
+     * return void
+     */
+    public function reload()
+    {
+        $this->watchers = array();
+        $this->active = false;
     }
 
     /**
@@ -61,9 +85,14 @@ abstract class Plugin extends ContainerAware implements PluginInterface
      */
     public function getMatchedFiles(EvaluateEvent $event)
     {
+        $container = $this->container;
+
         $filtered = array();
         $files = $event->getFiles();
         foreach($files as $file){
+            if($file==$container->getParameter('config.file')){
+                continue;
+            }
             if($matched=$this->matchFile($file)){
                 if(!$matched instanceof SplFileInfo){
                     $matched = PathUtil::createSplFileInfo(getcwd(),$matched);

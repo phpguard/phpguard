@@ -24,6 +24,7 @@ use PhpSpec\Extension;
 use PhpSpec\Formatter;
 use PhpSpec\Loader;
 use PhpSpec\ServiceContainer;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Class Application
@@ -35,6 +36,16 @@ class Application extends BaseApplication
      * @var Inspector
      */
     protected $inspector;
+
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
+     * @var ErrorHandler
+     */
+    protected $errorHandler;
 
     public function __construct()
     {
@@ -73,6 +84,21 @@ class Application extends BaseApplication
         });
     }
 
+    /**
+     * @return Logger
+     */
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    public function renderException($e, $output)
+    {
+        // this usually because class is moved
+        $this->errorHandler->handleException($e);
+        parent::renderException($e, $output);
+    }
+
     private function configureErrorHandler()
     {
         @unlink(Inspector::getErrorFileName());
@@ -87,6 +113,9 @@ class Application extends BaseApplication
         $handler->setFormatter($formatter);
         $logger->pushHandler($handler);
         $errorHandler = new ErrorHandler($logger);
+
         $errorHandler->registerFatalHandler();
+        $this->errorHandler = $errorHandler;
+        $this->logger = $logger;
     }
 }

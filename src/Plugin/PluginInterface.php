@@ -83,4 +83,10 @@ interface PluginInterface extends LoggerAwareInterface
      * @return void
      */
     public function configure();
+
+    /**
+     * Reset watchers into an empty array
+     * @return void
+     */
+    public function reload();
 }

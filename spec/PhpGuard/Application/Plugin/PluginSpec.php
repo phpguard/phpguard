@@ -51,7 +51,14 @@ class PluginSpec extends ObjectBehavior
         $this->addWatcher($watcher);
         $this->setContainer($container);
 
-        $watcher->hasTag(null)
+        $container->getParameter('config.file',Argument::any())
+            ->willReturn('config_file')
+        ;
+        $container->getParameter('filter.tags',Argument::any())
+            ->willReturn(array())
+        ;
+
+        $watcher->hasTag(Argument::any())
             ->willReturn(true);
         $watcher->lint(Argument::any())
             ->willReturn(true);
@@ -168,6 +175,21 @@ class PluginSpec extends ObjectBehavior
 
         $event->getFiles()
             ->willReturn(array(__FILE__));
+
+        $this->getMatchedFiles($event);
+    }
+
+    function its_getMatchedFiles_should_not_process_configuration_file(
+        EvaluateEvent $event,
+        ContainerInterface $container,
+        Watcher $watcher
+    )
+    {
+        $watcher->matchFile('config_file')
+            ->shouldNotBeCalled();
+        $event->getFiles()
+            ->willReturn(array('config_file'))
+        ;
 
         $this->getMatchedFiles($event);
     }

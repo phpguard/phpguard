@@ -17,9 +17,6 @@ final class ApplicationEvents
     const started          = 'phpguard.started';
     const terminated       = 'phpguard.terminated';
 
-    const preLoadConfig     = 'configPreLoad';
-    const postLoadConfig    = 'configPostLoad';
-
     const preEvaluate       = 'listen.preEvaluate';
     const evaluate          = 'listen.evaluate';
     const postEvaluate      = 'listen.postEvaluate';

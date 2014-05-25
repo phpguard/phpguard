@@ -11,6 +11,7 @@ use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\ApplicationEvents;
+use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Util\PathUtil;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
@@ -51,6 +52,9 @@ class ChangesetListenerSpec extends ObjectBehavior
 
         $container->get('logger.handler')
             ->willReturn($handler);
+
+        $container->getParameter('config.file')
+            ->willReturn('config_file');
 
         $plugin->isActive()->willReturn(true);
         $plugin->getName()->willReturn('some');

@@ -2,6 +2,8 @@
 
 namespace spec\PhpGuard\Application\Listener;
 
+use PhpGuard\Application\Configuration\ConfigEvents;
+use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\PluginInterface;
@@ -14,6 +16,7 @@ use PhpGuard\Listen\Listener;
 use PhpGuard\Application\Event\GenericEvent;
 
 use Prophecy\Argument;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ConfigurationListenerSpec extends ObjectBehavior
 {
@@ -42,8 +45,6 @@ class ConfigurationListenerSpec extends ObjectBehavior
             ->willReturn($adapter);
         $container->get('logger.handler')
             ->willReturn($handler);
-
-        //$logger = new Logger('PhpGuard');
         $container->get('logger')
             ->willReturn($logger);
         $event->getContainer()->willReturn($container);
@@ -58,12 +59,12 @@ class ConfigurationListenerSpec extends ObjectBehavior
 
     function it_should_subscribe_config_preLoad_event()
     {
-        $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::preLoadConfig);
+        $this->getSubscribedEvents()->shouldHaveKey(ConfigEvents::PRELOAD);
     }
 
     function it_should_subscribe_config_postLoad_event()
     {
-        $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::postLoadConfig);
+        $this->getSubscribedEvents()->shouldHaveKey(ConfigEvents::POSTLOAD);
     }
 
     function it_should_pre_load_configuration_properly(
@@ -102,5 +103,67 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $inactive->configure()->shouldNotBeCalled();
 
         $this->postLoad($event);
+    }
+
+    function it_should_load_configuration(
+        GenericEvent $event,
+        ContainerInterface $container,
+        EventDispatcherInterface $dispatcher,
+        Processor $processor
+    )
+    {
+        $configFile = getcwd().'/phpguard.yml.dist';
+
+        $container->get('config')
+            ->shouldBeCalled()
+            ->willReturn($processor)
+        ;
+
+        $container->getParameter('config.file')
+            ->shouldBeCalled()
+            ->willReturn($configFile)
+        ;
+
+        $dispatcher->dispatch(ConfigEvents::PRELOAD,$event)
+            ->shouldBeCalled();
+
+        $processor->compileFile($configFile)
+            ->shouldBeCalled()
+        ;
+
+        $dispatcher->dispatch(ConfigEvents::POSTLOAD,$event)
+            ->shouldBeCalled();
+        $this->load($event,ConfigEvents::LOAD,$dispatcher);
+    }
+
+    function it_should_reload_configuration(
+        GenericEvent $event,
+        ContainerInterface $container,
+        EventDispatcherInterface $dispatcher,
+        Processor $processor
+    )
+    {
+        $configFile = getcwd().'/phpguard.yml.dist';
+
+        $container->get('config')
+            ->shouldBeCalled()
+            ->willReturn($processor)
+        ;
+
+        $container->getParameter('config.file')
+            ->shouldBeCalled()
+            ->willReturn($configFile)
+        ;
+
+        $dispatcher->dispatch(ConfigEvents::PRELOAD,$event)
+            ->shouldBeCalled();
+
+        $processor->compileFile($configFile)
+            ->shouldBeCalled()
+        ;
+
+        $dispatcher->dispatch(ConfigEvents::POSTLOAD,$event)
+            ->shouldBeCalled();
+        $this->reload($event,ConfigEvents::LOAD,$dispatcher);
     }
 }

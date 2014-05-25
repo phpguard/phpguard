@@ -12,7 +12,7 @@
 namespace PhpGuard\Application\Tests;
 
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\Spec\ObjectBehavior as ob;
+use PhpGuard\Application\Functional\TestCase;
 
 class PhpGuardTest extends TestCase
 {
@@ -38,7 +38,8 @@ class PhpGuardTest extends TestCase
 
     public function testShouldSetupListenProperly()
     {
-        $listener = self::$app->getContainer()->get('listen.listener');
+        $this->getTester()->run('-vvv');
+        $listener = static::$container->get('listen.listener');
         $this->assertInstanceOf('PhpGuard\\Listen\\Listener',$listener);
         $this->assertEquals(doubleval(0.01*1000000),$listener->getLatency());
         $this->assertContains('foo',$listener->getIgnores());
@@ -46,21 +47,21 @@ class PhpGuardTest extends TestCase
 
     public function testShouldLoadPlugins()
     {
-        $container = self::$app->getContainer();
+        $container = static::$container;
         $this->assertTrue($container->get('plugins.test')->isActive());
     }
 
     public function testShouldMonitorBasedOnTags()
     {
 
-        ob::cleanDir($dirTag1 = self::$tmpDir.'/tag1');
-        ob::cleanDir($dirTag2 = self::$tmpDir.'/tag2');
+        static::cleanDir($dirTag1 = self::$tmpDir.'/tag1');
+        static::cleanDir($dirTag2 = self::$tmpDir.'/tag2');
 
-        ob::mkdir($dirTag1);
-        ob::mkdir($dirTag2);
+        static::mkdir($dirTag1);
+        static::mkdir($dirTag2);
         $ftag1 = $dirTag1.'/test1.php';
         $ftag2 = $dirTag2.'/test1.php';
-        static::$tester->run(array('--tags'=>'tag1'));
+        $this->getTester()->run('--tags=tag1');
         file_put_contents($ftag1,'Hello World');
         file_put_contents($ftag2,'Hello WOrld');
         static::getShell()->evaluate();
@@ -68,7 +69,7 @@ class PhpGuardTest extends TestCase
         $this->assertNotContains($ftag2,$this->getDisplay());
 
 
-        static::$tester->run(array('--tags'=>'tag2'));
+        $this->getTester()->run('--tags=tag2');
         touch($ftag1 = $dirTag1.'/test2.php');
         touch($ftag2 = $dirTag2.'/test2.php');
 
@@ -76,16 +77,14 @@ class PhpGuardTest extends TestCase
         $this->assertContains($ftag2,$this->getDisplay());
         $this->assertNotContains($ftag1,$this->getDisplay());
 
-        static::$tester->run(array('--tags'=>'tag1,tag2'));
+        $this->getTester()->run('--tags=tag1,tag2');
         touch($ftag1 = $dirTag1.'/test3.php');
         touch($ftag2 = $dirTag2.'/test3.php');
         static::getShell()->evaluate();
 
 
         $this->assertContains($ftag2,$this->getDisplay());
-        $this->assertContains($ftag1,$this->getDisplay());//
+        $this->assertContains($ftag1,$this->getDisplay());
     }
-
-
 }
  

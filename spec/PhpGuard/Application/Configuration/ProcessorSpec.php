@@ -1,6 +1,6 @@
 <?php
 
-namespace spec\PhpGuard\Application;
+namespace spec\PhpGuard\Application\Configuration;
 
 use PhpGuard\Application\PhpGuard;
 use \PhpGuard\Application\Container\ContainerInterface;
@@ -8,7 +8,7 @@ use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 
-class ConfigurationSpec extends ObjectBehavior
+class ProcessorSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,PhpGuard $guard, PluginInterface $plugin)
     {
@@ -22,7 +22,7 @@ class ConfigurationSpec extends ObjectBehavior
 
     function it_is_initializable()
     {
-        $this->shouldHaveType('PhpGuard\Application\Configuration');
+        $this->shouldHaveType('PhpGuard\Application\Configuration\Processor');
     }
 
     function it_throws_when_configuration_file_not_exist()

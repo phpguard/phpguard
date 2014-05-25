@@ -26,7 +26,7 @@ And add this line to your `php.ini` file:
 extension=inotify.so
 ```
 
-# PhpSpec Configuration
+# PhpSpec Processor
 
 ```yaml
 # /path/to/project/phpguard.yml
@@ -45,7 +45,7 @@ phpspec:
         - { pattern: "#^spec.*\.php$#" }
 ```
 
-# PHPUnit Configuration
+# PHPUnit Processor
 
 ```yaml
 # /path/to/project/phpguard.yml

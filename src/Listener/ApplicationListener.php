@@ -12,6 +12,7 @@
 namespace PhpGuard\Application\Listener;
 
 use PhpGuard\Application\ApplicationEvents;
+use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Event\GenericEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -36,11 +37,7 @@ class ApplicationListener implements EventSubscriberInterface
         if($container->getParameter('app.initialized',false)){
             return;
         }
-
-        $config = $container->get('config');
-        $dispatcher->dispatch('configPreLoad',$event);
-        $config->compileFile($container->getParameter('config.file'));
-        $dispatcher->dispatch('configPostLoad',$event);
+        $dispatcher->dispatch(ConfigEvents::LOAD,$event);
         $container->setParameter('app.initialized',true);
     }
 

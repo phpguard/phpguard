@@ -2,10 +2,14 @@
 
 namespace spec\PhpGuard\Application;
 
-use PhpGuard\Application\Configuration;
+use PhpGuard\Application\Configuration\ConfigEvents;
+use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Console\ShellInterface;
 use \PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Event\GenericEvent;
+use PhpGuard\Application\Log\ConsoleHandler;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
@@ -25,7 +29,7 @@ class PhpGuardSpec extends ObjectBehavior
         ConsoleOutput $output,
         EventDispatcherInterface $dispatcher,
         ShellInterface $shell,
-        Configuration $configuration,
+        Processor $configuration,
         Application $application,
         Listener $listener
     )
@@ -81,15 +85,47 @@ class PhpGuardSpec extends ObjectBehavior
         $options->shouldHaveKey('latency');
     }
 
-    function it_should_listen_properly(
+    function it_should_evaluate_when_the_file_system_change(
         EventDispatcherInterface $dispatcher,
-        ChangeSetEvent $event
+        ChangeSetEvent $event,
+        ContainerInterface $container
     )
     {
+        $container->getParameter('config.file',Argument::any())
+            ->willReturn('config_file');
+
         $event->getFiles()
             ->willReturn(array('some_file'));
         $dispatcher->dispatch(ApplicationEvents::postEvaluate,Argument::cetera())
             ->shouldBeCalled();
+        $this->listen($event);
+    }
+
+    function it_should_reload_when_configuration_changed(
+        ContainerInterface $container,
+        ChangeSetEvent $event,
+        EventDispatcherInterface $dispatcher,
+        ConsoleHandler $handler,
+        Logger $logger
+    )
+    {
+        $container->getParameter('config.file',Argument::any())
+            ->shouldBeCalled()
+            ->willReturn('phpguard.yml.dist')
+        ;
+
+        $container->get('logger.handler')->willReturn($handler);
+        $container->get('logger')->willReturn($logger);
+
+        $event->getFiles()
+            ->willReturn(array('phpguard.yml.dist'));
+
+        $dispatcher->dispatch(ConfigEvents::RELOAD,Argument::any())
+            ->shouldBeCalled();
+
+        $dispatcher->dispatch(ApplicationEvents::postEvaluate,Argument::any())
+            ->shouldBeCalled();
+
         $this->listen($event);
     }
 
@@ -104,6 +140,7 @@ class PhpGuardSpec extends ObjectBehavior
 
         $this->start();
     }
+
 
     function it_should_stop_application(EventDispatcherInterface $dispatcher)
     {

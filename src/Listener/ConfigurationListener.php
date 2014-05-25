@@ -11,11 +11,13 @@ namespace PhpGuard\Application\Listener;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Event\GenericEvent;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -47,27 +49,37 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     public static function getSubscribedEvents()
     {
         return array(
-            ApplicationEvents::preLoadConfig => 'preLoad',
-            ApplicationEvents::postLoadConfig => 'postLoad',
+            ConfigEvents::PRELOAD => 'preLoad',
+            ConfigEvents::POSTLOAD => 'postLoad',
+            ConfigEvents::RELOAD => 'reload',
+            ConfigEvents::LOAD => 'load',
         );
     }
 
     public function preLoad(GenericEvent $event)
     {
+        $container = $event->getContainer();
         /* @var PhpGuard $guard */
-        $guard = $event->getContainer()->get('phpguard');
+        $guard = $container->get('phpguard');
         $guard->setOptions(array());
 
         $configFile = null;
         if(is_file($file=getcwd().'/phpguard.yml')){
             $configFile = $file;
-        }elseif(is_file($file = getcwd().'/phpguard.yml.dist')){
+        }
+        elseif(is_file($file = getcwd().'/phpguard.yml.dist')){
             $configFile = $file;
         }
+
         if(is_null($configFile)){
             throw new ConfigurationException('Can not find configuration file "phpguard.yml" or "phpguard.yml.dist" in the current directory');
         }
-        $event->getContainer()->setParameter('config.file',$configFile);
+        $container->setParameter('config.file',$configFile);
+
+        $plugins = $container->getByPrefix('plugins');
+        foreach($plugins as $plugin){
+            $plugin->reload();
+        }
     }
 
     public function postLoad()
@@ -77,7 +89,6 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         /* @var \PhpGuard\Application\Log\Logger $logger */
         $container = $this->container;
         $plugins = $container->getByPrefix('plugins');
-        $logger = $container->get('logger');
         foreach($plugins as $plugin){
             if(!$plugin->isActive()){
                 continue;
@@ -97,5 +108,23 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         if(is_null($container->getParameter('phpguard.use_tty',null))){
             $container->setParameter('phpguard.use_tty',true);
         }
+    }
+
+    public function reload(GenericEvent $event,$eventName,EventDispatcherInterface $dispatcher)
+    {
+        $container = $event->getContainer();
+        $config = $container->get('config');
+        $dispatcher->dispatch(ConfigEvents::PRELOAD,$event);
+        $config->compileFile($container->getParameter('config.file'));
+        $dispatcher->dispatch(ConfigEvents::POSTLOAD,$event);
+    }
+
+    public function load(GenericEvent $event,$eventName,EventDispatcherInterface $dispatcher)
+    {
+        $container = $event->getContainer();
+        $config = $container->get('config');
+        $dispatcher->dispatch(ConfigEvents::PRELOAD,$event);
+        $config->compileFile($container->getParameter('config.file'));
+        $dispatcher->dispatch(ConfigEvents::POSTLOAD,$event);
     }
 }
