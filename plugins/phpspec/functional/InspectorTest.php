@@ -18,7 +18,6 @@ use PhpGuard\Plugins\PhpSpec\Inspector;
  * Class InspectorTest
  *
  * @package PhpGuard\Plugins\PhpSpec\Functional
- * @coversDefaultClass PhpGuard\Plugins\PhpSpec\Inspector
  */
 class InspectorTest extends TestCase
 {
@@ -52,14 +51,12 @@ class InspectorTest extends TestCase
         $this->assertDisplayContains('3 passed');
     }
 
-    /**
-     * @covers ::runAll
-     */
     public function testShouldKeepRunningFailedSpec()
     {
+        $this->markTestIncomplete();
         $inspector = $this->inspector;
-        $this->createSpecFile('spec/PhpSpecTest1/FooSpec.php','spec\\PhpSpecTest1','FooSpec');
-        $this->createSpecFile('spec/PhpSpecTest1/BarSpec.php','spec\\PhpSpecTest1','BarSpec');
+        $this->createSpecFile('src/psr0/namespace1/spec/psr0/namespace1/FooSpec.php','spec\\psr0\\namespace1','FooSpec');
+        $this->createSpecFile('src/psr0/namespace1/spec/psr0/namespace1/BarSpec.php','spec\\psr0\\namespace1','BarSpec');
 
         //$this->getTester()->resetDisplay();
 
@@ -74,7 +71,7 @@ class InspectorTest extends TestCase
         $this->assertDisplayContains('Foo');
         $this->assertDisplayContains('Bar');
 
-        unlink(getcwd().'/spec/PhpSpecTest1/BarSpec.php');
+        unlink(getcwd().'/src/psr0/namespace1/spec/psr0/namespace1/BarSpec.php');
         $this->getTester()->run('-vvv');
         $inspector->runAll();
         $this->assertNotDisplayContains('TestClass');
@@ -98,10 +95,11 @@ class InspectorTest extends TestCase
 
     public function testShouldLogBrokenSpecFiles()
     {
+        $this->markTestIncomplete();
         $content = <<<EOF
 <?php
 
-namespace spec\PhpSpecTest1;
+namespace spec\psr0\namespace1;
 
 use PhpSpec\ObjectBehavior;
 
@@ -109,7 +107,7 @@ class BrokenFileSpec extends ObjectBehavior
 {
     function it_is_initializable()
     {
-        \$this->shouldHaveType('spec\PhpSpecTest1\BrokenFile);
+        \$this->shouldHaveType('spec\psr0\namespace1\BrokenFile);
         aaaaaaaaa
     }
 }
@@ -117,12 +115,11 @@ EOF;
         $this->buildFixtures('psr0');
         $this->clearCache();
         static::createApplication();
-        $this->getResults();
-        $file = $this->createSpecFile('spec/PhpSpecTest1/BrokenSpec.php','spec\\PhpSpecTest1','BrokenSpec');
+        $file = $this->createSpecFile('src/psr0/namespace1/spec/psr0/namespace1/BrokenSpec.php','spec\\psr0\\namespace1','BrokenSpec');
 
         $this->getTester()->run('all phpspec -vvv');
         $this->assertDisplayContains('3 passed');
-        $this->assertDisplayContains('PhpSpecTest1\\Broken');
+        $this->assertDisplayContains('psr0\\namespace1\\Broken');
 
         file_put_contents($file,$content);
         $this->getTester()->run('all phpspec -vvv');

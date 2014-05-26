@@ -34,7 +34,7 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
     /**
      * @var Application
      */
-    protected $app;
+    //protected $app;
 
     protected $options = array();
 
@@ -92,6 +92,13 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         $this->cmdRunAll = $cmd.' '.$allOptions['cli'];
     }
 
+    public function runFiltered($paths)
+    {
+        $command = $this->cmdRunAll.' --spec-files='.implode(',',$paths);
+        $this->logger->addDebug('Inspector run with command: '.$command);
+        $this->process($command);
+    }
+
     public function runAll()
     {
         $command = $this->cmdRunAll;
@@ -101,12 +108,9 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
             foreach($this->failed as $failed)
             {
                 $file = getcwd().DIRECTORY_SEPARATOR.$failed;
-                // spec file should be deleted
-                if(!is_file($file)){
-
-                    continue;
+                if(is_file($file)){
+                    $files[] = $failed;
                 }
-                $files[] = $failed;
             }
 
             if(!empty($files)){
@@ -149,6 +153,24 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         return $results;
     }
 
+    public function process($command)
+    {
+        $container = $this->container;
+        $logger = $this->logger;
+        $logger->addDebug($command);
+        $writer = $container->get('ui.output');
+
+        $process = new Process($command.' -vvv');
+        $process->setTty($container->getParameter('phpguard.use_tty'));
+        $errors = null;
+
+        $process->run(function($type,$output) use($writer,&$errors){
+            $writer->write($output);
+        });
+
+        return $process->getExitCode();
+    }
+
     /**
      * @param   bool $runAll
      * @return  array
@@ -187,23 +209,6 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         }
 
         return $results;
-    }
-
-    private function process($command)
-    {
-        $container = $this->container;
-        $logger = $this->logger;
-        $logger->addDebug($command);
-        $writer = $container->get('ui.output');
-
-        $process = new Process($command.' -vvv');
-        $process->setTty($container->getParameter('phpguard.use_tty'));
-        $errors = null;
-
-        $process->run(function($type,$output) use($writer,&$errors){
-            $writer->write($output);
-        });
-        return $process->getExitCode();
     }
 
     private function checkResult()

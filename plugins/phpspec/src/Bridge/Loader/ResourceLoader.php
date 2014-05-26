@@ -11,6 +11,9 @@
 
 namespace PhpGuard\Plugins\PhpSpec\Bridge\Loader;
 
+use PhpGuard\Application\Util\Locator;
+use PhpSpec\Locator\PSR0\PSR0Resource;
+use PhpSpec\Locator\ResourceInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use PhpSpec\Loader\Node\ExampleNode;
@@ -18,6 +21,7 @@ use PhpSpec\Loader\Node\SpecificationNode;
 use PhpSpec\Loader\ResourceLoader as BaseResourceLoader;
 use PhpSpec\Loader\Suite;
 use PhpSpec\Locator\ResourceManager;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Class ResourceLoader
@@ -32,93 +36,28 @@ class ResourceLoader extends BaseResourceLoader
         $this->manager = $manager;
     }
 
-    /**
-     * @param   string  $file
-     * @return  \PhpSpec\Locator\ResourceInterface
-     */
-    public function createResource($file)
+    public function loadSpecFiles(Suite $suite,array $files)
     {
-
-    }
-
-    public function loadSpecFiles(array $files)
-    {
-        $suite = new Suite();
         foreach($files as $file){
-            $specClass = $this->getSpecClass($file);
-            if(!$specClass){
-                return false;
-            }
-            if($specClass==='spec\\PhpGuard\\Plugins\\PhpSpec\\PhpSpecPluginSpec'){
-                $srcClass = 'PhpGuard\\Plugins\\PhpSpec\\PhpSpecPlugin';
+            $relative = str_replace(getcwd(),'',$file);
+            $relative = ltrim($relative,'\\/');
+            if(is_dir($file)){
+                //$dirFiles = $this->getSpecFiles($file);
+                $this->load($suite,$relative);
             }else{
-
-            }
-            $srcClass = substr($specClass,5);
-            $srcClass = substr($specClass,0,strlen($specClass)-4);
-
-            $resource = $this->manager->createResource($srcClass);
-            if(!$resource){
-                continue;
-            }
-            $reflection = new \ReflectionClass($specClass);
-            if($reflection->isAbstract()){
-                continue;
-            }
-            if(!$reflection->implementsInterface('PhpSpec\SpecificationInterface')){
-                continue;
-            }
-
-            $spec = new SpecificationNode($resource->getSrcClassname(),$reflection,$resource);
-
-            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                if (!preg_match('/^(it|its)[^a-zA-Z]/', $method->getName())) {
-                    continue;
+                $this->load($suite,$file);
+                if($suite->count()===0){
+                    $this->loadSpec($suite,$file);
                 }
-
-                $example = new ExampleNode(str_replace('_', ' ', $method->getName()), $method);
-
-                if ($this->methodIsEmpty($method)) {
-                    $example->markAsPending();
-                }
-
-                $spec->addExample($example);
             }
-            $suite->addSpecification($spec);
         }
-
-        return $suite;
     }
 
-    private function getSpecClass($specFile)
+    private function loadSpec(Suite $suite,$file)
     {
-        $testFile = $specFile;
-        if(!is_file($specFile)){
-            $testFile = getcwd().DIRECTORY_SEPARATOR.$specFile;
-        }
 
-        if(!is_file($testFile)){
-            throw new \Exception('Spec file "'.$specFile.'" not exists');
-        }else{
-            $specFile = $testFile;
-        }
-
-        require_once realpath($specFile);
-
-        $exp = explode(DIRECTORY_SEPARATOR,str_replace('.php','',$specFile));
-        $class = null;
-        $i = count($exp)-1;
-
-        while(isset($exp[$i])){
-            $class = $exp[$i].'\\'.$class;
-            $class = rtrim($class,'\\');
-            if(class_exists($class,true)){
-                return $class;
-            }
-            $i--;
-        }
-        return false;
     }
+
     /**
      * @param $line
      * @param  ReflectionMethod $method
@@ -152,6 +91,58 @@ class ResourceLoader extends BaseResourceLoader
         return '' === $function;
     }
 
+    /**
+     * @param string       $locator
+     * @param integer|null $line
+     *
+     * @return Suite
+     */
+    public function load(Suite $suite,$locator, $line = null)
+    {
+        foreach ($this->manager->locateResources($locator) as $resource) {
+            $this->importResource($suite,$resource,$line);
+        }
+    }
+
+    private function importResource(Suite $suite,ResourceInterface $resource,$line=null)
+    {
+        if (!class_exists($resource->getSpecClassname()) && is_file($resource->getSpecFilename())) {
+            require_once $resource->getSpecFilename();
+        }
+
+        if (!class_exists($resource->getSpecClassname())) {
+            return;
+        }
+
+        $reflection = new ReflectionClass($resource->getSpecClassname());
 
 
+        if ($reflection->isAbstract()) {
+            return;
+        }
+        if (!$reflection->implementsInterface('PhpSpec\SpecificationInterface')) {
+            return;
+        }
+
+        $spec = new SpecificationNode($resource->getSrcClassname(), $reflection, $resource);
+
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+
+            if (!preg_match('/^(it|its)[^a-zA-Z]/', $method->getName())) {
+                continue;
+            }
+            if (null !== $line && !$this->lineIsInsideMethod($line, $method)) {
+                continue;
+            }
+
+            $example = new ExampleNode(str_replace('_', ' ', $method->getName()), $method);
+
+            if ($this->methodIsEmpty($method)) {
+                $example->markAsPending();
+            }
+            $spec->addExample($example);
+        }
+
+        $suite->addSpecification($spec);
+    }
 }

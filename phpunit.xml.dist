@@ -30,6 +30,7 @@
                 <directory>./tests</directory>
                 <directory>./plugins/phpspec/functional</directory>
                 <directory>./plugins/phpunit/functional</directory>
+                <directory>./src/Test/*</directory>
             </exclude>
         </whitelist>
     </filter>

@@ -18,6 +18,7 @@ use Symfony\Component\Console\Output\StreamOutput;
  *     $application->setAutoExit(false);
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ * @codeCoverageIgnore
  */
 class ApplicationTester
 {

@@ -13,6 +13,7 @@ namespace PhpGuard\Plugins\PhpSpec\Bridge\Console;
 
 use PhpGuard\Plugins\PhpSpec\Bridge\Loader\ResourceLoader;
 use PhpSpec\Console\Command\RunCommand as BaseRunCommand;
+use PhpSpec\Loader\Suite;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -44,8 +45,12 @@ class RunCommand extends BaseRunCommand
 
         $container->configure();
 
+        $locator     = $input->getArgument('spec');
+        $linenum     = null;
+
         $loader      = new ResourceLoader($container->get('locator.resource_manager'));
-        $suite       = $loader->loadSpecFiles($specFiles);
+        $suite       = new Suite();
+        $loader->loadSpecFiles($suite,$specFiles);
         $suiteRunner = $container->get('runner.suite');
 
         return $suiteRunner->run($suite);
@@ -64,6 +69,7 @@ class RunCommand extends BaseRunCommand
         if (preg_match('/^(.*)\:(\d+)$/', $locator, $matches)) {
             list($_, $locator, $linenum) = $matches;
         }
+
         $suite       = $container->get('loader.resource_loader')->load($locator, $linenum);
         $suiteRunner = $container->get('runner.suite');
 

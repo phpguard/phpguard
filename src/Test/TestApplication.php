@@ -24,7 +24,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Class TestApplication
  *
  * @package PhpGuard\Application\Test
- * @codeCoverageIgnore
+ * @covers \PhpGuard\Application\Console\Application
  */
 class TestApplication extends Application
 {

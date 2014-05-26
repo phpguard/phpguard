@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpSpecTest3;
+namespace psr0\namespace2;
 
 class TestClass
 {

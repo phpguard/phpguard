@@ -22,7 +22,7 @@ class DescribeCommandTest extends TestCase
 
     public function testRun()
     {
-        $this->getTester()->run('phpspec:describe PhpSpecTest1/FooClass');
+        $this->getTester()->run('phpspec:describe psr0/namespace1/FooClass');
         $this->assertDisplayContains('created');
     }
 }

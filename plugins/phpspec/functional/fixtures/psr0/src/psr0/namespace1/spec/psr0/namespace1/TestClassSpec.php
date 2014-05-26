@@ -1,6 +1,6 @@
 <?php
 
-namespace spec\PhpSpecTest3;
+namespace spec\psr0\namespace1;
 
 use PhpSpec\ObjectBehavior;
 
@@ -8,6 +8,6 @@ class TestClassSpec extends ObjectBehavior
 {
     function it_is_initializable()
     {
-        $this->shouldHaveType('PhpSpecTest3\\TestClass');
+        $this->shouldHaveType('psr0\\namespace1\\TestClass');
     }
 }

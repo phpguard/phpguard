@@ -29,50 +29,56 @@ class PhpSpecPluginTest extends TestCase
      */
     public function testShouldRunSpecs($fileName,$className,$tags=null,$assertNot=false)
     {
+        $this->buildPsr0();
         $args = '-vvv';
         if(!is_null($tags)){
             $args .= ' --tags='.$tags;
         }
-        //static::createApplication();
         $this->getTester()->run($args);
 
-        $file = self::$tmpDir.DIRECTORY_SEPARATOR.$fileName;
+        $file = static::$tmpDir.DIRECTORY_SEPARATOR.$fileName;
 
         $exp = explode("\\",$className);
-        $namespace = $exp[0];
-        $class = $exp[1];
+        $class = array_pop($exp);
+        $namespace = implode('\\',$exp);
+
+        if(!is_dir($dir=dirname($file))){
+            static::mkdir($dir);
+        }
+
         file_put_contents($file,$this->getClassContent($namespace,$class));
         $this->evaluate();
+        $this->assertDisplayContains($dir);
         if($assertNot){
             $this->assertNotDisplayContains('executing');
-            //$this->assertNotContains($className,$display);
         }else{
             $this->assertDisplayContains('executing');
-            ///$this->assertContains($className,$display);
         }
     }
 
     public function getTestRun()
     {
         return array(
-            array('src/PhpSpecTest1/TestClass.php','PhpSpecTest1\\TestClass'),
-            array('src/PhpSpecTest2/TestClass.php','PhpSpecTest2\\TestClass'),
-            array('src/PhpSpecTest3/TestClass.php','PhpSpecTest3\\TestClass'),
-            array('src/PhpSpecTest1/TestTag1.php','PhpSpecTest1\\TestTag1','Tag1'),
-            array('src/PhpSpecTest2/TestTag2.php','PhpSpecTest2\\TestTag2','Tag1',true),
-            array('src/PhpSpecTest2/TestTag3.php','PhpSpecTest3\\TestTag3','Tag1',true),
-            array('src/PhpSpecTest2/TestTag4.php','PhpSpecTest2\\TestTag4','Tag1,Tag2'),
-            array('src/PhpSpecTest3/TestTag5.php','PhpSpecTest3\\TestTag5','Tag1,Tag2',true),
-            array('src/PhpSpecTest1/TestTag6.php','PhpSpecTest1\\TestTag6','Tag1,Tag2'),
+            array('src/psr0/namespace1/TestClass.php','psr0\\namespace1\\TestClass'),
+            array('src/psr0/namespace2/TestClass.php','psr0\\namespace2\\TestClass'),
+            array('src/psr0/namespace3/TestClass.php','psr0\\namespace3\\TestClass'),
+            array('src/psr0/namespace1/TestTag1.php','psr0\\namespace1\\TestTag1','Tag1'),
+            array('src/psr0/namespace2/TestTag2.php','psr0\\namespace2\\TestTag2','Tag1',true),
+            array('src/psr0/namespace2/TestTag3.php','psr0\\namespace3\\TestTag3','Tag1',true),
+            array('src/psr0/namespace2/TestTag4.php','psr0\\namespace2\\TestTag4','Tag1,Tag2'),
+            array('src/psr0/namespace3/TestTag5.php','psr0\\namespace3\\TestTag5','Tag1,Tag2',true),
+            array('src/psr0/namespace1/TestTag6.php','psr0\\namespace1\\TestTag6','Tag1,Tag2'),
 
         );
     }
 
     /**
      * @dataProvider getTestSpecFile
+     *
      */
     public function testShouldRunFromSpecFile($specFile,$className)
     {
+        $this->markTestIncomplete();
         static::createApplication();
         $this->getTester()->run('-vvv');
         $file = self::$tmpDir.DIRECTORY_SEPARATOR.$specFile;
@@ -82,7 +88,7 @@ class PhpSpecPluginTest extends TestCase
         $content = $this->getSpecContent($namespace,$class);
 
         file_put_contents($file,$content,LOCK_EX);
-        self::getShell()->evaluate();
+        $this->evaluate();
 
         $display = $this->getDisplay();
         $this->assertContains($specFile,$display);
@@ -92,38 +98,43 @@ class PhpSpecPluginTest extends TestCase
     public function getTestSpecFile()
     {
         return array(
-            array('spec/PhpSpecTest1/TestClassSpec.php','spec\\PhpSpecTest1\\TestClass'),
-            array('src/PhpSpecTest2/spec/PhpSpecTest2/TestClassSpec.php','spec\\PhpSpecTest2\\TestClass'),
-            array('src/PhpSpecTest3/Spec/PhpSpecTest3/TestClassSpec.php','Spec\\PhpSpecTest3\\TestClass'),
+            array('src/psr0/namespace1/spec/psr0/namespace1/TestClassSpec.php','spec\\psr0\\namespace1\\TestClass'),
+            array('src/psr0/namespace2/spec/psr0/namespace2/TestClassSpec.php','spec\\psr0\\namespace2\\TestClass'),
+            array('src/psr0/namespace3/Spec/psr0/namespace3/TestClassSpec.php','Spec\\psr0\\namespace3\\TestClass'),
         );
     }
 
     public function testShouldLogFailedMessage()
     {
-        $file = static::$tmpDir.'/spec/PhpSpecTest1/NotExistSpec.php';
-        $content = $this->getSpecContent('spec\\PhpSpecTest1','NotExistSpec');
+        $this->markTestIncomplete();
+
+        $this->buildPsr0();
+        $this->getTester()->run('-vvv');
+        $file = static::$tmpDir.'/src/psr0/namespace1/spec/psr0/namespace1/NotExistSpec.php';
+        $content = $this->getSpecContent('spec\\psr0\\namespace1','NotExistSpec');
         file_put_contents($file,$content);
         $this->evaluate();
-        $display = $this->getDisplay();
-        $this->assertContains('failed',$display);
+        $this->assertContains(getcwd(),$file);
+        $this->assertDisplayContains('failed');
 
-        $this->getTester()->run('all phpspec');
-        $this->assertDisplayContains('broken',$display);
+        $this->getTester()->run('all phpspec -vvv');
+        $this->assertFileExists($file);
+        $this->assertDisplayContains('broken');
     }
 
     public function testShouldNotRunUnexistentSpecFile()
     {
+        $this->markTestIncomplete();
         @unlink(Inspector::getCacheFileName());
         @unlink(Inspector::getErrorFileName());
         $this->getTester()->run('-vvv');
 
-        $file = static::$tmpDir.'/src/PhpSpecTest1/TestClass2.php';
-        file_put_contents($file,$this->getClassContent('PhpSpecTest1','TestClass2'));
+        $file = static::$tmpDir.'/src/psr0/namespace1/TestClass2.php';
+        file_put_contents($file,$this->getClassContent('psr0\\namespace1','TestClass2'));
         $this->evaluate();
         $this->assertDisplayContains('file not found');
-        $this->assertDisplayContains('src/PhpSpecTest1/TestClass2.php');
+        $this->assertDisplayContains('src/psr0/namespace1/TestClass2.php');
     }
-
 
     public function testShouldImportSuites()
     {
@@ -137,25 +148,16 @@ class PhpSpecPluginTest extends TestCase
 
     /**
      * @dataProvider getTestPsr4
-     * @group current
      */
     public function testShouldImportPsr4Suites($targetClass,$class,$specPath,$specPrefix)
     {
-        static::buildFixtures('psr4');
-        static::createApplication();
-        $autoload = include_once getcwd().'/vendor/autoload.php';
-        if(is_object($autoload)){
-            $autoload->register();
-        }
-        chdir(static::$tmpDir);
-
+        $this->buildPsr4();
         $exp = explode('\\',$class);
         $specClass = array_pop($exp).'Spec';
         $specNs = $specPrefix.'\\'.implode('\\',$exp);
         $target = $specPath.$specPrefix.DIRECTORY_SEPARATOR.$class.'Spec.php';
         $target = str_replace('\\','/',$target);
 
-        $args = '-vvv';
         // build spec first before run
         $this->createSpecFile($target,$specNs,$specClass);
         $this->getTester()->run('all phpspec -vvv');
@@ -171,6 +173,57 @@ class PhpSpecPluginTest extends TestCase
             array('some/TestClass.php','psr4\\namespace1\\TestClass',null,'spec'),
             array('some/namespace2/src/TestClass.php','psr4\\namespace2\\TestClass','some/namespace2/','spec'),
             array('some/namespace3/src/TestClass.php','psr4\\namespace3\\TestClass','some/namespace3/','Spec'),
+        );
+    }
+
+    protected function buildPsr4()
+    {
+        static::buildFixtures('psr4');
+        static::createApplication();
+        $autoload = include_once getcwd().'/vendor/autoload.php';
+        if(is_object($autoload)){
+            $autoload->register();
+        }
+        chdir(static::$tmpDir);
+    }
+
+    static protected function buildPsr0()
+    {
+        static::buildFixtures('psr0');
+        static::createApplication();
+        $autoload = include_once getcwd().'/vendor/autoload.php';
+        if(is_object($autoload)){
+            $autoload->register();
+        }
+        chdir(static::$tmpDir);
+    }
+
+    /**
+     * @dataProvider getTestFilteredTags
+     */
+    public function testShouldRunWithFilteredTags($tags,$class,$assertNot=false)
+    {
+        $this->markTestIncomplete();
+        $this->getTester()->run('all phpspec --tags='.$tags.' -vvv');
+
+        if($assertNot){
+            $this->assertNotDisplayContains($class);
+        }else{
+            $this->assertDisplayContains($class);
+        }
+    }
+
+    public function getTestFilteredTags()
+    {
+        return array(
+            array('Tag1','psr0\\namespace1\\TestClass'),
+            array('Tag1','psr0\\namespace2\\TestClass',true),
+            array('Tag1','psr0\\namespace3\\TestClass',true),
+            array('Tag2','psr0\\namespace2\\TestClass'),
+            array('Tag3','psr0\\namespace3\\TestClass'),
+            array('Tag1,Tag2,Tag3','psr0\\namespace1\\TestClass'),
+            array('Tag1,Tag2,Tag3','psr0\\namespace2\\TestClass'),
+            array('Tag1,Tag2,Tag3','psr0\\namespace3\\TestClass'),
         );
     }
 }

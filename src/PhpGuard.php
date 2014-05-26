@@ -55,6 +55,7 @@ class PhpGuard
     {
         // force to setup default values
         $this->setOptions(array());
+
     }
 
     public function setContainer(ContainerInterface $container)
@@ -129,16 +130,8 @@ class PhpGuard
 
         $container->setShared('locator',function(){
             $locator = new Locator();
-            $cwd = getcwd();
-            // TODO: load this automatically
-            $locator->addPsr4('spec\\',array(
-                $cwd.'/spec',
-                $cwd.'/plugins/phpspec/spec',
-                $cwd.'/plugins/phpunit/spec'
-            ));
-
-
             return $locator;
+
         });
     }
 

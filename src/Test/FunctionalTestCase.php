@@ -49,7 +49,7 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     {
         parent::tearDownAfterClass();
         static::cleanDir(static::$tmpDir);
-        chdir(static::$cwd);
+        @chdir(static::$cwd);
     }
 
 

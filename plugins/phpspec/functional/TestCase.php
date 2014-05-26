@@ -29,6 +29,8 @@ abstract class TestCase extends FunctionalTestCase
     static public function buildFixtures($src='psr0')
     {
         static::$tmpDir = $tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpspec-'.$src.'-');
+        static::cleanDir($tmpDir);
+        static::mkdir($tmpDir);
         $finder = Finder::create();
         $finder->in(__DIR__.'/fixtures/'.$src);
         foreach($finder->files() as $file){
@@ -130,18 +132,5 @@ EOF;
     {
         @unlink(Inspector::getCacheFileName());
         @unlink(Inspector::getErrorFileName());
-    }
-
-    protected $currentResults;
-
-    protected function getResults()
-    {
-        return array();
-        $file = Inspector::getCacheFileName();
-        clearstatcache(true,$file);
-        $contents = file_get_contents($file);
-        $data = unserialize($contents);
-
-        return $data[0];
     }
 }

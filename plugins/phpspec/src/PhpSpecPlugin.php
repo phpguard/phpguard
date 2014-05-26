@@ -23,13 +23,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class PhpSpecPlugin extends Plugin
 {
-    const CACHE_DIR = '/phpguard/cache/plugin-phpspec';
     protected $suites = array();
-
-    /**
-     * @var Inspector
-     */
-    protected $inspector;
 
     public function __construct()
     {
@@ -41,7 +35,8 @@ class PhpSpecPlugin extends Plugin
     {
         parent::addWatcher($watcher);
         if(!is_null($this->logger)){
-            $this->logger->addDebug('added watcher ',$watcher->getOptions());
+            $options = $watcher->getOptions();
+            $this->logger->addDebug('added watcher pattern: '.$options['pattern']);
         }
 
         if($this->options['always_lint']){
@@ -72,13 +67,16 @@ class PhpSpecPlugin extends Plugin
             $this->importSuites();
         }
 
-
         $logger = $this->logger;
-        $inspector = new Inspector();
-        $inspector->setLogger($logger);
-        $inspector->setContainer($container);
-        $inspector->setOptions($this->options);
-        $this->inspector = $inspector;
+        $options = $this->options;
+
+        $container->setShared('phpspec.inspector',function($c) use($logger,$options){
+            $inspector = new Inspector();
+            $inspector->setLogger($logger);
+            $inspector->setContainer($c);
+            $inspector->setOptions($options);
+            return $inspector;
+        });
     }
 
     public function getName()
@@ -96,7 +94,31 @@ class PhpSpecPlugin extends Plugin
 
     public function runAll()
     {
-        return $this->inspector->runAll();
+        $container = $this->container;
+        $inspector = $container->get('phpspec.inspector');
+
+        $tags = $container->getParameter('filter.tags',array());
+        if(empty($tags)){
+            return $inspector->runAll();
+        }
+
+        $suites = $container->getParameter('phpspec.suites',array());
+        $paths = $this->getPathOfSuites($tags,$suites);
+        if(empty($suites) || empty($paths)){
+            return array();
+        }
+        return $inspector->runFiltered($paths);
+    }
+
+    private function getPathOfSuites($tags,$suites)
+    {
+        $paths = array();
+        foreach($tags as $tag){
+            if(isset($suites[$tag])){
+                $paths[] = $suites[$tag]['spec_path'];
+            }
+        }
+        return $paths;
     }
 
     public function run(array $paths = array())
@@ -104,17 +126,19 @@ class PhpSpecPlugin extends Plugin
         $specFiles = array();
         foreach($paths as $file)
         {
-            $specFile = $this->getSpecFile($file);
+            /*$specFile = $this->getSpecFile($file);
             if(false===$specFile){
                 $message = 'Spec file not found for <comment>'.$file->getRelativePathname().'</comment>';
                 $this->logger->addDebug($message);
                 continue;
-            }
-            $spl = PathUtil::createSplFileInfo(getcwd(),$specFile);
+            }*/
+            $spl = PathUtil::createSplFileInfo(getcwd(),$file);
+
             $specFiles[] = $spl->getRelativePathname();
         }
         if(count($specFiles)>0){
-            return $this->inspector->run($specFiles);
+            $inspector = $this->container->get('phpspec.inspector');
+            return $inspector->run($specFiles);
         }
     }
 
@@ -161,6 +185,7 @@ class PhpSpecPlugin extends Plugin
         elseif(is_file($file=getcwd().'/phpspec.yml.dist')){
             $path = $file;
         }
+
         if(is_null($path)){
             return;
         }
@@ -171,12 +196,13 @@ class PhpSpecPlugin extends Plugin
             return;
         }
 
-        $this->suites = $suites = $config['suites'];
+        $suites = array();
 
-        foreach($suites as $name=>$definition){
-            $this->parseDefinition($name,$definition);
+        foreach($config['suites'] as $name=>$definition){
+            $suites[$name]=$this->parseDefinition($name,$definition);
         }
-        return $suites;
+
+        $this->container->setParameter('phpspec.suites',$suites);
     }
 
     private function parseDefinition($tags,$definition)
@@ -192,16 +218,25 @@ class PhpSpecPlugin extends Plugin
 
         $namespace = $definition['namespace'];
 
-        $path = $locator->getPathOfNamespace($namespace);
-        if($path){
-            $watcher = $this->createWatcher($path,$tags);
-            $this->addWatcher($watcher);
-        }
+        //$path = $locator->getPathOfNamespace($namespace);
+        //if($path){
+        //    $watcher = $this->createWatcher($path,$tags);
+        //    $this->addWatcher($watcher);
+        //}
         $specDir = getcwd().DIRECTORY_SEPARATOR.$specPath;
-        $specDir   = rtrim($specDir,'\\/').DIRECTORY_SEPARATOR.$specPrefix;
-        $this->addWatcher($this->createWatcher($specDir,$tags,'Spec.php'));
+        $specDir   = rtrim($specDir,'\\/');
+        $this->addWatcher($this->createWatcher($specDir,$tags));
         $locator->addPsr4($specPrefix.'\\',$specDir);
-        $this->logger->addDebug('Locator add prefix: '.$specPrefix.' dir: '.$specDir);
+        $this->logger->addDebug('Locator add prefix: '.$specPrefix.' dir: '.$specDir.DIRECTORY_SEPARATOR.$specPrefix);
+        $psr4 = isset($definition['psr4_prefix']) ? $definition['psr4_prefix']:null;
+
+        return array(
+            'namespace' => $namespace,
+            'psr4_prefix' => $psr4,
+            'spec_path' => $specPath,
+            'prefix' => $specPrefix,
+            //'src' => $path
+        );
     }
 
     private function normalizePhpSpecConfig($definition)

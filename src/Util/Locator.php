@@ -111,6 +111,8 @@ class Locator
         $exp = explode('\\',$test);
         $class = array_pop($exp);//
         $dir = implode(DIRECTORY_SEPARATOR,$exp);
+
+
         $testClass = $this->getClass($dir,$class,$checkExistence);
         if(false===$testClass){
             $testClass = $this->getClassPsr4($dir,$class,$checkExistence);
