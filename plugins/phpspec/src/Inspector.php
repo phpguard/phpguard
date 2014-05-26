@@ -49,7 +49,7 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
     public function __construct()
     {
         // always clear serialized result when Inspector object created
-        $file = $this->getCacheFileName();
+        $file = Inspector::getCacheFileName();
         if(is_file($file)){
             unlink($file);
         }
@@ -95,15 +95,15 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
     public function runAll()
     {
         $command = $this->cmdRunAll;
+
         if($this->options['keep_failed']){
-
             $files = array();
-
             foreach($this->failed as $failed)
             {
                 $file = getcwd().DIRECTORY_SEPARATOR.$failed;
                 // spec file should be deleted
                 if(!is_file($file)){
+
                     continue;
                 }
                 $files[] = $failed;
@@ -117,14 +117,15 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
             }
         }
         $this->logger->addCommon('Running all specs');
-        $exitCode = $this->process($command);
-        if(0===$exitCode){
+        $this->process($command);
+        $results = $this->renderResult(true);
+
+        if(count($this->failed)===0){
             $plugin = $this->container->get('plugins.phpspec');
             $message = 'Running All success';
             return array(new CommandEvent($plugin,CommandEvent::SUCCEED,$message));
-
         }else{
-            return $this->renderResult(true);
+            return $results;
         }
     }
 
@@ -179,10 +180,12 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
             $results[] = $event;
         }
         foreach($data['failed'] as $title=>$file){
+            $this->failed[$title] = $file;
             $message = $prefix.': '.$title.' spec failed';
             $event = new CommandEvent($plugin,CommandEvent::FAILED,$message);
             $results[] = $event;
         }
+
         return $results;
     }
 
@@ -193,16 +196,12 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         $logger->addDebug($command);
         $writer = $container->get('ui.output');
 
-        $process = new Process($command);//
+        $process = new Process($command.' -vvv');
         $process->setTty($container->getParameter('phpguard.use_tty'));
         $errors = null;
 
         $process->run(function($type,$output) use($writer,&$errors){
-            if(Process::ERR===$type){
-                $errors .= $output;
-            }else{
-                $writer->write($output);
-            }
+            $writer->write($output);
         });
         return $process->getExitCode();
     }

@@ -60,6 +60,7 @@ class PhpGuardExtension implements ExtensionInterface,EventSubscriberInterface
             'success' => $this->success,
         );
         $contents = serialize($contents);
+
         file_put_contents(Inspector::getCacheFileName(),$contents,LOCK_EX);
     }
 

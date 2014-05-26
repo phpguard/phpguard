@@ -11,6 +11,7 @@
 
 namespace PhpGuard\Plugins\PhpSpec;
 
+use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Util\Locator;
 use PhpGuard\Application\Watcher;
@@ -173,27 +174,56 @@ class PhpSpecPlugin extends Plugin
         $this->suites = $suites = $config['suites'];
 
         foreach($suites as $name=>$definition){
-            $source = 'src';
-            if(isset($definition['src'])){
-                $source = $definition['src'];
-            }
-            elseif(isset($definition['spec_path'])){
-                $source = $definition['spec_path'];
-            }
-
-            $pattern = '#^'.str_replace('/','\/',$source).'(.+)\.php$#';
-            $watcher = new Watcher($this->container);
-            $watcher->setContainer($this->container);
-            $options = array(
-                'pattern' => $pattern,
-                'tags' => $name
-            );
-
-            $watcher->setOptions($options);
-            $message = 'Imported suite '.$name;
-            $this->logger->addDebug($message,$options);
-            $this->addWatcher($watcher);
+            $this->parseDefinition($name,$definition);
         }
         return $suites;
+    }
+
+    private function parseDefinition($tags,$definition)
+    {
+        /* @var \PhpGuard\Application\Util\Locator $locator */
+        $locator = $this->container->get('locator');
+
+        $definition = $this->normalizePhpSpecConfig($definition);
+
+        $tags = array($tags);
+        $specPrefix = isset($definition['spec_prefix']) ? $definition['spec_prefix']:'spec';
+        $specPath = isset($definition['spec_path']) ? $definition['spec_path']:null;
+
+        $namespace = $definition['namespace'];
+
+        $path = $locator->getPathOfNamespace($namespace);
+        if($path){
+            $watcher = $this->createWatcher($path,$tags);
+            $this->addWatcher($watcher);
+        }
+        $specDir = getcwd().DIRECTORY_SEPARATOR.$specPath;
+        $specDir   = rtrim($specDir,'\\/').DIRECTORY_SEPARATOR.$specPrefix;
+        $this->addWatcher($this->createWatcher($specDir,$tags,'Spec.php'));
+        $locator->addPsr4($specPrefix.'\\',$specDir);
+        $this->logger->addDebug('Locator add prefix: '.$specPrefix.' dir: '.$specDir);
+    }
+
+    private function normalizePhpSpecConfig($definition)
+    {
+        $norm = array();
+        foreach($definition as $key=>$val){
+            $key = strtolower($key);
+            $norm[$key] = $val;
+        }
+        return $norm;
+    }
+
+    private function createWatcher($dir,$tags,$suffix='\.php')
+    {
+        $dir = ltrim(str_replace(getcwd(),'',$dir),'\\/');
+        $pattern = '#^'.str_replace('/','\/',$dir).'\/(.+)'.$suffix.'$#';
+        $options = array(
+            'pattern' => $pattern,
+            'tags' => $tags
+        );
+        $watcher = new Watcher($this->container);
+        $watcher->setOptions($options);
+        return $watcher;
     }
 }

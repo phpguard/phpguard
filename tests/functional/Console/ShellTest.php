@@ -24,7 +24,7 @@ class ShellTest extends TestCase
 
 
     /**
-     * @group current
+     *
      */
     public function testShouldEvaluateChange()
     {

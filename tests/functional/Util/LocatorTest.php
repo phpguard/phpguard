@@ -25,7 +25,7 @@ class LocatorTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @dataProvider getClassFile
-     * @group current
+     *
      */
     public function testShouldFindPsr0Class($classFile,$expectedClass,$checkExistence=false)
     {

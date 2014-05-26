@@ -35,7 +35,9 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         static::createApplication();
-        static::$tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpguard');
+        if(is_null(static::$tmpDir)){
+            static::$tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpguard');
+        }
         static::mkdir(static::$tmpDir);
         if(is_null(static::$cwd)){
             static::$cwd = getcwd();

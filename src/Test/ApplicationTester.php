@@ -61,7 +61,7 @@ class ApplicationTester
             $this->input->setInteractive($options['interactive']);
         }
 
-        $this->resetDisplay();
+        $this->output = new StreamOutput(fopen('php://memory', 'w', false));
 
         if (isset($options['decorated'])) {
             $this->output->setDecorated($options['decorated']);

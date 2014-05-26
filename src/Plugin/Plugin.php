@@ -103,6 +103,11 @@ abstract class Plugin extends ContainerAware implements PluginInterface
         return $filtered;
     }
 
+    /**
+     * @param array $options
+     *
+     * @return $this
+     */
     public function setOptions(array $options = array())
     {
         $resolver = new OptionsResolver();
@@ -112,6 +117,9 @@ abstract class Plugin extends ContainerAware implements PluginInterface
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getOptions()
     {
         return $this->options;
@@ -172,6 +180,16 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     }
 
     /**
+     * @param   mixed $tag
+     *
+     * @return  void
+     */
+    public function addTag($tag)
+    {
+        // TODO: Implement addTag() method.
+    }
+
+    /**
      * @param $file
      * @return string
      * @author Anthonius Munthi <me@itstoni.com>
@@ -181,7 +199,7 @@ abstract class Plugin extends ContainerAware implements PluginInterface
         $tags = $this->container->getParameter('filter.tags',array());
         /* @var Watcher $watcher */
         foreach($this->watchers as $watcher){
-            if(false===$watcher->hasTag($tags)){
+            if(false===$watcher->hasTags($tags)){
                 $options = $watcher->getOptions();
                 $this->logger->debug('Unmatched tags',array('watcher.tags'=>$options['tags'],'app.tags'=>$tags));
                 continue;

@@ -1,0 +1,5 @@
+formatter.name: pretty
+suites:
+    Tag1: { Namespace: PhpSpecTest1 }
+    Tag2: { Namespace: PhpSpecTest2, spec_path: src/PhpSpecTest2 }
+    Tag3: { Namespace: PhpSpecTest3, spec_path: src/PhpSpecTest3, spec_prefix: Spec }

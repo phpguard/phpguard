@@ -36,14 +36,6 @@ class ShellSpec extends ObjectBehavior
         $this->shouldHaveType('PhpGuard\Application\Console\Shell');
     }
 
-    function it_should_delegate_run_command(Application $application)
-    {
-        $application->run(Argument::any(),Argument::any())
-            ->shouldBeCalled();
-        $application->getName()->willReturn('phpguard');
-        $this->runCommand('help');
-    }
-
     function it_should_quit_application(
         EventDispatcherInterface $dispatcher
     )

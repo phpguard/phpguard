@@ -28,6 +28,8 @@ class Locator
     protected $prefixes = array();
     protected $prefixesPsr4 = array();
 
+    protected $fallbackDirs = array();
+    protected $fallbackDirsPsr4 = array();
     /**
      * @var ClassLoader
      */
@@ -64,6 +66,7 @@ class Locator
     {
         $this->mainLoader->addPsr4($prefix,$paths,$prepend);
         $this->prefixesPsr4 = array_merge($this->prefixesPsr4,$this->mainLoader->getPrefixesPsr4());
+        $this->fallbackDirsPsr4 = array_merge($this->fallbackDirsPsr4,$this->mainLoader->getFallbackDirsPsr4());
         return $this;
     }
 
@@ -116,6 +119,44 @@ class Locator
         return $testClass;
     }
 
+    public function getPathOfNamespace($namespace)
+    {
+        $path = false;
+        foreach($this->fallbackDirs as $dir){
+            $testDir = $dir.DIRECTORY_SEPARATOR.$namespace;
+            if(is_dir($testDir)){
+                return $testDir;
+            }
+        }
+
+        foreach($this->fallbackDirsPsr4 as $dir){
+            $testDir = $dir.DIRECTORY_SEPARATOR.$namespace;
+            if(is_dir($testDir)){
+                return $testDir;
+            }
+        }
+
+        $exp = explode('\\',$namespace);
+        $topNamespace = $exp[0];
+        foreach($this->prefixes as $ns=>$prefix){
+            if(false!==strpos($ns,$topNamespace)){
+                //print_r($prefix);
+            }
+        }
+
+        foreach($this->prefixesPsr4 as $ns=>$prefix){
+            if(false!==strpos($ns,$namespace)){
+                foreach($prefix as $dir){
+                    if(is_dir($dir)){
+                        return $dir;
+                    }
+                }
+            }
+        }
+
+        return $path;
+    }
+
     private function getClass($dir,$class,$checkExistence = true)
     {
         return $this->checkPrefix($this->prefixes,$dir,$class,$checkExistence);
@@ -126,20 +167,23 @@ class Locator
         return $this->checkPrefix($this->prefixesPsr4,$dir,$class,$checkExistence);
     }
 
-    private function checkPrefix(array $prefixes,$dir,$class,$checkExistence=false)
+    private function checkPrefix(array $prefixes,$dir,$class=false,$checkExistence=false)
     {
         $absPath = realpath($dir);
 
         $testClass = false;
-
         foreach($prefixes as $ns=>$prefix){
             foreach($prefix as $nsDir){
                 $len = strlen($nsDir);
                 if($nsDir===substr($absPath,0,$len)){
                     $namespace = ltrim(substr($absPath,$len),'\\/');
-                    $testClass = $namespace.DIRECTORY_SEPARATOR.$class;
-                    $testClass = str_replace(DIRECTORY_SEPARATOR,'\\',$testClass);
-                    $testClass = ltrim($testClass,'\\');
+                    if($class){
+                        $testClass = $namespace.DIRECTORY_SEPARATOR.$class;
+                        $testClass = str_replace(DIRECTORY_SEPARATOR,'\\',$testClass);
+                        $testClass = ltrim($testClass,'\\');
+                    }else{
+                        $testClass = $namespace;
+                    }
                     if(false!==strpos($ns,'\\')){
                         $ns = rtrim($ns,'\\');
                         $testClass = $ns.'\\'.$testClass;
@@ -166,8 +210,14 @@ class Locator
      */
     private function initialize()
     {
-        $functions = spl_autoload_functions();
 
+        if(is_file($file = getcwd().'/vendor/autoload.php')){
+            $autoload = include_once $file;
+            if(is_object($autoload)){
+                $autoload->register();
+            }
+        }
+        $functions = spl_autoload_functions();
         foreach($functions as $loader){
             if(is_array($loader)){
                 $ob = $loader[0];
@@ -193,10 +243,20 @@ class Locator
             $this->mainLoader = $object;
         }
 
-        $this->prefixes = array_merge_recursive($this->prefixes,$object->getPrefixes());
-        $this->prefixesPsr4 = array_merge_recursive($this->prefixesPsr4,$object->getPrefixesPsr4());
+        if(is_array($object->getFallbackDirs())){
+            $this->fallbackDirs = array_merge_recursive($this->fallbackDirs,$object->getFallbackDirs());
+        }
 
+        if(is_array($object->getFallbackDirsPsr4())){
+            $this->fallbackDirs = array_merge_recursive($this->fallbackDirs,$object->getFallbackDirs());
+        }
 
+        if(is_array(@$object->getPrefixes())){
+            $this->prefixes = array_merge_recursive($this->prefixes,$object->getPrefixes());
+        }
+        if(is_array(@$object->getPrefixesPsr4())){
+            $this->prefixesPsr4 = array_merge_recursive($this->prefixesPsr4,$object->getPrefixesPsr4());
+        }
 
         $this->autoLoaders->attach($object);
     }

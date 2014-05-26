@@ -137,6 +137,7 @@ class PhpGuard
                 $cwd.'/plugins/phpunit/spec'
             ));
 
+
             return $locator;
         });
     }

@@ -13,6 +13,7 @@ namespace PhpGuard\Application;
 
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Plugin\TaggableInterface;
 use PhpGuard\Listen\Exception\InvalidArgumentException;
 use PhpGuard\Listen\Resource\FileResource;
 use PhpGuard\Listen\Util\PathUtil;
@@ -25,7 +26,7 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
  * Class Watcher
  *
  */
-class Watcher extends ContainerAware
+class Watcher extends ContainerAware implements TaggableInterface
 {
     private $options = array(
         'groups' => array(),
@@ -54,11 +55,12 @@ class Watcher extends ContainerAware
         return in_array($group,$this->options['groups']);
     }
 
-    public function hasTag($tags)
+    public function hasTags($tags)
     {
         if(empty($tags)){
             return true;
         }
+
         if(!is_array($tags)){
             $tags = array($tags);
         }
@@ -69,6 +71,26 @@ class Watcher extends ContainerAware
             }
         }
         return false;
+    }
+
+    public function getTags()
+    {
+        return $this->options['tags'];
+    }
+
+    public function addTags($tags)
+    {
+        if(!is_array($tags)){
+            $tags = array($tags);
+        }
+
+        $cTags = $this->options['tags'];
+        foreach($tags as $tag){
+            if(!in_array($tag,$cTags)){
+                $cTags[] = $tag;
+            }
+        }
+        $this->options['tags'] = $cTags;
     }
 
     public function matchFile($file)

@@ -3,10 +3,6 @@ suites:
     Application:
         namespace:   PhpGuard\Application
         psr4_prefix: PhpGuard\Application
-    Shell:
-        namespace:   PhpGuard\Shell
-        psr4_prefix: PhpGuard\Shell
-        spec_path:   plugins/shell
     PhpSpecPlugin:
         namespace:   PhpGuard\Plugins\PhpSpec
         psr4_prefix: PhpGuard\Plugins\PhpSpec

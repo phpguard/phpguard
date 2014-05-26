@@ -3,6 +3,7 @@
 namespace spec\PhpGuard\Application\Listener;
 
 use PhpGuard\Application\Console\Shell;
+use PhpGuard\Application\Console\ShellInterface;
 use PhpGuard\Application\Event\CommandEvent;
 use PhpGuard\Application\Event\EvaluateEvent;
 use \PhpGuard\Application\Container\ContainerInterface;
@@ -177,7 +178,6 @@ class ChangesetListenerSpec extends ObjectBehavior
     function it_should_handle_preRunCommand_events(
         GenericEvent $event,
         PluginInterface $plugin,
-        Shell $shell,
         Logger $logger
     )
     {
@@ -190,16 +190,12 @@ class ChangesetListenerSpec extends ObjectBehavior
         $event->getArgument('paths')
             ->willReturn(array(PathUtil::createSplFileInfo(getcwd(),__FILE__)));
 
-        $shell->unsetStreamBlocking()
-            ->shouldBeCalled();
-
         $this->preRunCommand($event);
     }
 
     function it_should_handle_postRunCommand_events(
         GenericEvent $event,
         PluginInterface $plugin,
-        Shell $shell,
         Logger $logger
     )
     {
@@ -209,8 +205,6 @@ class ChangesetListenerSpec extends ObjectBehavior
         $logger->addDebug(Argument::containingString('End'))
             ->shouldBeCalled();
 
-        $shell->setStreamBlocking()
-            ->shouldBeCalled();
         $this->postRunCommand($event);
     }
 

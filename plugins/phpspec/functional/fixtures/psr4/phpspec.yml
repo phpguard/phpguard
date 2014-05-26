@@ -1,0 +1,5 @@
+formatter.name: pretty
+suites:
+    Tag1: { namespace: psr4\namespace1, psr4_prefix: psr4\namespace1 }
+    Tag2: { namespace: psr4\namespace2, psr4_prefix: psr4\namespace2, spec_path: some/namespace2 }
+    Tag3: { namespace: psr4\namespace3, psr4_prefix: psr4\namespace3, spec_path: some/namespace3, spec_prefix: Spec }

@@ -58,7 +58,7 @@ class PluginSpec extends ObjectBehavior
             ->willReturn(array())
         ;
 
-        $watcher->hasTag(Argument::any())
+        $watcher->hasTags(Argument::any())
             ->willReturn(true);
         $watcher->lint(Argument::any())
             ->willReturn(true);
@@ -137,7 +137,7 @@ class PluginSpec extends ObjectBehavior
             ->willReturn($tags)
         ;
 
-        $watcher->hasTag($tags)
+        $watcher->hasTags($tags)
             ->shouldBeCalled()
             ->willReturn(true);
         $watcher->matchFile(__FILE__)
@@ -164,7 +164,7 @@ class PluginSpec extends ObjectBehavior
             ->shouldBeCalled()
             ->willReturn($tags)
         ;
-        $watcher->hasTag($tags)
+        $watcher->hasTags($tags)
             ->shouldBeCalled()
             ->willReturn(false);
         $watcher->matchFile(__FILE__)

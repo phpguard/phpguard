@@ -110,19 +110,6 @@ class WatcherSpec extends ObjectBehavior
         $this->shouldNotHaveGroup('bar');
     }
 
-    function its_hasTag_should_check_if_tag_exists()
-    {
-        $this->setOptions(array(
-            'pattern' => 'some',
-            'tags' => 'tag'
-        ));
-        $this->shouldHaveTag('tag');
-        $this->shouldHaveTag(array('tag'));
-        $this->shouldHaveTag(array());
-        $this->shouldHaveTag(null);
-        $this->shouldNotHaveTag('foo');
-    }
-
     function it_should_check_file_with_linter_if_defined(
         ContainerInterface $container,
         LinterInterface $linter
@@ -147,5 +134,37 @@ class WatcherSpec extends ObjectBehavior
             ->willReturn(true)
         ;
         $this->lint(__FILE__)->shouldReturn(true);
+    }
+
+    function its_hasTag_returns_true_if_tag_exists()
+    {
+        $this->setOptions(array(
+            'pattern' => 'some',
+            'tags' => array('tag','foo','bar','hello','world')
+        ));
+        $this->shouldHaveTags('tag');
+        $this->shouldHaveTags(array('tag'));
+        $this->shouldHaveTags(array());
+        $this->shouldHaveTags(null);
+        $this->shouldNotHaveTags('untag');
+        $this->shouldHaveTags(array('untag','foo','bar'));
+        $this->shouldNotHaveTags(array('untag','ungag1','untag2'));
+    }
+
+    function its_tags_should_be_empty_by_default()
+    {
+        $this->getTags()->shouldReturn(array());
+    }
+
+    function its_tags_should_be_mutable()
+    {
+        $this->addTags('foo');
+        $this->shouldHaveTags('foo');
+        $this->addTags(array('bar','hello','world','foo','bar','hello'));
+
+        $this->getTags()->shouldHaveCount(4);
+        $this->shouldHaveTags('bar');
+        $this->shouldHaveTags('hello');
+        $this->shouldHaveTags('world');
     }
 }

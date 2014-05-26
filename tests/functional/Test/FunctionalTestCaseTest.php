@@ -18,7 +18,7 @@ use PhpGuard\Application\Functional\TestCase;
 class FunctionalTestCaseTest extends TestCase
 {
     /**
-     * @group current
+     *
      */
     public function testShouldOverrideDefaultSetup()
     {

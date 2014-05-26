@@ -22,36 +22,35 @@ abstract class TestCase extends FunctionalTestCase
 {
     public static function setUpBeforeClass()
     {
-        parent::setUpBeforeClass();
         static::buildFixtures();
+        parent::setUpBeforeClass();
     }
 
-    static public function buildFixtures($prefix=null)
+    static public function buildFixtures($src='psr0')
     {
+        static::$tmpDir = $tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpspec-'.$src.'-');
         $finder = Finder::create();
-        $finder->in(__DIR__.'/fixtures');
-
+        $finder->in(__DIR__.'/fixtures/'.$src);
         foreach($finder->files() as $file){
-            $target = static::$tmpDir.$prefix.'/'.$file->getRelativePathname();
+            $target = static::$tmpDir.DIRECTORY_SEPARATOR.$file->getRelativePathname();
             static::mkdir(dirname($target));
             copy($file,$target);
             if(false!==strpos($target,'.php')){
                 //require_once($target);
             }
         }
-
+        chdir(static::$tmpDir);
         $finder = new ExecutableFinder();
         if(!is_executable($executable = $finder->find('composer.phar'))){
             $executable = $finder->find('composer');
         }
         if(!is_executable($executable)){
-            //$this->markTestSkipped('Composer executable not found');
             return;
         }
         $process = new Process($executable.' dumpautoload');
         $process->run();
         if($process->getExitCode()!==0){
-            //$this->markTestSkipped('Composer failed to dumpautoload');
+            throw new \PHPUnit_Framework_IncompleteTestError('Composer failed to dump autoload');
         }
     }
 
@@ -63,6 +62,7 @@ abstract class TestCase extends FunctionalTestCase
 <?php
 
 // created at {$time}
+// file: %relative_path%
 namespace {$namespace};
 
 class {$class}
@@ -71,6 +71,19 @@ class {$class}
 EOF;
         return $content;
 
+    }
+
+    protected function buildClass($target,$class)
+    {
+        $exp = explode('\\',$class);
+        $class = array_pop($exp);
+        $namespace = implode('\\',$exp);
+        $content = $this->getClassContent($namespace,$class);
+        $content = str_replace('%relative_path%',$target,$content);
+        $absPath = static::$tmpDir.DIRECTORY_SEPARATOR.$target;
+        $dir = dirname($absPath);
+        static::mkdir($dir);
+        file_put_contents($absPath,$content,LOCK_EX);
     }
 
     protected function getSpecContent($namespace,$class)
@@ -96,7 +109,7 @@ class {$class} extends ObjectBehavior
 {
     function it_is_initializable()
     {
-        \$this->shouldHaveType("{$specClass}");
+        \$this->shouldHaveType('{$specClass}');
     }
 }
 EOF;
@@ -107,8 +120,28 @@ EOF;
     {
         $content = $this->getSpecContent($namespace,$class);
         $target = static::$tmpDir.'/'.$target;
+        $dir = dirname($target);
+        static::mkdir($dir);
         file_put_contents($target,$content);
-
         return $target;
+    }
+
+    protected function clearCache()
+    {
+        @unlink(Inspector::getCacheFileName());
+        @unlink(Inspector::getErrorFileName());
+    }
+
+    protected $currentResults;
+
+    protected function getResults()
+    {
+        return array();
+        $file = Inspector::getCacheFileName();
+        clearstatcache(true,$file);
+        $contents = file_get_contents($file);
+        $data = unserialize($contents);
+
+        return $data[0];
     }
 }

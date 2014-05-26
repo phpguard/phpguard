@@ -25,7 +25,7 @@ class ApplicationTest extends TestCase
 
     /**
      * @dataProvider getTestRunCommand
-     * @group current
+     *
      */
     public function testShouldRunCommand($command,$expected)
     {

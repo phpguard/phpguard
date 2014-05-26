@@ -43,12 +43,11 @@ class PhpSpecPluginTest extends TestCase
         $class = $exp[1];
         file_put_contents($file,$this->getClassContent($namespace,$class));
         $this->evaluate();
-        $display = $this->getDisplay(true);
         if($assertNot){
-            $this->assertNotContains($fileName,$display);
-            ///$this->assertNotContains($className,$display);
+            $this->assertNotDisplayContains('executing');
+            //$this->assertNotContains($className,$display);
         }else{
-            $this->assertDisplayContains($fileName);
+            $this->assertDisplayContains('executing');
             ///$this->assertContains($className,$display);
         }
     }
@@ -59,7 +58,6 @@ class PhpSpecPluginTest extends TestCase
             array('src/PhpSpecTest1/TestClass.php','PhpSpecTest1\\TestClass'),
             array('src/PhpSpecTest2/TestClass.php','PhpSpecTest2\\TestClass'),
             array('src/PhpSpecTest3/TestClass.php','PhpSpecTest3\\TestClass'),
-
             array('src/PhpSpecTest1/TestTag1.php','PhpSpecTest1\\TestTag1','Tag1'),
             array('src/PhpSpecTest2/TestTag2.php','PhpSpecTest2\\TestTag2','Tag1',true),
             array('src/PhpSpecTest2/TestTag3.php','PhpSpecTest3\\TestTag3','Tag1',true),
@@ -124,5 +122,55 @@ class PhpSpecPluginTest extends TestCase
         $this->evaluate();
         $this->assertDisplayContains('file not found');
         $this->assertDisplayContains('src/PhpSpecTest1/TestClass2.php');
+    }
+
+
+    public function testShouldImportSuites()
+    {
+        static::setUpBeforeClass();
+        @unlink(Inspector::getCacheFileName());
+        @unlink(Inspector::getErrorFileName());
+        $this->getTester()->run('all phpspec -vvv');
+        $this->assertDisplayContains('3 passed');
+        $this->assertNotDisplayContains('broken');
+    }
+
+    /**
+     * @dataProvider getTestPsr4
+     * @group current
+     */
+    public function testShouldImportPsr4Suites($targetClass,$class,$specPath,$specPrefix)
+    {
+        static::buildFixtures('psr4');
+        static::createApplication();
+        $autoload = include_once getcwd().'/vendor/autoload.php';
+        if(is_object($autoload)){
+            $autoload->register();
+        }
+        chdir(static::$tmpDir);
+
+        $exp = explode('\\',$class);
+        $specClass = array_pop($exp).'Spec';
+        $specNs = $specPrefix.'\\'.implode('\\',$exp);
+        $target = $specPath.$specPrefix.DIRECTORY_SEPARATOR.$class.'Spec.php';
+        $target = str_replace('\\','/',$target);
+
+        $args = '-vvv';
+        // build spec first before run
+        $this->createSpecFile($target,$specNs,$specClass);
+        $this->getTester()->run('all phpspec -vvv');
+        $this->buildClass($targetClass,$class);
+        $this->evaluate();
+
+        $this->assertDisplayContains($class);
+    }
+
+    public function getTestPsr4()
+    {
+        return array(
+            array('some/TestClass.php','psr4\\namespace1\\TestClass',null,'spec'),
+            array('some/namespace2/src/TestClass.php','psr4\\namespace2\\TestClass','some/namespace2/','spec'),
+            array('some/namespace3/src/TestClass.php','psr4\\namespace3\\TestClass','some/namespace3/','Spec'),
+        );
     }
 }

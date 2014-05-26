@@ -5,7 +5,7 @@ phpspec:
         all_after_pass:     true
         import_suites:      true
         run_all:
-            cli: "--format=dot -n"
+            cli: "--format=pretty -n"
 
-    watch:
-        - { pattern: "#^spec.*\.php$#", tags: Tag1 }
+    #watch:
+    #    - { pattern: "#^spec.*\.php$#", tags: Tag1 }

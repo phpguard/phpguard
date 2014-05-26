@@ -80,6 +80,7 @@ class InspectorTest extends TestCase
         $this->assertNotDisplayContains('TestClass');
         $this->assertDisplayContains('Foo');
         $this->assertNotDisplayContains('Bar');
+        $this->assertDisplayContains('2 broken');
 
         $plugin = $this->getApplication()->getContainer()->get('plugins.phpspec');
         $options = $plugin->getOptions();
@@ -87,10 +88,46 @@ class InspectorTest extends TestCase
         $options['keep_failed'] = false;
         $plugin->setOptions($options);
         $this->getTester()->run('-vvv');
+        $inspector->setOptions($options);
         $inspector->runAll();
         $this->assertNotDisplayContains('Bar');
         $this->assertDisplayContains('Foo');
         $this->assertDisplayContains('3 passed');
         $this->assertDisplayContains('1 broken');
+    }
+
+    public function testShouldLogBrokenSpecFiles()
+    {
+        $content = <<<EOF
+<?php
+
+namespace spec\PhpSpecTest1;
+
+use PhpSpec\ObjectBehavior;
+
+class BrokenFileSpec extends ObjectBehavior
+{
+    function it_is_initializable()
+    {
+        \$this->shouldHaveType('spec\PhpSpecTest1\BrokenFile);
+        aaaaaaaaa
+    }
+}
+EOF;
+        $this->buildFixtures('psr0');
+        $this->clearCache();
+        static::createApplication();
+        $this->getResults();
+        $file = $this->createSpecFile('spec/PhpSpecTest1/BrokenSpec.php','spec\\PhpSpecTest1','BrokenSpec');
+
+        $this->getTester()->run('all phpspec -vvv');
+        $this->assertDisplayContains('3 passed');
+        $this->assertDisplayContains('PhpSpecTest1\\Broken');
+
+        file_put_contents($file,$content);
+        $this->getTester()->run('all phpspec -vvv');
+        //$this->inspector->runAll();
+        $this->assertFileExists(Inspector::getErrorFileName());
+        $this->assertDisplayContains('Fatal Error');
     }
 }
