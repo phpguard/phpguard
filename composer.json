@@ -8,6 +8,7 @@
             "email": "me@itstoni.com"
         }
     ],
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
         "phpguard/listen":              "0.1.*@dev",
