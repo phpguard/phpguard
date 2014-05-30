@@ -15,7 +15,7 @@ before_script:
   - echo $PATH
 
 script:
-  - ./vendor/bin/phpunit --coverage-clover=build/logs/clover.xml
+  - ./bin/phpguard all --coverage -vvv
 
 after_script:
   - php ./vendor/bin/coveralls -v

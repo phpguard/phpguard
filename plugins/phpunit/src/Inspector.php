@@ -87,10 +87,13 @@ class Inspector extends ContainerAware
         $exitCode =$runner->run($builder)->getExitCode();
         $results = $this->checkResult(true);
         if(0===$exitCode && $this->options['all_after_pass']){
-            $this->getLogger()->addDebug('Run all tests after pass');
+            $this->getLogger()->addCommon('Run all tests after pass');
             $results = array_merge($results,$this->doRunAll());
         }
         $event = new ProcessEvent($this->plugin,$results);
+        if(count($this->failed) > 1){
+            $this->container->setParameter('application.exit_code',ResultEvent::FAILED);
+        }
         return $event;
     }
 
@@ -98,6 +101,9 @@ class Inspector extends ContainerAware
     {
         $results = $this->doRunAll();
         $event = new ProcessEvent($this->plugin,$results);
+        if(count($this->failed) > 1){
+            $this->container->setParameter('application.exit_code',ResultEvent::FAILED);
+        }
         return $event;
     }
 
@@ -154,7 +160,6 @@ class Inspector extends ContainerAware
             if($event->isSucceed()){
                 foreach($this->failed as $failedKey=>$failedEvent){
                     if($failedEvent->getArgument('file') === $file){
-                        $this->getLogger()->addDebug('unset failed tests '.$failedEvent->getMessage());
                         unset($this->failed[$failedKey]);
                     }
                 }
@@ -163,7 +168,6 @@ class Inspector extends ContainerAware
                 }
             }
             else {
-                $this->getLogger()->addDebug($key.' '.$event->getMessage());
                 $this->failed[$key] = $event;
                 $results[$key] = $event;
             }

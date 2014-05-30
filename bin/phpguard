@@ -19,13 +19,17 @@ if (is_dir($vendor = __DIR__ . '/../vendor')) {
     );
 }
 
+use PhpGuard\Application\Console\Application;
+use PhpGuard\Application\Event\ResultEvent;
 set_time_limit(0);
 try{
-    $app = new \PhpGuard\Application\Console\Application();
+    $app = new Application();
+    $app->setAutoExit(false);
     $app->setCatchExceptions(true);
-    $exit = $app->run();
+    $app->run();
+    $app->exitApplication();
+
 }catch(\Exception $e){
-    $exit = 1;
-    //exit($exit);
+    $app->renderException($e,$app->getContainer()->get('ui.output'));
+    exit(ResultEvent::BROKEN);
 }
-exit($exit);

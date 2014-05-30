@@ -11,6 +11,7 @@
 
 namespace PhpGuard\Plugins\PHPUnit\Bridge\TextUI;
 
+use PhpGuard\Application\Bridge\CodeCoverageRunner;
 use PhpGuard\Application\Container;
 use PhpGuard\Plugins\PHPUnit\Inspector;
 use PhpGuard\Plugins\PHPUnit\Bridge\TestListener;
@@ -34,22 +35,33 @@ class TestRunner extends PHPUnit_TextUI_TestRunner
     private $testListener;
 
     private $testFiles = array();
+
+    /**
+     * @var CodeCoverageRunner
+     */
+    private $coverageRunner;
+
     public function __construct(PHPUnit_Runner_TestSuiteLoader $loader = null, PHP_CodeCoverage_Filter $filter = null)
     {
+        $this->coverageRunner = $coverageRunner = CodeCoverageRunner::getCached();
+        $filter = $coverageRunner->getFilter();
+
         parent::__construct($loader, $filter);
         if(is_file($file=Inspector::getResultFileName())){
             unlink($file);
         }
         $this->testListener = new TestListener();
+        $this->testListener->setCoverage($coverageRunner);
     }
 
     public function doRun(PHPUnit_Framework_Test $suite, array $arguments = array())
     {
-        $arguments['listeners'][] = $this->testListener;
-        $result = parent::doRun($suite, $arguments);
 
+        $arguments['listeners'][] = $this->testListener;
+        $result = parent::doRun($suite,$arguments);
         $results = $this->testListener->getResults();
         Filesystem::serialize(Inspector::getResultFileName(),$results);
+        $this->coverageRunner->saveState();
         return $result;
     }
 

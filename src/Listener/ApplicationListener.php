@@ -40,6 +40,7 @@ class ApplicationListener implements EventSubscriberInterface
         }
         $dispatcher->dispatch(ConfigEvents::LOAD,$event);
         $container->setParameter('app.initialized',true);
+        $container->get('logger')->addDebug('Application initialized');
     }
 
     public function started(GenericEvent $event)

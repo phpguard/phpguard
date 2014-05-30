@@ -20,22 +20,22 @@ class ResultEvent
     /**
      * Command success
      */
-    const SUCCEED   = 100;
+    const SUCCEED   = 0;
 
     /**
      * Command fail
      */
-    const FAILED    = 200;
+    const FAILED    = 100;
 
     /**
      * Command is broken
      */
-    const BROKEN    = 400;
+    const BROKEN    = 200;
 
     /**
      * Command throws an error
      */
-    const ERROR     = 500;
+    const ERROR     = 300;
 
     /**
      * @var \Exception
@@ -60,6 +60,13 @@ class ResultEvent
     private $arguments = array();
 
     private $trace = array();
+
+    static $maps = array(
+        0       => 'SUCCEED',
+        100     => 'FAILED',
+        200     => 'BROKEN',
+        300     => 'ERROR',
+    );
 
     public function __construct(
         $result,

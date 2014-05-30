@@ -58,6 +58,7 @@ class PhpGuardExtension implements ExtensionInterface,EventSubscriberInterface
             ExampleEvent::PENDING => ResultEvent::FAILED,
             ExampleEvent::SKIPPED => ResultEvent::BROKEN,
         );
+
         $this->coverage = CodeCoverageRunner::getCached();
     }
 
@@ -73,7 +74,9 @@ class PhpGuardExtension implements ExtensionInterface,EventSubscriberInterface
     public function afterSuite(SuiteEvent $event)
     {
         Filesystem::serialize(Inspector::getCacheFileName(),$this->results);
-        $this->coverage->saveState();
+        if($this->coverage){
+            $this->coverage->saveState();
+        }
     }
 
     public function beforeExample(ExampleEvent $event)
@@ -85,14 +88,18 @@ class PhpGuardExtension implements ExtensionInterface,EventSubscriberInterface
             '%example%' => $example->getFunctionReflection()->getName(),
         ));
 
-        $this->coverage->start($name);
+        if($this->coverage){
+            $this->coverage->start($name);
+        }
     }
 
     public function afterExample(ExampleEvent $event)
     {
-        $this->coverage->stop();
         $type = $this->map[$event->getResult()];
         $this->addResult($type,$event->getSpecification(),$event->getTitle());
+        if($this->coverage){
+            $this->coverage->stop();
+        }
     }
 
     public function getResults()

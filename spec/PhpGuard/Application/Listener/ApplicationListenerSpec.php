@@ -18,8 +18,9 @@ use Symfony\Component\Finder\Adapter\AdapterInterface;
 
 class ApplicationListenerSpec extends ObjectBehavior
 {
-    function let(GenericEvent $event,ContainerInterface $container)
+    function let(GenericEvent $event,ContainerInterface $container,Logger $logger)
     {
+        $container->get('logger')->willReturn($logger);
         $event->getContainer()->willReturn($container);
     }
 

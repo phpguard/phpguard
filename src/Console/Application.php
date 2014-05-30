@@ -14,11 +14,11 @@ namespace PhpGuard\Application\Console;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Container;
 use PhpGuard\Application\Event\GenericEvent;
+use PhpGuard\Application\Event\ResultEvent;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Container\ContainerInterface;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\StringInput;
@@ -53,9 +53,6 @@ class Application extends BaseApplication
         $container->set('ui.output',$output);
         $container->get('logger.handler')->setOutput($output);
 
-        $event = new GenericEvent($container);
-        $container->get('dispatcher')->dispatch(ApplicationEvents::initialize,$event);
-
         foreach ($container->getByPrefix('commands') as $command) {
             $this->add($command);
         }
@@ -67,6 +64,13 @@ class Application extends BaseApplication
             $container->setParameter('filter.tags',$tags);
             $container->get('logger')->addDebug('Filtered using tags',array('tags'=>$tags));
         }
+
+        if($input->hasParameterOption(array('--coverage','-cov'))){
+            $container->setParameter('coverage.enabled',true);
+        }
+
+        $event = new GenericEvent($container);
+        $container->get('dispatcher')->dispatch(ApplicationEvents::initialize,$event);
 
         $command = $this->getCommandName($input);
         if(!$command){
@@ -83,7 +87,7 @@ class Application extends BaseApplication
         parent::configureIO($input, $output);
         $formatter = $output->getFormatter();
         $formatter->setStyle('fail',new OutputFormatterStyle('red'));
-        $formatter->setStyle('highlight',new OutputFormatterStyle('blue'));
+        $formatter->setStyle('highlight',new OutputFormatterStyle('blue',null,array('bold')));
     }
 
     public function setContainer(ContainerInterface $container)
@@ -118,6 +122,13 @@ class Application extends BaseApplication
             'Run only for this tags'
         );
 
+        $options['coverage'] = new InputOption(
+            'coverage',
+            'cov',
+            InputOption::VALUE_OPTIONAL,
+            'Run only for this tags'
+        );
+
         $definition->setOptions($options);
 
         return $definition;
@@ -148,10 +159,16 @@ class Application extends BaseApplication
      */
     public function exitApplication()
     {
+        $exitCode = $this->container->getParameter('application.exit_code',0);
+        $type = ResultEvent::$maps[$exitCode];
+        $this->container->get('logger')
+            ->addCommon('Application exit with code: <highlight>'.$exitCode.' - '.$type.'</highlight>');
+        ;
         $this->container->get('ui.output')->writeln('');
         $this->container->get('logger')
             ->addCommon(PhpGuard::EXIT_MESSAGE);
         $this->container->get('ui.output')->writeln('');
-        exit(0);
+
+        exit($exitCode);
     }
 }

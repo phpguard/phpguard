@@ -20,6 +20,8 @@ class InspectorSpec extends ObjectBehavior
 {
     protected $cacheFile;
 
+    protected $cwd;
+
     function let(
         ContainerInterface $container,
         Runner $runner,
@@ -28,6 +30,8 @@ class InspectorSpec extends ObjectBehavior
         Logger $logger
     )
     {
+        $this->cwd = getcwd();
+        chdir(sys_get_temp_dir());
         $this->cacheFile = Inspector::getResultFileName();
         @unlink($this->cacheFile);
         $runner->setContainer($container);
@@ -39,6 +43,9 @@ class InspectorSpec extends ObjectBehavior
         $container->get('plugins.phpunit')->willReturn($plugin);
         $container->get('logger')->willReturn($logger);
 
+        $container->setParameter('application.exit_code',Argument::any())
+            ->willReturn(true);
+
         $plugin->getOptions()
             ->willReturn(array(
                 'cli'=>'--some-options',
@@ -49,7 +56,11 @@ class InspectorSpec extends ObjectBehavior
             ->willReturn('phpunit')
         ;
         $this->setContainer($container);
+    }
 
+    function letgo()
+    {
+        chdir($this->cwd);
     }
 
     function it_is_initializable()
@@ -102,6 +113,8 @@ class InspectorSpec extends ObjectBehavior
         $results = $this->run(array('some_path'))->getResults();
         $results->shouldHaveCount(2);
         $results->shouldHaveKey('all_after_pass');
+
+
     }
 
     function its_runAll_should_returns_only_failed_or_broken_tests(

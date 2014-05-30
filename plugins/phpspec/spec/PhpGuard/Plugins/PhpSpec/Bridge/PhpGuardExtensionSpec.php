@@ -12,6 +12,7 @@ use Prophecy\Argument;
 
 class PhpGuardExtensionSpec extends ObjectBehavior
 {
+    protected $cwd;
     function let(
         SpecificationNode $specificationNode,
         ExampleEvent $exampleEvent
@@ -26,6 +27,13 @@ class PhpGuardExtensionSpec extends ObjectBehavior
         $exampleEvent->getTitle()
             ->willReturn('it should do something')
         ;
+        $this->cwd = getcwd();
+        chdir(sys_get_temp_dir());
+    }
+
+    function letgo()
+    {
+        chdir($this->cwd);
     }
 
     function it_is_initializable()

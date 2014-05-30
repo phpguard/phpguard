@@ -127,5 +127,6 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         $compiled = $config->compileFile($container->getParameter('config.file'));
         $container->setParameter('config.compiled',$compiled);
         $dispatcher->dispatch(ConfigEvents::POSTLOAD,$event);
+        $container->get('logger')->addDebug('Configuration loaded');
     }
 }

@@ -35,11 +35,6 @@ class PhpSpecPlugin extends Plugin
     {
         parent::addWatcher($watcher);
 
-        if(!is_null($this->logger)){
-            $options = $watcher->getOptions();
-            $this->logger->addDebug('added watcher pattern: '.$options['pattern']);
-        }
-
         if($this->options['always_lint']){
             $options = $watcher->getOptions();
             $linters = array_keys($options['lint']);

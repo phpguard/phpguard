@@ -41,9 +41,9 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         ));
         $this->options = array(
             'enabled'   => true,
-            'html'      => null,
-            'clover'    => null,
-            'text'      => null,
+            'output.html'      => null,
+            'output.clover'    => null,
+            'output.text'      => null,
             'whitelist' => array(),
             'blacklist' => array(),
             'whitelist_files' => array(),
@@ -52,6 +52,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $container->get('ui.output')->willReturn($output);
         $container->get('phpguard')->willReturn($phpGuard);
         $container->get('logger.handler')->willReturn($handler);
+        $container->getParameter('coverage.enabled',Argument::any())->willReturn(false);
         $phpGuard->getOptions()->willReturn(array('coverage'=>$this->options));
         $this->setContainer($container);
         $this->onConfigPostLoad();
@@ -89,11 +90,30 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $events->shouldHaveKey(ApplicationEvents::postRunAll);
     }
 
+    function it_should_enabled_by_container_parameter(
+        ContainerInterface $container,
+        PhpGuard $phpGuard
+    )
+    {
+        $options = $this->options;
+        $options['enabled'] = false;
+        $container->get('phpguard')
+            ->willReturn($phpGuard);
+        $phpGuard->getOptions()->willReturn(array('coverage'=>$options));
+        $this->onConfigPostLoad();
+
+        $this->shouldNotBeEnabled();
+
+        $container->getParameter('coverage.enabled',false)
+            ->willReturn(true);
+        $this->onConfigPostLoad();
+        $this->shouldBeEnabled();
+    }
+
     function it_delegate_start(
         PHP_CodeCoverage $coverage
     )
     {
-
         $coverage->start('some',false)
             ->shouldBeCalled();
 

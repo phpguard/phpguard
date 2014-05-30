@@ -1,21 +1,57 @@
+phpguard:
+    coverage:
+        enabled: false
+        whitelist:
+            - src
+            - plugins/*/src
+            - plugins/*/src
+        blacklist:
+            - spec
+            - tests
+            - plugins/*/spec
+            - plugins/*/functional
+            - vendor
+        show_uncovered_files: true
+        show_only_summary: true
+
+        output.text:    true
+        output.clover:  build/logs/clover.xml
+
 phpunit:
     options:
-        cli: "--exclude-group phpspec"
-        all_on_start:   false
-        all_after_pass: false
+        all_on_start:   true
+        all_after_pass: true
         keep_failed:    true
     watch:
-        - { pattern: "#^src\/PhpGuard\/Application\/(.+)\.php$#", transform: "tests/PhpGuard/Application/Tests/${1}Test.php" }
-        - { pattern: "#^src\/PhpGuard\/Plugins\/(\w+)\/(.+)\.php$#", transform: "tests/PhpGuard/Plugins/${1}/Tests/${2}Test.php" }
-        - { pattern: "#^tests\/.*Test\.php$#" }
+        - { pattern: "#^src\/(.+)\.php$#", transform: "tests/functional/${1}.php" }
+        - { pattern: "#^tests\/functional\/.*Test\.php$#" }
+
+        # phpspec
+        - { pattern: "#^plugins\/phpspec\/src\/(.+)\.php$#", transform: "plugins/phpspec/functional/PhpSpecPluginTest.php" }
+        - { pattern: "#^plugins\/phpspec\/functional\/.*Test\.php$#" }
+
+        # phpunit
+        - { pattern: "#^plugins\/phpunit\/src\/(.+)\.php$#", transform: "plugins/phpunit/functional/PHPUnitPluginTest.php" }
+        - { pattern: "#^plugins\/phpunit\/functional\/.*Test.php$#" }
 
 phpspec:
     options:
         cli: "--format=pretty --ansi"
+        all_on_start:       true
         all_after_pass:     true
         keep_failed:        true
+        import_suites:      false
         run_all:
-            cli: "--format=dot --ansi"
+            cli: "--format=dot"
+
     watch:
-        - { pattern: "#^src\/(.+)\.php$#" }
+        - { pattern: "#^src\/(.+)\.php$#", transform: "spec/PhpGuard/Application/${1}Spec.php" }
         - { pattern: "#^spec.*\.php$#" }
+
+        # phpspec
+        - { pattern: "#^plugins\/phpspec\/src\/(.+)\.php$#", transform: "plugins/phpspec/spec/PhpGuard/Plugins/PhpSpec/${1}Spec.php" }
+        - { pattern: "#^plugins\/phpspec\/spec\/(.+)\.php$#" }
+
+        # phpunit
+        - { pattern: "#^plugins\/phpunit\/src\/(.+)\.php$#", transform: "plugins/phpunit/spec/PhpGuard/Plugins/PHPUnit/${1}Spec.php" }
+        - { pattern: "#^plugins\/phpunit\/spec\/(.+)\.php$#" }

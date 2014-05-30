@@ -49,6 +49,9 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         /* @var \PhpGuard\Application\Log\ConsoleHandler $loggerHandler */
 
         $container = $this->container;
+
+        // always set exit code to zero first
+        $container->setParameter('application.exit_code',0);
         $dispatcher = $container->get('dispatcher');
         $loggerHandler = $container->get('logger.handler');
 
@@ -127,7 +130,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public function runAllCommand(GenericEvent $event)
     {
         /* @var \PhpGuard\Application\Plugin\PluginInterface $plugin */
-
+        $this->container->setParameter('application.exit_code',0);
         if ( is_null($plugin = $event->getArgument('plugin')) ) {
             $plugins = $this->container->getByPrefix('plugins');
         }

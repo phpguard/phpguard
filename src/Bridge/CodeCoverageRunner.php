@@ -14,6 +14,7 @@ namespace PhpGuard\Application\Bridge;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Console\Application;
+use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Util\Filesystem;
@@ -76,9 +77,9 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
 
             ApplicationEvents::postEvaluate => array(
                 array('onPostEvaluate',-100),
-                array('onPrePostEvaluate',0)
+                array('preCoverage',0)
             ),
-            ApplicationEvents::preRunAll => array('onPreRunAll',10),
+            ApplicationEvents::preRunAll => array('preCoverage',10),
             ApplicationEvents::postRunAll => array('onPostRunAll',10),
         );
     }
@@ -179,35 +180,62 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-            'enabled'   => false,
-            'html'      => false,
-            'clover'    => false,
-            'text'      => false,
-            'blacklist' => array(),
-            'whitelist' => array(),
-            'blacklist_files' => array(),
-            'whitelist_files' => array(),
-            'show_uncovered_files' => true,
-            'lower_upper_bound' => 35,
-            'high_lower_bound' => 70,
-            'show_only_summary' => false,
+            'enabled'               => false,
+            'blacklist'             => array(),
+            'whitelist'             => array(),
+            'blacklist_files'       => array(),
+            'whitelist_files'       => array(),
+            'show_uncovered_files'  => true,
+            'lower_upper_bound'     => 35,
+            'high_lower_bound'      => 70,
+            'show_only_summary'     => false,
+
+            'output.html'           => false,
+            'output.clover'         => false,
+            'output.text'           => false,
+            'input.option.enabled'  => false,
+        ));
+
+        $resolver->setNormalizers(array(
+            'output.html' => function($options,$value){
+                if($value){
+                    $dir = dirname($value);
+                    if(!is_dir($dir)){
+                        throw new ConfigurationException(sprintf(
+                            'Can not output coverage html to : "%s". Please ensure that directory %s exists and readable',
+                            $value,$dir
+                        ));
+                    }
+                    if(!is_dir($value)){
+                        mkdir($value,0755,true);
+                    }
+                    $value = realpath($value);
+                    return $value;
+                }
+            }
         ));
     }
 
     public function start($id, $clear = false )
     {
-        if(!$this->options['enabled']){
-            return;
+        if($this->isEnabled()){
+            $this->coverage->start($id,$clear);
         }
-        $this->coverage->start($id,$clear);
     }
 
     public function stop($append=true,$linesToBeCovered=array(),array $linesToBeUsed=array())
     {
-        if(!$this->options['enabled']){
-            return;
+        if($this->isEnabled()){
+            $this->coverage->stop($append,$linesToBeCovered,$linesToBeUsed);
         }
-        $this->coverage->stop($append,$linesToBeCovered,$linesToBeUsed);
+    }
+
+    public function preCoverage()
+    {
+        $this->logger->addDebug('Coverage saving state...');
+        $enabled = $this->isEnabled() ? 'enabled':'disabled';
+        $this->logger->addCommon('Coverage is <comment>'.$enabled.'</comment>');
+        $this->saveState();
     }
 
     public function onConfigPostLoad()
@@ -223,14 +251,11 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         array_map(array($filter, 'addDirectoryToBlacklist'), $options['blacklist']);
         array_map(array($filter, 'addFileToWhitelist'), $options['whitelist_files']);
         array_map(array($filter, 'addFileToBlacklist'), $options['blacklist_files']);
+
+        $enabled = $this->container->getParameter('coverage.enabled',false);
+        $this->options['input.option.enabled'] = $enabled;
+
         $this->logger->addDebug('Coverage configured');
-
-        $this->saveState();
-    }
-
-    public function onPrePostEvaluate()
-    {
-        $this->logger->addDebug('Coverage Post Evaluate');
     }
 
     public function onPostEvaluate()
@@ -238,31 +263,11 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         $this->logger->addDebug('Coverage Post Evaluate');
     }
 
-    public function onPreRunAll()
-    {
-        $this->logger->addDebug('coverage pre run all',$this->options);
-        $this->saveState();
-    }
-
     public function onPostRunAll()
     {
         $this->importCached();
         $this->logger->addDebug('coverage post run all');
-        $this->reportText();
-    }
-
-    private function reportText()
-    {
-        $options = $this->options;
-        $report = new \PHP_CodeCoverage_Report_Text(
-            $options['lower_upper_bound'],
-            $options['high_lower_bound'],
-            //false,
-            $options['show_uncovered_files'],
-            $options['show_only_summary']
-        );
-        $output = $report->process($this->coverage,true);
-        $this->container->get('ui.output')->writeln($output);
+        $this->process();
     }
 
     public function getFilter()
@@ -278,6 +283,11 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     public function saveState()
     {
         Filesystem::serialize(static::getCacheFile(),$this);
+    }
+
+    public function isEnabled()
+    {
+        return $this->options['input.option.enabled'] || $this->options['enabled'];
     }
 
     private function importCached()
@@ -301,6 +311,64 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
      */
     static public function getCached()
     {
-        return Filesystem::unserialize(static::getCacheFile());
+        if(file_exists(static::getCacheFile())){
+            return Filesystem::unserialize(static::getCacheFile());
+        }else{
+            return false;
+        }
+    }
+
+    private function process()
+    {
+        if(!$this->isEnabled()){
+            return;
+        }
+        $options = $this->options;
+        if($options['output.text']){
+            $this->reportText();
+        }
+        if($options['output.html']){
+            $this->reportHtml($options['output.html']);
+        }
+
+        if($options['output.clover']){
+            $this->reportClover($options['output.clover']);
+        }
+    }
+
+    private function reportText()
+    {
+        $this->logger->addCommon('Processing text output... please wait!');
+        $options = $this->options;
+        $report = new \PHP_CodeCoverage_Report_Text(
+            $options['lower_upper_bound'],
+            $options['high_lower_bound'],
+            $options['show_uncovered_files'],
+            $options['show_only_summary']
+        );
+        $output = $report->process($this->coverage,true);
+        $this->container->get('ui.output')->writeln($output);
+    }
+
+    private function reportHtml($target)
+    {
+        $relative = str_replace(getcwd().DIRECTORY_SEPARATOR,'',$target);
+        $this->logger->addCommon(sprintf(
+            'Generating html output to: <comment>%s</comment> please wait!',
+            $relative
+        ));
+        $report = new \PHP_CodeCoverage_Report_HTML();
+        $report->process($this->coverage,$target);
+    }
+
+    private function reportClover($target)
+    {
+        $relative = str_replace(getcwd().DIRECTORY_SEPARATOR,'',$target);
+        $this->logger->addCommon(sprintf(
+            'Generating clover output to: <comment>%s</comment> please wait!',
+            $relative
+        ));
+        $report = new \PHP_CodeCoverage_Report_Clover();
+        $report->process($this->coverage,$target);
     }
 }

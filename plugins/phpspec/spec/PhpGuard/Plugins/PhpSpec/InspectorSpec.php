@@ -69,7 +69,8 @@ class InspectorSpec extends ObjectBehavior
 
     function it_should_run_for_paths(
         Runner $runner,
-        Process $process
+        Process $process,
+        ContainerInterface $container
     )
     {
 
@@ -89,6 +90,9 @@ class InspectorSpec extends ObjectBehavior
             ->shouldBeCalled()
             ->willReturn(1)
         ;
+        $container->setParameter('application.exit_code',ResultEvent::FAILED)
+            ->shouldBeCalled();
+        
         $results = $this->run(array('some_path'));
         $results->getResults()->shouldHaveCount(3);
         $results->getResults()->shouldHaveKey('succeed');

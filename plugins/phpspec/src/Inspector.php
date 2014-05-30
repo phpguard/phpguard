@@ -97,6 +97,9 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
     public function runAll()
     {
         $results = $this->doRunAll();
+        if(count($this->failed) > 0){
+            $this->container->setParameter('application.exit_code',ResultEvent::FAILED);
+        }
         return new ProcessEvent(
             $this->container->get('plugins.phpspec'),
             $results
@@ -128,6 +131,9 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
             $this->container->get('plugins.phpspec'),
             $results
         );
+        if(count($this->failed) > 0){
+            $this->container->setParameter('application.exit_code',ResultEvent::FAILED);
+        }
         return $event;
     }
 

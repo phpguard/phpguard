@@ -12,6 +12,7 @@
 namespace PhpGuard\Plugins\PHPUnit\Bridge;
 
 use Exception;
+use PhpGuard\Application\Bridge\CodeCoverageRunner;
 use PhpGuard\Application\Container;
 use PhpGuard\Application\Event\ResultEvent;
 use PhpGuard\Application\Plugin\PluginInterface;
@@ -32,6 +33,16 @@ class TestListener implements \PHPUnit_Framework_TestListener
     private $results = array();
 
     private $hasFailed = false;
+
+    /**
+     * @var CodeCoverageRunner
+     */
+    private $coverage;
+
+    public function setCoverage(CodeCoverageRunner $coverage)
+    {
+        $this->coverage = $coverage;
+    }
 
     public function addError(\PHPUnit_Framework_Test $test, Exception $e, $time)
     {
@@ -70,13 +81,18 @@ class TestListener implements \PHPUnit_Framework_TestListener
     public function startTest(PHPUnit_Framework_Test $test)
     {
         //printf("Test '%s' started.\n", $test->getName());
-
+        $name = strtr('%test%::%name%', array(
+            '%test%' => get_class($test),
+            '%name%' =>$test->getName(),
+        ));
+        $this->coverage->start($name);
         return;
     }
 
     public function endTest(PHPUnit_Framework_Test $test, $time)
     {
         //printf("Test '%s' ended.\n", $test->getName());
+        $this->coverage->stop();
         return;
     }
 

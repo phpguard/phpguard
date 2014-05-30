@@ -293,7 +293,8 @@ EOF;
 
     static public function getCacheDir()
     {
-        $dir = sys_get_temp_dir().'/phpguard/cache';
+        $hash = md5(getcwd());
+        $dir = sys_get_temp_dir().'/phpguard/cache/'.$hash;
         @mkdir($dir,0755,true);
         return $dir;
     }
