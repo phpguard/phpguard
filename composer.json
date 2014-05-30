@@ -9,18 +9,19 @@
         }
     ],
     "require": {
-        "symfony/console":  "*",
-        "symfony/finder":   "*",
-        "symfony/process":  "*",
-        "monolog/monolog":  "*",
-        "phpguard/listen":  "0.1.*@dev",
-        "symfony/options-resolver": "*",
-        "symfony/event-dispatcher": "*",
-        "symfony/yaml":     "*"
+        "symfony/console":              "*",
+        "symfony/finder":               "*",
+        "symfony/process":              "*",
+        "monolog/monolog":              "*",
+        "phpguard/listen":              "0.1.*@dev",
+        "symfony/options-resolver":     "*",
+        "symfony/event-dispatcher":     "*",
+        "symfony/yaml":                 "*",
+        "phpunit/php-code-coverage":    "~2.0"
     },
     "require-dev": {
         "phpspec/phpspec": "~2.1@dev",
-        "phpunit/phpunit": "*"
+        "phpunit/phpunit": "~4.0"
     },
     "autoload": {
         "psr-4": {
