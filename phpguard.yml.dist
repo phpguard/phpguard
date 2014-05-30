@@ -3,17 +3,12 @@ phpguard:
         enabled: false
         whitelist:
             - src
-            - plugins/*/src
-            - plugins/*/src
         blacklist:
             - spec
             - tests
-            - plugins/*/spec
-            - plugins/*/functional
             - vendor
         show_uncovered_files: true
         show_only_summary: true
-
         output.text:    true
         output.clover:  build/logs/clover.xml
 
@@ -25,14 +20,6 @@ phpunit:
     watch:
         - { pattern: "#^src\/(.+)\.php$#", transform: "tests/functional/${1}.php" }
         - { pattern: "#^tests\/functional\/.*Test\.php$#" }
-
-        # phpspec
-        - { pattern: "#^plugins\/phpspec\/src\/(.+)\.php$#", transform: "plugins/phpspec/functional/PhpSpecPluginTest.php" }
-        - { pattern: "#^plugins\/phpspec\/functional\/.*Test\.php$#" }
-
-        # phpunit
-        - { pattern: "#^plugins\/phpunit\/src\/(.+)\.php$#", transform: "plugins/phpunit/functional/PHPUnitPluginTest.php" }
-        - { pattern: "#^plugins\/phpunit\/functional\/.*Test.php$#" }
 
 phpspec:
     options:
@@ -46,11 +33,3 @@ phpspec:
     watch:
         - { pattern: "#^src\/(.+)\.php$#", transform: "spec/PhpGuard/Application/${1}Spec.php" }
         - { pattern: "#^spec.*\.php$#" }
-
-        # phpspec
-        - { pattern: "#^plugins\/phpspec\/src\/(.+)\.php$#", transform: "plugins/phpspec/spec/PhpGuard/Plugins/PhpSpec/${1}Spec.php" }
-        - { pattern: "#^plugins\/phpspec\/spec\/(.+)\.php$#" }
-
-        # phpunit
-        - { pattern: "#^plugins\/phpunit\/src\/(.+)\.php$#", transform: "plugins/phpunit/spec/PhpGuard/Plugins/PHPUnit/${1}Spec.php" }
-        - { pattern: "#^plugins\/phpunit\/spec\/(.+)\.php$#" }
