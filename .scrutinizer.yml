@@ -9,6 +9,3 @@ filter:
     - spec/*
     - vendor/*
     - tests/*
-    - plugins/*/bin
-    - plugins/*/spec
-    - plugins/*/functional
