@@ -41,7 +41,8 @@ phpspec:
         all_after_pass:     true
         keep_failed:        true
         import_suites:      false
-        
+        run_all: "--format=pretty"
+
     watch:
         - { pattern: "#^src\/(.+)\.php$#", transform: "spec/PhpGuard/Application/${1}Spec.php" }
         - { pattern: "#^spec.*\.php$#" }
