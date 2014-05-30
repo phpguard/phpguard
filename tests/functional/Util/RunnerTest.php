@@ -11,8 +11,8 @@
 
 namespace PhpGuard\Application\Functional\Util;
 
+use PhpGuard\Application\Functional\TestCase;
 use PhpGuard\Application\Util\Runner;
-use PhpGuard\Plugins\PhpSpec\Functional\TestCase;
 use Symfony\Component\Process\ProcessBuilder;
 
 class RunnerTest extends TestCase

@@ -11,28 +11,9 @@
          bootstrap="tests/bootstrap.php">
 
     <testsuites>
-        <testsuite name="PhpGuard Application Spec">
-            <directory>./tests/spec</directory>
-        </testsuite>
-        <testsuite name="PhpGuard Application Functional">
+        <testsuite name="PhpGuard Functional Test Suite">
             <directory>./tests/functional</directory>
-            <directory>./plugins/phpspec/functional</directory>
-            <directory>./plugins/phpunit/functional</directory>
-            <exclude>./plugins/phpunit/functional/fixtures</exclude>
+            <exclude>./functional/fixtures</exclude>
         </testsuite>
     </testsuites>
-
-    <filter>
-        <whitelist>
-            <directory>./src</directory>
-            <directory>./plugins/phpspec/src</directory>
-            <directory>./plugins/phpunit/src</directory>
-            <exclude>
-                <directory>./tests</directory>
-                <directory>./plugins/phpspec/functional</directory>
-                <directory>./plugins/phpunit/functional</directory>
-                <directory>./src/Test/*</directory>
-            </exclude>
-        </whitelist>
-    </filter>
 </phpunit>
