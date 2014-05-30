@@ -55,48 +55,6 @@ class ApplicationListener implements EventSubscriberInterface
         $container->get('ui.application')->exitApplication();
     }
 
-    public function runAll(GenericEvent $event)
-    {
-        $container = $event->getContainer();
-        $logger = $container->get('logger');
-        
-        if(is_null($plugin = $event->getArgument('plugin'))){
-            $plugins = $container->getByPrefix('plugins');
-        }else{
-            $name = 'plugins.'.$plugin;
-            if($container->has($name)){
-                $plugin = $container->get('plugins.'.$plugin);
-                $plugins = array($plugin);
-            }else{
-                $logger->addFail(sprintf(
-                    'Plugin "%s" is not registered',
-                    $plugin
-                ));
-                return;
-            }
-        }
-
-        /* @var \PhpGuard\Application\Plugin\PluginInterface $plugin */
-
-        if(!is_array($plugins)){
-            $plugins = array($plugins);
-        }
-
-        foreach($plugins as $plugin)
-        {
-            if(!$plugin->isActive()){
-                continue;
-            }
-            $logger->addDebug(
-                'Start running all for plugin '.$plugin->getName()
-            );
-            $plugin->runAll();
-            $logger->addDebug(
-                'End running all for plugin '.$plugin->getName()
-            );
-        }
-    }
-
     private function setupListen($container)
     {
         $adapter = $container->get('listen.adapter');
