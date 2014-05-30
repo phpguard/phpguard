@@ -34,7 +34,9 @@ class RunAllCommand extends Command
         $container = $this->container;
         $dispatcher = $container->get('dispatcher');
         $event = new GenericEvent($container,array('plugin'=>$input->getArgument('plugin')));
-        $dispatcher->dispatch(ApplicationEvents::runAllCommands,$event);
+        $dispatcher->dispatch(ApplicationEvents::preRunAll,$event);
+        $dispatcher->dispatch(ApplicationEvents::runAll,$event);
+        $dispatcher->dispatch(ApplicationEvents::postRunAll,$event);
     }
 
 }

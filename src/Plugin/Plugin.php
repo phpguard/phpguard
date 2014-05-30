@@ -165,28 +165,13 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     }
 
     /**
-     * @param   string    $command
-     * @param   array     $arguments
-     * @return  Runner
-     */
-    public function createRunner($command,array $arguments = array())
-    {
-        $runner = new Runner();
-        $runner->setContainer($this->container);
-        $runner->setCommand($command);
-        $runner->setArguments($arguments);
-
-        return $runner;
-    }
-
-    /**
      * @param   mixed $tag
      *
      * @return  void
      */
     public function addTag($tag)
     {
-        // TODO: Implement addTag() method.
+        $this->options['tag'][] = $tag;
     }
 
     /**

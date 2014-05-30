@@ -20,6 +20,7 @@ if (is_dir($vendor = __DIR__ . '/../vendor')) {
     );
 }
 
+
 use PhpGuard\Plugins\PhpSpec\Bridge\Console\Application;
 $app = new Application();
 $app->run();

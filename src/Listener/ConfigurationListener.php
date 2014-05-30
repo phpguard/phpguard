@@ -105,8 +105,8 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     {
         $container = $this->container;
 
-        if(is_null($container->getParameter('phpguard.use_tty',null))){
-            $container->setParameter('phpguard.use_tty',true);
+        if(is_null($container->getParameter('runner.tty',null))){
+            $container->setParameter('runner.tty',true);
         }
     }
 
@@ -124,7 +124,8 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         $container = $event->getContainer();
         $config = $container->get('config');
         $dispatcher->dispatch(ConfigEvents::PRELOAD,$event);
-        $config->compileFile($container->getParameter('config.file'));
+        $compiled = $config->compileFile($container->getParameter('config.file'));
+        $container->setParameter('config.compiled',$compiled);
         $dispatcher->dispatch(ConfigEvents::POSTLOAD,$event);
     }
 }

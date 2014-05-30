@@ -17,20 +17,20 @@ final class ConfigEvents
     /**
      * Before configuration loaded
      */
-    const PRELOAD       = 'preLoad';
+    const PRELOAD       = 'config.pre_load';
 
     /**
      * After configuration loaded
      */
-    const POSTLOAD      = 'postLoad';
+    const POSTLOAD      = 'config.post_load';
 
     /**
      * Load configuration file
      */
-    const LOAD          = 'load';
+    const LOAD          = 'config.load';
 
     /**
      * Processor reload
      */
-    const RELOAD         = 'reload';
+    const RELOAD         = 'config.reload';
 }

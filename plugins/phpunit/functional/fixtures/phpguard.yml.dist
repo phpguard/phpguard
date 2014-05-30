@@ -1,0 +1,7 @@
+phpunit:
+    options:
+        cli: "--verbose"
+        keep_failed:        true
+        all_after_pass:     true
+    watch:
+        - {pattern: "#^tests/(.+)\.php$#"}

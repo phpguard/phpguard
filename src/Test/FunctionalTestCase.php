@@ -12,6 +12,7 @@
 namespace PhpGuard\Application\Test;
 
 use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Container;
 use PhpGuard\Application\PhpGuard;
 use PHPUnit_Framework_TestCase;
 
@@ -94,6 +95,9 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
 
     protected function evaluate()
     {
+        static::$container->get('logger')
+            ->addDebug('Start evaluate on: '.getcwd())
+        ;
         static::$container->get('listen.listener')->evaluate();
     }
 
@@ -142,7 +146,6 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
 
     protected function assertNotDisplayContains($expected,$message=null)
     {
-
         $display = $this->getDisplay();
         $this->assertNotContains($expected,$display,$message);
     }

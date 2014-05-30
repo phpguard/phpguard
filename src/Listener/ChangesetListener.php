@@ -13,7 +13,8 @@ namespace PhpGuard\Application\Listener;
 
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Container\ContainerInterface;
-use PhpGuard\Application\Event\CommandEvent;
+use PhpGuard\Application\Event\ProcessEvent;
+use PhpGuard\Application\Event\ResultEvent;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Event\EvaluateEvent;
@@ -27,13 +28,18 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  */
 class ChangesetListener extends ContainerAware implements EventSubscriberInterface
 {
+    private $results;
+
     public static function getSubscribedEvents()
     {
         return array(
-            ApplicationEvents::postEvaluate => 'postEvaluate',
+            ApplicationEvents::postEvaluate => array(
+                array('postEvaluate',10),
+                array('showPrompt',-1000)
+            ),
             ApplicationEvents::preRunCommand => 'preRunCommand',
             ApplicationEvents::postRunCommand => 'postRunCommand',
-            ApplicationEvents::runAllCommands => 'runAllCommand',
+            ApplicationEvents::runAll => 'runAllCommand',
         );
     }
 
@@ -69,7 +75,8 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
                         $results = array_merge($results,$result);
                     }
                 }catch(\Exception $e){
-                    $results[] = new CommandEvent($plugin,CommandEvent::BROKEN,$e->getMessage(),$e);
+                    $resultEvent = new ResultEvent(ResultEvent::ERROR,$e->getMessage(),array(),$e);
+                    $results[] = new ProcessEvent($plugin,array($resultEvent));
                 }
 
                 $dispatcher->dispatch(
@@ -79,9 +86,17 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
             }
         }
         $this->renderResults($container,$results);
-        if(count($results) > 0 || $loggerHandler->isLogged()){
-            $container->get('ui.shell')->installReadlineCallback();
+        $this->results = $results;
+        //$loggerHandler->reset();
+    }
+
+    public function showPrompt()
+    {
+        $loggerHandler = $this->container->get('logger.handler');
+        if(count($this->results) > 0 || $loggerHandler->isLogged()){
+            $this->container->get('ui.shell')->installReadlineCallback();
         }
+        $loggerHandler->reset();
     }
 
     public function preRunCommand(GenericEvent $event)
@@ -113,14 +128,16 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     {
         /* @var \PhpGuard\Application\Plugin\PluginInterface $plugin */
 
-        if(is_null($plugin = $event->getArgument('plugin'))){
+        if ( is_null($plugin = $event->getArgument('plugin')) ) {
             $plugins = $this->container->getByPrefix('plugins');
-        }else{
+        }
+        else {
             $name = 'plugins.'.$plugin;
             if($this->container->has($name)){
                 $plugin = $this->container->get('plugins.'.$plugin);
                 $plugins = array($plugin);
-            }else{
+            }
+            else {
                 throw new \RuntimeException(sprintf(
                         'Plugin "%s" is not registered',
                         $plugin
@@ -133,18 +150,15 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
             if(!$plugin->isActive()){
                 $this->getLogger()->addFail(sprintf('Plugin "%s" is not active',$plugin->getTitle()));
                 continue;
+            }else{
+                $this->getLogger()->addDebug(
+                    'Start running all for plugin '.$plugin->getTitle()
+                );
+                $results[] = $plugin->runAll();
+                $this->getLogger()->addDebug(
+                    'End running all for plugin '.$plugin->getTitle()
+                );
             }
-            $this->getLogger()->addDebug(
-                'Start running all for plugin '.$plugin->getName()
-            );
-            $result = $plugin->runAll();
-            if($result){
-                $result = is_array($result) ? $result:array($result);
-                $results = array_merge($results,$result);
-            }
-            $this->getLogger()->addDebug(
-                'End running all for plugin '.$plugin->getName()
-            );
         }
         if(count($results) > 0){
             $this->renderResults($event->getSubject(),$results);
@@ -170,23 +184,39 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     private function renderResults(ContainerInterface $container,$results)
     {
         /* @var \PhpGuard\Application\Log\Logger $logger */
-        /* @var \PhpGuard\Application\Event\CommandEvent $event */
+        /* @var \PhpGuard\Application\Event\ProcessEvent $resultEvent */
+        /* @var \PhpGuard\Application\Event\ResultEvent $event */
         $logger = $container->get('logger');
 
-        foreach($results as $event)
+        foreach($results as $resultEvent)
         {
-            $status = $event->getResult();
-            switch($status){
-                case CommandEvent::SUCCEED:
-                    $logger->addSuccess($event->getMessage());
-                    break;
-                case CommandEvent::FAILED:
-                    $logger->addFail($event->getMessage());
-                    break;
-                case CommandEvent::BROKEN:
-                    $logger->addFail($event->getMessage());
-                    break;
+            foreach($resultEvent->getResults() as $event)
+            {
+                $status = $event->getResult();
+                switch($status){
+                    case ResultEvent::SUCCEED:
+                        $logger->addSuccess($event->getMessage());
+                        break;
+                    case ResultEvent::FAILED:
+                        $logger->addFail($event->getMessage());
+                        break;
+                    case ResultEvent::BROKEN:
+                        $logger->addFail($event->getMessage());
+                        break;
+                    case ResultEvent::ERROR:
+                        $logger->addFail($event->getMessage());
+                        $this->printTrace($event->getTrace());
+                        break;
+                }
             }
+        }
+    }
+
+    private function printTrace($trace)
+    {
+        $writer = $this->container->get('ui.output');
+        for ($i = 0, $count = count($trace); $i < $count; $i++) {
+            $writer->writeln($trace[$i]);
         }
     }
 }

@@ -12,10 +12,11 @@
 namespace PhpGuard\Plugins\PhpSpec\Bridge\Console;
 
 use Monolog\ErrorHandler;
-use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
+use PhpGuard\Application\Event\ResultEvent;
 use PhpGuard\Application\Log\ConsoleFormatter;
 use PhpGuard\Application\Log\Logger;
+use PhpGuard\Application\Util\Filesystem;
 use PhpGuard\Plugins\PhpSpec\Bridge\PhpGuardExtension;
 use PhpGuard\Plugins\PhpSpec\Inspector;
 use PhpSpec\Console\Application as BaseApplication;
@@ -24,7 +25,6 @@ use PhpSpec\Extension;
 use PhpSpec\Formatter;
 use PhpSpec\Loader;
 use PhpSpec\ServiceContainer;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Class Application
@@ -94,28 +94,43 @@ class Application extends BaseApplication
 
     public function renderException($e, $output)
     {
-        // this usually because class is moved
-        $this->errorHandler->handleException($e);
+        //$this->errorHandler->handleException($e);
         parent::renderException($e, $output);
     }
 
     private function configureErrorHandler()
     {
-        @unlink(Inspector::getErrorFileName());
+        @unlink($file=sys_get_temp_dir().'/phpspec_error.log');
         ini_set('display_errors', 0);
-        ini_set('error_log',sys_get_temp_dir().'/phpspec_error.log');
-        $logger = new Logger('PhpSpec');
+        ini_set('error_log',$file);
+        register_shutdown_function(array($this,'handleShutdown'));
+    }
 
-        $format = $format = "%message% %context%\n";
-        $formatter = new ConsoleFormatter($format);
+    public function handleShutdown()
+    {
+        $fatalErrors = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR);
+        $lastError = error_get_last();
 
-        $handler = new StreamHandler(Inspector::getErrorFileName(),Logger::ERROR);
-        $handler->setFormatter($formatter);
-        $logger->pushHandler($handler);
-        $errorHandler = new ErrorHandler($logger);
+        if($lastError && in_array($lastError['type'],$fatalErrors)){
+            $message = 'Fatal Error '.$lastError['message'];
+            $error = $lastError;
+            $trace = file(sys_get_temp_dir().'/phpspec_error.log');
 
-        $errorHandler->registerFatalHandler();
-        $this->errorHandler = $errorHandler;
-        $this->logger = $logger;
+            $traces = array();
+            for( $i=0,$count=count($trace);$i < $count; $i++ ){
+                $text = trim($trace[$i]);
+                if(false!==($pos=strpos($text,'PHP '))){
+                    $text = substr($text,$pos+4);
+                }
+                $traces[] = $text;
+            }
+            $event = ResultEvent::createError(
+                $message,
+                $error,
+                null,
+                $traces
+            );
+            Filesystem::serialize(Inspector::getCacheFileName(),array($event));
+        }
     }
 }

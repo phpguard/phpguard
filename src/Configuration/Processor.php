@@ -31,7 +31,7 @@ class Processor extends ContainerAware
                 $file
             ));
         }
-        $this->compile($file);
+        return $this->compile($file);
     }
 
     public function compile($text)
@@ -47,6 +47,8 @@ class Processor extends ContainerAware
                 $this->parsePluginSection($plugin,$definitions);
             }
         }
+
+        return $parsed;
     }
 
     private function parseGuardSection($definitions)

@@ -9,12 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Event;
+namespace PhpGuard\Application\Exception;
 
 /**
- * Class CommonEvent
+ * Class ErrorHandler
  *
  */
-class CommonEvent
+class ErrorHandler
 {
 }

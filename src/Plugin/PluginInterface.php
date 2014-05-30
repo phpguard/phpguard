@@ -28,6 +28,12 @@ interface PluginInterface extends LoggerAwareInterface
     public function getTitle();
 
     /**
+     * An array of plugin options
+     * @return array
+     */
+    public function getOptions();
+
+    /**
      * @param \PhpGuard\Application\Watcher $watcher
      * @return void
      */
@@ -35,13 +41,14 @@ interface PluginInterface extends LoggerAwareInterface
 
     /**
      * Run all command
-     * @return void
+     * @return \PhpGuard\Application\Event\ProcessEvent
      */
     public function runAll();
 
     /**
      * @param   array $paths
-     * @return  array An array of CommandEvent
+     *
+     * @return \PhpGuard\Application\Event\ProcessEvent
      */
     public function run(array $paths = array());
 

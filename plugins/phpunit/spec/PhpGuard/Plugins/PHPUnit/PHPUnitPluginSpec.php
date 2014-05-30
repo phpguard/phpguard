@@ -5,49 +5,31 @@ namespace spec\PhpGuard\Plugins\PHPUnit;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\PhpGuard;
-use PhpGuard\Application\Runner;
-use PhpGuard\Listen\Util\PathUtil;
-use PhpGuard\Plugins\PHPUnit\PHPUnitPlugin;
+use PhpGuard\Application\Util\Runner;
 use PhpGuard\Application\Spec\ObjectBehavior;
+use PhpGuard\Listen\Util\PathUtil;
+use PhpGuard\Plugins\PHPUnit\Inspector;
 use Prophecy\Argument;
 use Symfony\Component\Console\Output\OutputInterface;
-
-class MockPhpUnitPlugin extends PHPUnitPlugin
-{
-    /**
-     * @var Runner
-     */
-    protected $runner;
-
-    public function setRunner(Runner $runner)
-    {
-        $this->runner = $runner;
-    }
-
-    public function createRunner($command,array $arguments=array())
-    {
-        $this->runner->setCommand($command);
-        $this->runner->setArguments($arguments);
-        return $this->runner;
-    }
-}
+use Symfony\Component\Finder\SplFileInfo;
+use Symfony\Component\Process\Process;
 
 class PHPUnitPluginSpec extends ObjectBehavior
 {
     function let(
-        Runner $runner,
         ContainerInterface $container,
         OutputInterface $output,
         PhpGuard $phpGuard,
-        $logger
+        Inspector $inspector
     )
     {
-        $this->beAnInstanceOf(__NAMESPACE__.'\\MockPhpUnitPlugin');
-        $this->setRunner($runner);
         $container->get('ui.output')
             ->willReturn($output);
         $container->get('phpguard')
             ->willReturn($phpGuard);
+
+        $container->get('phpunit.inspector')
+            ->willReturn($inspector);
 
         $logger = new Logger('PhpUnit');
         $this->setLogger($logger);
@@ -65,5 +47,27 @@ class PHPUnitPluginSpec extends ObjectBehavior
         $this->setOptions(array());
         $options = $this->getOptions();
         $options->shouldHaveKey('cli');
+    }
+
+    function its_run_should_delegate_run_to_inspector(
+        Inspector $inspector
+    )
+    {
+        $inspector->run(array('some_path'))
+            ->shouldBeCalled()
+            ->willReturn('result');
+        $this->run(array('some_path'))->shouldReturn('result');
+    }
+
+    function it_should_delegate_run_all_to_inspector(
+        Inspector $inspector
+    )
+    {
+        $inspector->runAll()
+            ->shouldBeCalled()
+            ->willReturn('result')
+        ;
+
+        $this->runAll();
     }
 }

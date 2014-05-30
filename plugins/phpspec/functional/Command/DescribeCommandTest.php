@@ -12,18 +12,19 @@
 namespace PhpGuard\Plugins\PhpSpec\Functional\Command;
 
 use PhpGuard\Plugins\PhpSpec\Functional\TestCase;
+use PhpGuard\Plugins\PhpSpec\Command\DescribeCommand;
+use Symfony\Component\Console\Tester\CommandTester;
 
 class DescribeCommandTest extends TestCase
 {
-    public static function setUpBeforeClass()
-    {
-        parent::setUpBeforeClass();
-    }
-
     public function testRun()
     {
-        $this->getTester()->run('phpspec:describe psr0/namespace1/FooClass');
-        $this->assertDisplayContains('created');
+        //$this->markTestIncomplete('not implemented yet');
+        //$this->getTester()->run('phpspec:describe psr0/namespace1/FooClass');
+        //$this->assertDisplayContains('created');
+        $this->getApplication()->add(new DescribeCommand());
+        $this->getTester()->run('phpspec:describe psr0/namespace1/FooClass -vvv');
+        $this->assertDisplayContains('psr0\\namespace1\\FooClass');
     }
 }
  

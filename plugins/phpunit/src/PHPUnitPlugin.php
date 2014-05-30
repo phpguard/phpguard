@@ -11,9 +11,12 @@
 
 namespace PhpGuard\Plugins\PHPUnit;
 
-use PhpGuard\Application\Event\CommandEvent;
+use PhpGuard\Application\Event\ResultEvent;
+use PhpGuard\Application\Event\ProcessEvent;
+use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Plugin\Plugin;
 use PhpGuard\Application\Watcher;
+use PhpGuard\Listen\Event\ChangeSetEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
@@ -54,46 +57,14 @@ class PHPUnitPlugin extends Plugin
         return 'PHPUnit';
     }
 
-
     public function runAll()
     {
-        $arguments = $this->buildArguments();
-        $runner = $this->createRunner('phpunit',$arguments);
-        $return = $runner->run();
-        if(!$return){
-            return array(new CommandEvent($this,CommandEvent::FAILED,'Running All Failed'));
-        }else{
-            return array(new CommandEvent($this,CommandEvent::SUCCEED,'Running All Success'));
-        }
+        return $this->getInspector()->runAll();
     }
 
     public function run(array $paths = array())
     {
-        $success = true;
-        $results = array();
-        foreach($paths as $path){
-            $arguments = $this->buildArguments();
-            $arguments[] = $path;
-            $runner = $this->createRunner('phpunit',$arguments);
-            $return = $runner->run();
-
-            if(!$return){
-                $success = false;
-                $results[] = new CommandEvent($this,CommandEvent::FAILED,'Running Failed for file: <highlight>'.$path->getRelativePathname().'</highlight>');
-            }else{
-                $results[] = new CommandEvent($this,CommandEvent::SUCCEED,'Running Success for file: <highlight>'.$path->getRelativePathname().'</highlight>');
-            }
-        }
-        if($success){
-            if($this->options['all_after_pass']){
-                $this->logger->addCommon('Run all tests after pass');
-                $return = $this->runAll();
-                $results = array_merge($results,$return);
-            }
-        }else{
-            $results[] = new CommandEvent($this,CommandEvent::FAILED,'Running Failed');
-        }
-        return $results;
+        return $this->getInspector()->run($paths);
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
@@ -104,17 +75,17 @@ class PHPUnitPlugin extends Plugin
             'all_after_pass' => false,
             'keep_failed' => false,
             'always_lint' => true,
+            'run_all' => array(
+                'cli' => null,
+            ),
         ));
     }
 
-    private function buildArguments()
+    /**
+     * @return \PhpGuard\Plugins\PHPUnit\Inspector
+     */
+    protected function getInspector()
     {
-        $arguments = array();
-        $options = $this->options;
-        if(isset($options['cli'])){
-            $arguments[] = $options['cli'];
-        }
-
-        return $arguments;
+        return $this->container->get('phpunit.inspector');
     }
 }

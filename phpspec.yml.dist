@@ -7,7 +7,9 @@ suites:
         namespace:   PhpGuard\Plugins\PhpSpec
         psr4_prefix: PhpGuard\Plugins\PhpSpec
         spec_path:   plugins/phpspec
+        src:         plugins/phpspec
     PHPUnitPlugin:
         namespace:   PhpGuard\Plugins\PHPUnit
         psr4_prefix: PhpGuard\Plugins\PHPUnit
         spec_path:   plugins/phpunit
+        src:         plugins/phpunit

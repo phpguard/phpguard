@@ -2,10 +2,10 @@ phpspec:
     options:
         cli: "--format=pretty -n"
         keep_failed:        true
-        all_after_pass:     true
+        all_after_pass:     false
         import_suites:      true
         run_all:
             cli: "--format=pretty -n"
 
-    #watch:
-    #    - { pattern: "#^spec.*\.php$#", tags: Tag1 }
+    watch:
+        - { pattern: "#^src\/.+\.php$#"}

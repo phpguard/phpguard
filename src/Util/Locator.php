@@ -10,6 +10,7 @@
  */
 
 namespace PhpGuard\Application\Util;
+
 use PhpGuard\Listen\Util\PathUtil;
 use SplObjectStorage;
 use Composer\Autoload\ClassLoader;
@@ -18,7 +19,7 @@ use Composer\Autoload\ClassLoader;
  * Class Locator
  *
  */
-class Locator
+class Locator implements \Serializable
 {
     /**
      * @var SplObjectStorage
@@ -52,7 +53,10 @@ class Locator
                 return true;
             }
         }
-        return $this->mainLoader->loadClass($class);
+        if($this->mainLoader->loadClass($class)){
+            return true;
+        }
+        return false;
     }
 
     public function add($prefix,$path,$prepend=false)
@@ -262,4 +266,29 @@ class Locator
 
         $this->autoLoaders->attach($object);
     }
+
+    /**
+     * (PHP 5 &gt;= 5.1.0)<br/>
+     * String representation of object
+     *
+     * @link http://php.net/manual/en/serializable.serialize.php
+     * @return string the string representation of the object or null
+     */
+    public function serialize(){}
+
+    /**
+     * (PHP 5 &gt;= 5.1.0)<br/>
+     * Constructs the object
+     *
+     * @link http://php.net/manual/en/serializable.unserialize.php
+     *
+     * @param string $serialized <p>
+     *                           The string representation of the object.
+     *                           </p>
+     *
+     * @return void
+     */
+    public function unserialize($serialized){}
+
+
 }

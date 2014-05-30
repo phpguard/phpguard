@@ -51,6 +51,7 @@ class Application extends BaseApplication
         $container = $this->container;
         $container->set('ui.input',$input);
         $container->set('ui.output',$output);
+        $container->get('logger.handler')->setOutput($output);
 
         $event = new GenericEvent($container);
         $container->get('dispatcher')->dispatch(ApplicationEvents::initialize,$event);

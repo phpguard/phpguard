@@ -12,7 +12,8 @@
 namespace PhpGuard\Application\Functional;
 
 
-use PhpGuard\Application\Event\CommandEvent;
+use PhpGuard\Application\Event\ResultEvent;
+use PhpGuard\Application\Event\ProcessEvent;
 use PhpGuard\Application\Plugin\Plugin;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -48,14 +49,15 @@ class TestPlugin extends Plugin
 
 
     /**
-     * @return CommandEvent
+     * @return ResultEvent
      */
     public function runAll()
     {
         if($this->throwException){
             throw new \RuntimeException(self::THROW_MESSAGE);
         }
-        return new CommandEvent($this,CommandEvent::SUCCEED,self::RUN_ALL_MESSAGE);
+        $event = new ResultEvent(ResultEvent::SUCCEED,self::RUN_ALL_MESSAGE);
+        return new ProcessEvent($this,array($event));
     }
 
     /**
@@ -74,10 +76,11 @@ class TestPlugin extends Plugin
         $results = array();
         foreach($paths as $path){
             $message =  self::RUN_MESSAGE.' Modified path: '.$path;
-            $event = new CommandEvent($this,CommandEvent::SUCCEED,$message);
+            $event = new ResultEvent(ResultEvent::SUCCEED,$message);
             $results[] = $event;
         }
-        return $results;
+        $event = new ProcessEvent($this,$results);
+        return $event;
     }
 
     /**

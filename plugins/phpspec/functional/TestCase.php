@@ -12,54 +12,53 @@
 namespace PhpGuard\Plugins\PhpSpec\Functional;
 
 use PhpGuard\Application\Test\FunctionalTestCase;
+use PhpGuard\Application\Util\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
-use PhpGuard\Application\Log\Logger;
 use PhpGuard\Plugins\PhpSpec\Inspector;
 
 abstract class TestCase extends FunctionalTestCase
 {
-    public static function setUpBeforeClass()
+    static $composerOutput;
+
+    static public function setUpBeforeClass()
     {
         static::buildFixtures();
-        parent::setUpBeforeClass();
     }
 
-    static public function buildFixtures($src='psr0')
+    static public function buildFixtures($type='psr0')
     {
-        static::$tmpDir = $tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpspec-'.$src.'-');
-        static::cleanDir($tmpDir);
-        static::mkdir($tmpDir);
-        $finder = Finder::create();
-        $finder->in(__DIR__.'/fixtures/'.$src);
-        foreach($finder->files() as $file){
-            $target = static::$tmpDir.DIRECTORY_SEPARATOR.$file->getRelativePathname();
-            static::mkdir(dirname($target));
-            copy($file,$target);
-            if(false!==strpos($target,'.php')){
-                //require_once($target);
-            }
+        static::$tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpguard');
+        static::cleanDir(static::$tmpDir);
+        static::mkdir(static::$tmpDir);
+        static::createApplication();
+        if(is_null(static::$cwd)){
+            static::$cwd = getcwd();
         }
         chdir(static::$tmpDir);
-        $finder = new ExecutableFinder();
-        if(!is_executable($executable = $finder->find('composer.phar'))){
-            $executable = $finder->find('composer');
+
+        $finder = Finder::create();
+        Filesystem::copyDir(__DIR__.'/fixtures/'.$type,static::$tmpDir,$finder);
+
+        $exFinder = new ExecutableFinder();
+        if(!is_executable($executable=$exFinder->find('composer.phar'))){
+            $executable = $exFinder->find('composer');
         }
-        if(!is_executable($executable)){
-            return;
-        }
+        chdir(static::$tmpDir);
         $process = new Process($executable.' dumpautoload');
         $process->run();
-        if($process->getExitCode()!==0){
-            throw new \PHPUnit_Framework_IncompleteTestError('Composer failed to dump autoload');
-        }
+        static::$composerOutput = $process->getOutput();
     }
 
-    protected function getClassContent($namespace,$class)
+    protected function buildClass($target,$class)
     {
         $time = new \DateTime();
         $time = $time->format('H:i:s');
+
+        $exp = explode('\\',$class);
+        $class = array_pop($exp);
+        $namespace = implode('\\',$exp);
         $content = <<<EOF
 <?php
 
@@ -71,59 +70,49 @@ class {$class}
 {
 }
 EOF;
-        return $content;
-
-    }
-
-    protected function buildClass($target,$class)
-    {
-        $exp = explode('\\',$class);
-        $class = array_pop($exp);
-        $namespace = implode('\\',$exp);
-        $content = $this->getClassContent($namespace,$class);
-        $content = str_replace('%relative_path%',$target,$content);
         $absPath = static::$tmpDir.DIRECTORY_SEPARATOR.$target;
         $dir = dirname($absPath);
         static::mkdir($dir);
         file_put_contents($absPath,$content,LOCK_EX);
     }
 
-    protected function getSpecContent($namespace,$class)
+    private function getSpecContent($class,$content)
     {
         $time = new \DateTime();
         $time = $time->format('H:i:s');
-        $specClass = strtr($namespace.'\\'.$class,array(
-            'spec\\' => '',
-            'Spec\\' => '',
-        ));
-
-        $specClass = substr($specClass,0,strlen($specClass)-4);
-
+        $exp = explode('\\',$class);
+        $class = array_pop($exp);
+        $namespace = implode('\\',$exp);
         $content = <<<EOF
 <?php
 
 // created at {$time}
+// relative path: %relative_path%
 namespace {$namespace};
 
 use PhpSpec\ObjectBehavior;
 
 class {$class} extends ObjectBehavior
 {
-    function it_is_initializable()
+    function it_should_do_something()
     {
-        \$this->shouldHaveType('{$specClass}');
+        {$content}
     }
 }
 EOF;
         return $content;
     }
 
-    protected function createSpecFile($target,$namespace,$class)
+    protected function buildSpec($target,$class,$content)
     {
-        $content = $this->getSpecContent($namespace,$class);
+        $time = new \DateTime();
+        $time = $time->format('H:i:s');
+        $content = $this->getSpecContent($class,$content);
+        $content = str_replace('%relative_path%',$target,$content);
         $target = static::$tmpDir.'/'.$target;
         $dir = dirname($target);
         static::mkdir($dir);
+
         file_put_contents($target,$content);
         return $target;
     }

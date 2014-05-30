@@ -1,0 +1,14 @@
+{
+    "name": "tests/phpunit-plugin",
+    "authors": [
+        {
+            "name": "Anthonius Munthi",
+            "email": "me@itstoni.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Test\\": "tests/"
+        }
+    }
+}

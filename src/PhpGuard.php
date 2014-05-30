@@ -11,6 +11,7 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
+use PhpGuard\Application\Bridge\CodeCoverageRunner;
 use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Console\Command\RunAllCommand;
@@ -21,6 +22,7 @@ use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Util\Locator;
 use PhpGuard\Application\Event\GenericEvent;
+use PhpGuard\Application\Util\Runner;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
 use PhpGuard\Application\Event\EvaluateEvent;
@@ -28,6 +30,7 @@ use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Listener\ConfigurationListener;
 use PhpGuard\Application\Listener\ChangesetListener;
 use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
+use PhpGuard\Plugins\PHPUnit\Inspector;
 use PhpGuard\Plugins\PHPUnit\PHPUnitPlugin;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\OptionsResolver\Options;
@@ -100,7 +103,6 @@ class PhpGuard
             $formatter = new ConsoleFormatter($format);
             $handler = new ConsoleHandler(null,true);
             $handler->setFormatter($formatter);
-            $c->get('dispatcher')->addSubscriber($handler);
             return $handler;
         });
 
@@ -133,6 +135,18 @@ class PhpGuard
             return $locator;
 
         });
+
+        $container->setShared('runner.logger',function($c){
+            $logger = new Logger('Runner');
+            $logger->pushHandler($c->get('logger.handler'));
+            return $logger;
+        });
+
+        $container->setShared('runner',function(){
+            return new Runner();
+        });
+
+        CodeCoverageRunner::setupContainer($container);
     }
 
     public function setupCommands($container)
@@ -153,9 +167,15 @@ class PhpGuard
             $plugin = new PhpSpecPlugin();
             return $plugin;
         });
-        $container->setShared('plugins.phpunit',function(){
+        $container->setShared('plugins.phpunit',function($c){
             return new PHPUnitPlugin();
         });
+        $container->setShared('phpunit.inspector',function($c){
+            $file = PhpGuard::getPluginCache('phpunit').'/result.dat';
+            $c->setParameter(Inspector::CONTAINER_RESULT_ID,$file);
+            return new Inspector();
+        });
+
         $container->setShared('linters.php',function($c){
             $linter = new Linter\PhpLinter();
             $linter->setContainer($c);
@@ -271,11 +291,29 @@ EOF;
         return $this->running;
     }
 
+    static public function getCacheDir()
+    {
+        $dir = sys_get_temp_dir().'/phpguard/cache';
+        @mkdir($dir,0755,true);
+        return $dir;
+    }
+
+    static public function getPluginCache($plugin)
+    {
+        $cache = static::getCacheDir();
+        $dir = $cache.DIRECTORY_SEPARATOR.'plugins'.DIRECTORY_SEPARATOR.$plugin;
+        if(!is_dir($dir)){
+            mkdir($dir,0755,true);
+        }
+        return $dir;
+    }
+
     private function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
             'ignores' => array(),
             'latency' => 1000000,
+            'coverage' => array(),
         ));
 
         $resolver->setNormalizers(array(

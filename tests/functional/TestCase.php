@@ -24,10 +24,10 @@ class TestCase extends FunctionalTestCase
         static::buildFixtures();
     }
 
-    static public function buildFixtures()
+    static public function buildFixtures($suffix='common')
     {
         $finder = Finder::create();
-        $finder->in(static::$cwd.'/tests/fixtures/common');
+        $finder->in(static::$cwd.'/tests/fixtures/'.$suffix);
 
         foreach($finder->files() as $file){
             $target = static::$tmpDir.'/'.$file->getRelativePathname();

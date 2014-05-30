@@ -24,10 +24,9 @@
     },
     "autoload": {
         "psr-4": {
-            "PhpGuard\\Application\\":      "src/",
             "PhpGuard\\Plugins\\PhpSpec\\": "plugins/phpspec/src/",
             "PhpGuard\\Plugins\\PHPUnit\\": "plugins/phpunit/src/",
-            "PhpGuard\\Shell\\":            "plugins/shell/src/"
+            "PhpGuard\\Application\\":      "src/"
         }
     },
     "bin": ["bin/phpguard"],

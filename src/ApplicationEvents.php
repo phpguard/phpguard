@@ -24,5 +24,7 @@ final class ApplicationEvents
     const preRunCommand     = 'plugin.preRunCommand';
     const postRunCommand    = 'plugin.postRunCommand';
 
-    const runAllCommands    = 'plugin.runAllCommand';
+    const preRunAll         = 'plugin.preRunAll';
+    const runAll    = 'plugin.runAll';
+    const postRunAll        = 'plugin.postRunAll';
 }

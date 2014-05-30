@@ -12,12 +12,16 @@
 namespace PhpGuard\Plugins\PhpSpec;
 
 use PhpGuard\Application\Container\ContainerAware;
-use PhpGuard\Application\Event\CommandEvent;
+use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Event\ResultEvent;
+use PhpGuard\Application\Event\ProcessEvent;
 use PhpGuard\Application\Log\Logger;
-use PhpGuard\Plugins\PhpSpec\Bridge\Console\Application;
+use PhpGuard\Application\PhpGuard;
+use PhpGuard\Application\Util\Filesystem;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ProcessBuilder;
 
 /**
  * Class Inspector
@@ -29,12 +33,10 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
      */
     protected $logger;
 
-    protected $failed = array();
-
     /**
-     * @var Application
+     * @var ResultEvent[]
      */
-    //protected $app;
+    protected $failed = array();
 
     protected $options = array();
 
@@ -44,29 +46,37 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
 
     protected $cmdRun;
 
-    protected $results = array();
+    /**
+     * @var PhpSpecPlugin
+     */
+    protected $plugin;
 
     public function __construct()
     {
         // always clear serialized result when Inspector object created
         $file = Inspector::getCacheFileName();
-        if(is_file($file)){
+        if(file_exists($file)){
             unlink($file);
         }
     }
 
-    static public function getCacheFileName()
+    public function setContainer(ContainerInterface $container)
     {
-        $dir = sys_get_temp_dir().'/phpguard/cache/plugins/phpspec';
-        @mkdir($dir,0755,true);
-        return $dir.DIRECTORY_SEPARATOR.'inspector.dat';
+        parent::setContainer($container);
+        $cmd = realpath(__DIR__.'/../bin/phpspec').' run';
+        $this->plugin = $plugin = $container->get('plugins.phpspec');
+        $this->options = $options = $plugin->getOptions();
+        $this->cmdRun = $cmd.' '.$options['cli'];
+        $allOptions = $options['run_all'];
+        unset($options['run_all']);
+        $allOptions = array_merge($options,$allOptions);
+        $this->cmdRunAll = $cmd.' '.$allOptions['cli'];
     }
 
-    static public function getErrorFileName()
+    static public function getCacheFileName()
     {
-        $dir = sys_get_temp_dir().'/phpguard/cache/plugins/phpspec';
-        @mkdir($dir,0755,true);
-        return $dir.DIRECTORY_SEPARATOR.'error.dat';
+        $dir = PhpGuard::getPluginCache('phpspec');
+        return $dir.DIRECTORY_SEPARATOR.'results.dat';
     }
 
     /**
@@ -81,38 +91,61 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
         $this->logger = $logger;
     }
 
-    public function setOptions(array $options)
-    {
-        $cmd = realpath(__DIR__.'/../bin/phpspec').' run';
-        $this->options = $options;
-        $this->cmdRun = $cmd.' '.$options['cli'];
-        $allOptions = $options['run_all'];
-        unset($options['run_all']);
-        $allOptions = array_merge($options,$allOptions);
-        $this->cmdRunAll = $cmd.' '.$allOptions['cli'];
-    }
-
-    public function runFiltered($paths)
-    {
-        $command = $this->cmdRunAll.' --spec-files='.implode(',',$paths);
-        $this->logger->addDebug('Inspector run with command: '.$command);
-        $this->process($command);
-    }
-
+    /**
+     * @return ProcessEvent
+     */
     public function runAll()
     {
-        $command = $this->cmdRunAll;
+        $results = $this->doRunAll();
+        return new ProcessEvent(
+            $this->container->get('plugins.phpspec'),
+            $results
+        );
+    }
 
+    public function run($files)
+    {
+        $specFiles = implode(',',$files);
+
+        $command = $this->cmdRun.' --spec-files='.$specFiles;
+        $this->logger->addCommon('Running for files',$files);
+
+        $runner = $this->getRunner();
+        $arguments = explode(' ',$command);
+        $builder = new ProcessBuilder($arguments);
+        $process = $runner->run($builder);
+        $results = $this->renderResult();
+
+        if(0===$process->getExitCode()){
+            if($this->options['all_after_pass']){
+                $this->logger->addSuccess('Run all specs after pass');
+                $allSpecs = $this->doRunAll();
+                $results = array_merge($results,$allSpecs);
+            }
+        }
+
+        $event = new ProcessEvent(
+            $this->container->get('plugins.phpspec'),
+            $results
+        );
+        return $event;
+    }
+
+    private function doRunAll()
+    {
+        $command = $this->cmdRunAll;
         if($this->options['keep_failed']){
             $files = array();
-            foreach($this->failed as $failed)
+            foreach($this->failed as $key=>$failedEvent)
             {
-                $file = getcwd().DIRECTORY_SEPARATOR.$failed;
-                if(is_file($file)){
-                    $files[] = $failed;
+                $file = $failedEvent->getArgument('file');
+                if(file_exists($file)){
+                    $file = ltrim(str_replace(getcwd(),'',$file),'\\/');
+                    if(!in_array($file,$files)){
+                        $files[] = $file;
+                    }
                 }
             }
-
             if(!empty($files)){
                 $command = $this->cmdRun;
                 $specFiles = implode(',',$files);
@@ -120,111 +153,64 @@ class Inspector extends ContainerAware implements LoggerAwareInterface
                 $this->logger->debug('Keep failed spec run');
             }
         }
-        $this->logger->addCommon('Running all specs');
-        $this->process($command);
-        $results = $this->renderResult(true);
+
+        // start to run phpspec command
+        $arguments = explode(' ',$command);
+
+        $builder = new ProcessBuilder($arguments);
+        $runner = $this->getRunner();
+        $runner->run($builder);
+        // not showing success events for run all
+        $results = $this->renderResult(false);
 
         if(count($this->failed)===0){
-            $plugin = $this->container->get('plugins.phpspec');
-            $message = 'Running All success';
-            return array(new CommandEvent($plugin,CommandEvent::SUCCEED,$message));
-        }else{
-            return $results;
-        }
-    }
-
-    public function run($files)
-    {
-        $this->results = array();
-        $specFiles = implode(',',$files);
-
-        $command = $this->cmdRun.' --spec-files='.$specFiles;
-        $this->logger->addCommon('Running for files',$files);
-
-        $exitCode = $this->process($command);
-        $results = $this->renderResult();
-        if($exitCode===0){
-            if($this->options['all_after_pass']){
-                $this->logger->addSuccess('Run all specs after pass');
-                $allSpecs = $this->runAll();
-                $results = array_merge($results,$allSpecs);
-            }
+            $results['all_after_pass'] = ResultEvent::createSucceed('Run all specs success');
         }
         return $results;
-    }
-
-    public function process($command)
-    {
-        $container = $this->container;
-        $logger = $this->logger;
-        $logger->addDebug($command);
-        $writer = $container->get('ui.output');
-
-        $process = new Process($command.' -vvv');
-        $process->setTty($container->getParameter('phpguard.use_tty'));
-        $errors = null;
-
-        $process->run(function($type,$output) use($writer,&$errors){
-            $writer->write($output);
-        });
-
-        return $process->getExitCode();
     }
 
     /**
-     * @param   bool $runAll
+     * @param   bool $showSuccess
      * @return  array
      */
-    private function renderResult($runAll=false)
+    private function renderResult($showSuccess = true)
     {
-        $plugin = $this->container->get('plugins.phpspec');
-        $prefix = $runAll ? 'Running All':'Running';
-        if(is_file($file=static::getErrorFileName())){
-            $message = $prefix.' is broken with message: '.file_get_contents($file);
-            $event = new CommandEvent($plugin,CommandEvent::BROKEN,$message);
-            return array($event);
-        }
-
-        $data = $this->checkResult();
+        /* @var ResultEvent $resultEvent */
         $results = array();
-        foreach($data['success'] as $title=>$file)
-        {
-            if(isset($this->failed[$title])){
-                $this->failed[$title] = $file;
-                unset($this->failed[$title]);
-            }
-            if($runAll) continue;
-            $format = 'Running Success For: <highlight>%s</highlight>';
 
-            $message = sprintf($format,$title);
-
-            $event = new CommandEvent($plugin,CommandEvent::SUCCEED,$message);
-            $results[] = $event;
+        $file = static::getCacheFileName();
+        if(!file_exists($file)){
+            throw new \RuntimeException(sprintf(
+                'Unknown PhpSpec results'
+            ));
         }
-        foreach($data['failed'] as $title=>$file){
-            $this->failed[$title] = $file;
-            $message = $prefix.': '.$title.' spec failed';
-            $event = new CommandEvent($plugin,CommandEvent::FAILED,$message);
-            $results[] = $event;
+
+        $data = Filesystem::unserialize($file);
+
+        foreach($data as $key => $resultEvent){
+            if($resultEvent->isSucceed()){
+                if($showSuccess){
+                    $results[$key] = $resultEvent;
+                }
+                if(isset($this->failed[$key])){
+                    unset($this->failed[$key]);
+                }
+                //$this->logger->addDebug($key.' '.$resultEvent->getMessage());
+            }else{
+                // track failed result
+                $this->failed[$key] = $resultEvent;
+                $results[$key] = $resultEvent;
+            }
         }
 
         return $results;
     }
 
-    private function checkResult()
+    /**
+     * @return \PhpGuard\Application\Util\Runner
+     */
+    private function getRunner()
     {
-        $file = $this->getCacheFileName();
-        if(!is_file($file)){
-            return array(
-                'failed' => array(),
-                'success' => array(),
-            );
-        }
-        clearstatcache(true,$file);
-        $contents = file_get_contents($file);
-
-        $data = unserialize($contents);
-
-        return $data;
+        return $this->container->get('runner');
     }
 }

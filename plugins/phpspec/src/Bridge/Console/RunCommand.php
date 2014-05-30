@@ -45,7 +45,7 @@ class RunCommand extends BaseRunCommand
 
         $container->configure();
 
-        $locator     = $input->getArgument('spec');
+        $locator     = $input->getOption('spec-files');
         $linenum     = null;
 
         $loader      = new ResourceLoader($container->get('locator.resource_manager'));

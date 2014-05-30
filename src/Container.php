@@ -18,7 +18,7 @@ use PhpGuard\Application\Container\ContainerInterface;
  * Some methods Proudly Stolen from PhpSpec, and Symfony
  *
  */
-class Container implements ContainerInterface
+class Container implements ContainerInterface, \Serializable
 {
     protected $parameters = array();
 
@@ -186,4 +186,39 @@ class Container implements ContainerInterface
         });
         return $this;
     }
+
+    /**
+     * (PHP 5 &gt;= 5.1.0)<br/>
+     * String representation of object
+     *
+     * @link http://php.net/manual/en/serializable.serialize.php
+     * @return string the string representation of the object or null
+     */
+    public function serialize()
+    {
+        $data = array(
+            'parameters' => array(),
+        );
+
+        return serialize($data);
+    }
+
+    /**
+     * (PHP 5 &gt;= 5.1.0)<br/>
+     * Constructs the object
+     *
+     * @link http://php.net/manual/en/serializable.unserialize.php
+     *
+     * @param string $serialized <p>
+     *                           The string representation of the object.
+     *                           </p>
+     *
+     * @return void
+     */
+    public function unserialize($serialized)
+    {
+        $data = unserialize($serialized);
+    }
+
+
 }

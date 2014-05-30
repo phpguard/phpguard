@@ -47,6 +47,7 @@ class TestApplication extends Application
         });
     }
 
+
     public function boot()
     {
         $event = new GenericEvent($this->getContainer());
@@ -58,6 +59,7 @@ class TestApplication extends Application
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $this->getContainer()->get('logger.handler')->setOutput($output);
+        $this->getContainer()->setParameter('runner.tty',false);
         return parent::doRun($input,$output);
     }
 
