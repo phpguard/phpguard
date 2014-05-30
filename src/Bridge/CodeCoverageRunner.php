@@ -234,7 +234,7 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     {
         $this->logger->addDebug('Coverage saving state...');
         $enabled = $this->isEnabled() ? 'enabled':'disabled';
-        $this->logger->addCommon('Coverage is <comment>'.$enabled.'</comment>');
+        $this->logger->addCommon('Coverage is <highlight>'.$enabled.'</highlight>');
         $this->saveState();
     }
 

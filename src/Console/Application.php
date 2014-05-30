@@ -65,7 +65,7 @@ class Application extends BaseApplication
             $container->get('logger')->addDebug('Filtered using tags',array('tags'=>$tags));
         }
 
-        if($input->hasParameterOption(array('--coverage','-cov'))){
+        if($input->hasParameterOption(array('--coverage','-r'))){
             $container->setParameter('coverage.enabled',true);
         }
 
@@ -106,7 +106,8 @@ class Application extends BaseApplication
     public function renderException($e, $output)
     {
         parent::renderException($e, $output);
-        $this->container->get('ui.shell')->installReadlineCallback();
+        //$this->container->get('ui.shell')->installReadlineCallback();
+        $this->container->setParameter('application.exit_code',ResultEvent::ERROR);
     }
 
     protected function getDefaultInputDefinition()
@@ -124,7 +125,7 @@ class Application extends BaseApplication
 
         $options['coverage'] = new InputOption(
             'coverage',
-            'cov',
+            'r',
             InputOption::VALUE_OPTIONAL,
             'Run only for this tags'
         );

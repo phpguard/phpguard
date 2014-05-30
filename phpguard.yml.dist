@@ -36,14 +36,12 @@ phpunit:
 
 phpspec:
     options:
-        cli: "--format=pretty --ansi"
+        cli: "--format=pretty"
         all_on_start:       true
         all_after_pass:     true
         keep_failed:        true
         import_suites:      false
-        run_all:
-            cli: "--format=dot"
-
+        
     watch:
         - { pattern: "#^src\/(.+)\.php$#", transform: "spec/PhpGuard/Application/${1}Spec.php" }
         - { pattern: "#^spec.*\.php$#" }
