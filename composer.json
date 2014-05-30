@@ -8,27 +8,29 @@
             "email": "me@itstoni.com"
         }
     ],
+    "prefer-stable": true,
     "require": {
-        "symfony/console":              "*",
-        "symfony/finder":               "*",
-        "symfony/process":              "*",
-        "monolog/monolog":              "*",
         "phpguard/listen":              "0.1.*@dev",
-        "symfony/options-resolver":     "*",
-        "symfony/event-dispatcher":     "*",
-        "symfony/yaml":                 "*",
+        "symfony/console":              "~2.3",
+        "symfony/finder":               "~2.3",
+        "symfony/process":              "~2.3",
+        "symfony/options-resolver":     "~2.3",
+        "symfony/event-dispatcher":     "~2.3",
+        "symfony/yaml":                 "~2.3",
+        "monolog/monolog":              "*",
         "phpunit/php-code-coverage":    "~2.0"
     },
     "require-dev": {
-        "phpspec/phpspec": "~2.1@dev",
-        "phpunit/phpunit": "~4.0"
+        "phpguard/plugin-phpspec":      "dev-master",
+        "phpguard/plugin-phpunit":      "dev-master"
     },
     "autoload": {
         "psr-4": {
-            "PhpGuard\\Plugins\\PhpSpec\\": "plugins/phpspec/src/",
-            "PhpGuard\\Plugins\\PHPUnit\\": "plugins/phpunit/src/",
             "PhpGuard\\Application\\":      "src/"
         }
+    },
+    "replace": {
+        "phpguard/phpguard": "self.version"
     },
     "bin": ["bin/phpguard"],
     "extra":  {
