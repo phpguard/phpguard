@@ -69,25 +69,23 @@ class Runner extends ContainerAware
 
     private function getDefaultDirs()
     {
-        if (false !== ($dirs = $this->container->getParameter('runner.default_dirs',false)) ) {
-            return $dirs;
-        }
-
-        $cwd = getcwd();
-        $defaultDirs = array(
-            $cwd.'/bin',
-            $cwd.'/vendor/bin',
-            $cwd.'/app/bin',
-        );
-        $dirs = array();
-        foreach ($defaultDirs as $dir) {
-            if (is_dir($dir)) {
-                $dirs[] = $dir;
+        if (false === $this->container->hasParameter($id = 'runner.default_dirs')) {
+            $cwd = getcwd();
+            $defaultDirs = array(
+                $cwd.'/bin',
+                $cwd.'/vendor/bin',
+                $cwd.'/app/bin',
+            );
+            $dirs = array();
+            foreach ($defaultDirs as $dir) {
+                if (is_dir($dir)) {
+                    $dirs[] = $dir;
+                }
             }
+            $this->container->setParameter($id,$dirs);
         }
-        $this->container->setParameter('runner.default_dirs',$dirs);
 
-        return $dirs;
+        return $this->container->getParameter($id);
     }
 
     /**

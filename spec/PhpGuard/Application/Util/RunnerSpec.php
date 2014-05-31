@@ -31,7 +31,7 @@ class RunnerSpec extends ObjectBehavior
         $container->get('runner.logger')->willReturn($logger);
         $container->get('ui.output')->willReturn($output);
         $container->getParameter('runner.tty',false)->willReturn(false);
-        $container->getParameter('runner.default_dirs',false)->willReturn(array());
+        $container->getParameter('runner.default_dirs')->willReturn(array());
         $this->setContainer($container);
     }
 
@@ -52,8 +52,13 @@ class RunnerSpec extends ObjectBehavior
         $this->run($builder)->shouldHaveType('Symfony\\Component\\Process\\Process');
     }
 
-    public function it_should_find_executable()
+    public function it_should_find_executable(
+        ContainerInterface $container
+    )
     {
+        $container->hasParameter($id = 'runner.default_dirs')
+            ->willReturn(false);
+        $container->setParameter($id,Argument::any())->shouldBeCalled();
         $this->findExecutable('foo')->shouldReturn(false);
         $this->findExecutable('php')->shouldNotReturn(false);
         $this->findExecutable('phpspec')->shouldNotReturn(false);

@@ -97,7 +97,7 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
             return new \PHP_CodeCoverage(null,$filter);
         });
 
-        $container->setShared('coverage.runner',function ($c) {
+        $container->setShared('coverage.runner',function () {
             $runner = new CodeCoverageRunner();
 
             return new $runner;
@@ -150,7 +150,7 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     {
         $resolver = new OptionsResolver();
         $this->setDefaultOptions($resolver);
-        $this->options = $options = $resolver->resolve($options);
+        $this->options = $resolver->resolve($options);
     }
 
     public function getOptions()

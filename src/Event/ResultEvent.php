@@ -56,7 +56,7 @@ class ResultEvent
 
     private $trace = array();
 
-    static $maps = array(
+    public static $maps = array(
         0       => 'SUCCEED',
         100     => 'FAILED',
         200     => 'BROKEN',
