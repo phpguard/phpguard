@@ -11,7 +11,7 @@ use Prophecy\Argument;
 
 class ProcessorSpec extends ObjectBehavior
 {
-    public function let(ContainerInterface $container,PhpGuard $guard, PluginInterface $plugin)
+    function let(ContainerInterface $container,PhpGuard $guard, PluginInterface $plugin)
     {
         Filesystem::cleanDir(self::$tmpDir);
         Filesystem::mkdir(self::$tmpDir);
@@ -21,24 +21,24 @@ class ProcessorSpec extends ObjectBehavior
         $this->setContainer($container);
     }
 
-    public function it_is_initializable()
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Configuration\Processor');
     }
 
-    public function it_throws_when_configuration_file_not_exist()
+    function it_throws_when_configuration_file_not_exist()
     {
         $this
             ->shouldThrow('RuntimeException')
             ->duringCompileFile('foo.yml');
     }
 
-    public function it_should_not_process_empty_file()
+    function it_should_not_process_empty_file()
     {
         $this->compile('')->shouldReturn(null);
     }
 
-    public function it_should_process_global_section(ContainerInterface $container,PhpGuard $guard)
+    function it_should_process_global_section(ContainerInterface $container,PhpGuard $guard)
     {
         $guard->setOptions(array(
                 'ignores' => 'app/cache'
@@ -53,7 +53,7 @@ EOF;
         $this->compile($text);
     }
 
-    public function it_should_process_plugin_section(ContainerInterface $container, PluginInterface $pspec, PluginInterface $plugin)
+    function it_should_process_plugin_section(ContainerInterface $container, PluginInterface $pspec, PluginInterface $plugin)
     {
         $container->has('plugins.phpspec')
             ->willReturn(true)
@@ -91,7 +91,7 @@ EOF;
         $this->compileFile($file);
     }
 
-    public function it_throws_when_plugin_not_exists(
+    function it_throws_when_plugin_not_exists(
         ContainerInterface $container
     )
     {

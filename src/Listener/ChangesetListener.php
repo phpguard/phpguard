@@ -214,7 +214,9 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     {
         $writer = $this->container->get('ui.output');
         for ($i = 0, $count = count($trace); $i < $count; $i++) {
-            $writer->writeln($trace[$i]);
+            $output = $trace[$i];
+            $output = ltrim(str_replace(getcwd(),'',$output),'\\/');
+            $writer->writeln($output);
         }
     }
 }

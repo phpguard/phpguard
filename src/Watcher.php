@@ -127,10 +127,11 @@ class Watcher extends ContainerAware implements TaggableInterface
         if ($retVal && $this->options['transform']) {
             $transformed = preg_replace($pattern,$this->options['transform'],$file->getRelativePathname());
             $this->container->get('logger')->addDebug('Transform: '.$file->getRelativePathname(). ' To '.$transformed);
-            if (!is_file($transformed)) {
-                return false;
+            if (file_exists($transformed)) {
+                $retVal = PathUtil::createSplFileInfo(getcwd(),$transformed);
+            } else {
+                $retVal = false;
             }
-            $retVal = PathUtil::createSplFileInfo(getcwd(),$transformed);
         }
 
         return $retVal;

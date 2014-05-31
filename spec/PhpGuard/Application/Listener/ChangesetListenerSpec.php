@@ -21,7 +21,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ChangesetListenerSpec extends ObjectBehavior
 {
-    public function let(
+    function let(
         ContainerInterface $container,
         PluginInterface $plugin,
         EventDispatcherInterface $dispatcher,
@@ -65,17 +65,17 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->setContainer($container);
     }
 
-    public function it_is_initializable()
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Listener\ChangesetListener');
     }
 
-    public function it_should_subscribe_postEvaluate_event()
+    function it_should_subscribe_postEvaluate_event()
     {
         $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::postEvaluate);
     }
 
-    public function it_should_run_plugins_when_the_paths_is_matched(
+    function it_should_run_plugins_when_the_paths_is_matched(
         EvaluateEvent $evaluateEvent,
         PluginInterface $plugin,
         EventDispatcherInterface $dispatcher
@@ -91,7 +91,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->postEvaluate($evaluateEvent);
     }
 
-    public function it_should_not_run_plugins_when_the_paths_is_no_match($plugin,EvaluateEvent $evaluateEvent)
+    function it_should_not_run_plugins_when_the_paths_is_no_match($plugin,EvaluateEvent $evaluateEvent)
     {
         $plugin->getMatchedFiles($evaluateEvent)
             ->shouldBeCalled()
@@ -103,7 +103,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->postEvaluate($evaluateEvent);
     }
 
-    public function it_should_render_result_after_running_plugin(
+    function it_should_render_result_after_running_plugin(
         PluginInterface $plugin,
         ResultEvent $succeed,
         ResultEvent $failed,
@@ -155,7 +155,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->postEvaluate($event);
     }
 
-    public function it_plugin_should_not_run_if_not_active(
+    function it_plugin_should_not_run_if_not_active(
         ContainerInterface $container,
         PluginInterface $active,
         PluginInterface $inactive,
@@ -187,7 +187,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->postEvaluate($event);
     }
 
-    public function it_should_handle_preRunCommand_events(
+    function it_should_handle_preRunCommand_events(
         GenericEvent $event,
         PluginInterface $plugin,
         Logger $logger
@@ -205,7 +205,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->preRunCommand($event);
     }
 
-    public function it_should_handle_postRunCommand_events(
+    function it_should_handle_postRunCommand_events(
         GenericEvent $event,
         PluginInterface $plugin,
         Logger $logger
@@ -220,7 +220,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->postRunCommand($event);
     }
 
-    public function it_should_handle_runAllCommand_events(
+    function it_should_handle_runAllCommand_events(
         GenericEvent $event,
         ContainerInterface $container,
         PluginInterface $plugin,
@@ -250,7 +250,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->runAllCommand($event);
     }
 
-    public function it_should_runAllCommand_for_spesific_plugin(
+    function it_should_runAllCommand_for_spesific_plugin(
         GenericEvent $event,
         PluginInterface $plugin,
         ContainerInterface $container
@@ -294,7 +294,7 @@ class ChangesetListenerSpec extends ObjectBehavior
 
     }
 
-    public function it_plugin_should_not_runAll_if_not_active(
+    function it_plugin_should_not_runAll_if_not_active(
         ContainerInterface $container,
         PluginInterface $active,
         PluginInterface $inactive,

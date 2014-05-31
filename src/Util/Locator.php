@@ -103,11 +103,6 @@ class Locator extends ContainerAware implements EventSubscriberInterface
     public function loadClass($class)
     {
         /* @var ClassLoader $loader */
-        foreach ($this->autoLoaders as $loader) {
-            if ($loader->loadClass($class)) {
-                return true;
-            }
-        }
         if ($this->mainLoader->loadClass($class)) {
             return true;
         }
@@ -142,24 +137,11 @@ class Locator extends ContainerAware implements EventSubscriberInterface
      */
     public function findClassFile($class,$baseDir = null)
     {
-        /* @var ClassLoader $loader */
-
-        $autoLoaders = $this->autoLoaders;
         $baseDir = is_null($baseDir) ? getcwd():$baseDir;
 
         $file = $this->mainLoader->findFile($class);
-        if (!is_file($file)) {
-            foreach ($autoLoaders as $loader) {
-                $file = $loader->findFile($class);
-                if (is_file($file)) {
-                    break;
-                }
-            }
-        }
-
         if (is_file($file)) {
             $spl = PathUtil::createSplFileInfo($baseDir,$file);
-
             return $spl;
         }
 
@@ -182,44 +164,6 @@ class Locator extends ContainerAware implements EventSubscriberInterface
         return $testClass;
     }
 
-    public function getPathOfNamespace($namespace)
-    {
-        $path = false;
-        foreach ($this->fallbackDirs as $dir) {
-            $testDir = $dir.DIRECTORY_SEPARATOR.$namespace;
-            if (is_dir($testDir)) {
-                return $testDir;
-            }
-        }
-
-        foreach ($this->fallbackDirsPsr4 as $dir) {
-            $testDir = $dir.DIRECTORY_SEPARATOR.$namespace;
-            if (is_dir($testDir)) {
-                return $testDir;
-            }
-        }
-
-        $exp = explode('\\',$namespace);
-        $topNamespace = $exp[0];
-        foreach ($this->prefixes as $ns=>$prefix) {
-            if (false!==strpos($ns,$topNamespace)) {
-                //print_r($prefix);
-            }
-        }
-
-        foreach ($this->prefixesPsr4 as $ns=>$prefix) {
-            if (false!==strpos($ns,$namespace)) {
-                foreach ($prefix as $dir) {
-                    if (is_dir($dir)) {
-                        return $dir;
-                    }
-                }
-            }
-        }
-
-        return $path;
-    }
-
     private function getClass($dir,$class,$checkExistence = true)
     {
         return $this->checkPrefix($this->prefixes,$dir,$class,$checkExistence);
@@ -240,13 +184,9 @@ class Locator extends ContainerAware implements EventSubscriberInterface
                 $len = strlen($nsDir);
                 if ($nsDir===substr($absPath,0,$len)) {
                     $namespace = ltrim(substr($absPath,$len),'\\/');
-                    if ($class) {
-                        $testClass = $namespace.DIRECTORY_SEPARATOR.$class;
-                        $testClass = str_replace(DIRECTORY_SEPARATOR,'\\',$testClass);
-                        $testClass = ltrim($testClass,'\\');
-                    } else {
-                        $testClass = $namespace;
-                    }
+                    $testClass = $namespace.DIRECTORY_SEPARATOR.$class;
+                    $testClass = str_replace(DIRECTORY_SEPARATOR,'\\',$testClass);
+                    $testClass = ltrim($testClass,'\\');
                     if (false!==strpos($ns,'\\')) {
                         $ns = rtrim($ns,'\\');
                         $testClass = $ns.'\\'.$testClass;
@@ -255,19 +195,16 @@ class Locator extends ContainerAware implements EventSubscriberInterface
                 }
             }
         }
-        if (!is_null($testClass)) {
+
+        if ($testClass) {
             if ($checkExistence) {
-                if (class_exists($testClass)) {
-                    return $testClass;
-                } else {
-                    return false;
+                if (!class_exists($testClass)) {
+                    $testClass = false;
                 }
             }
-
-            return $testClass;
         }
 
-        return false;
+        return $testClass;
     }
 
     /**
@@ -277,10 +214,7 @@ class Locator extends ContainerAware implements EventSubscriberInterface
     {
 
         if (is_file($file = getcwd().'/vendor/autoload.php')) {
-            $autoload = include_once $file;
-            if (is_object($autoload)) {
-                $autoload->register();
-            }
+            include_once $file;
         }
         $functions = spl_autoload_functions();
         foreach ($functions as $loader) {
@@ -296,14 +230,11 @@ class Locator extends ContainerAware implements EventSubscriberInterface
     private function addAutoloader($object)
     {
         if (!$object instanceof ClassLoader) {
-            return $object;
+            return;
         }
 
         $object = clone $object;
 
-        if ($this->autoLoaders->contains($object)) {
-            return;
-        }
         if ($this->autoLoaders->count()===0) {
             $this->mainLoader = $object;
         }

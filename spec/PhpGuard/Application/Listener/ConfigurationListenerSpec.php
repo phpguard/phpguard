@@ -10,6 +10,7 @@ use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
+use PhpGuard\Application\Util\Filesystem;
 use PhpGuard\Listen\Adapter\AdapterInterface;
 use PhpGuard\Listen\Listener;
 use PhpGuard\Application\Event\GenericEvent;
@@ -19,7 +20,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ConfigurationListenerSpec extends ObjectBehavior
 {
-    public function let(
+    static $cwd;
+    function let(
         ContainerInterface $container,
         PluginInterface $plugin,
         AdapterInterface $adapter,
@@ -29,7 +31,10 @@ class ConfigurationListenerSpec extends ObjectBehavior
         GenericEvent $event
     )
     {
-
+        if(is_null(static::$cwd)){
+            static::$cwd = getcwd();
+        }
+        Filesystem::mkdir(static::$tmpDir);
         $container->getByPrefix('plugins')
             ->willReturn(array($plugin))
         ;
@@ -51,22 +56,27 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $this->setContainer($container);
     }
 
-    public function it_is_initializable()
+    function letgo()
+    {
+        chdir(static::$cwd);
+    }
+
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Listener\ConfigurationListener');
     }
 
-    public function it_should_subscribe_config_preLoad_event()
+    function it_should_subscribe_config_preLoad_event()
     {
         $this->getSubscribedEvents()->shouldHaveKey(ConfigEvents::PRELOAD);
     }
 
-    public function it_should_subscribe_config_postLoad_event()
+    function it_should_subscribe_config_postLoad_event()
     {
         $this->getSubscribedEvents()->shouldHaveKey(ConfigEvents::POSTLOAD);
     }
 
-    public function it_should_pre_load_configuration_properly(
+    function it_should_pre_load_configuration_properly(
         GenericEvent $event,
         ContainerInterface $container,
         PhpGuard $guard
@@ -79,7 +89,22 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $this->preLoad($event);
     }
 
-    public function it_postLoad_should_configure_only_active_plugin(
+    function its_preLoad_throws_when_configuration_file_not_exists(
+        GenericEvent $event,
+        ContainerInterface $container,
+        PhpGuard $guard
+    )
+    {
+        chdir(static::$tmpDir);
+        $container->get('phpguard')->willReturn($guard);
+
+        $guard->setOptions(array())
+            ->shouldBeCalled();
+        $this->shouldThrow('InvalidArgumentException')
+            ->duringPreLoad($event);
+    }
+
+    function it_postLoad_should_configure_only_active_plugin(
         GenericEvent $event,
         ContainerInterface $container,
         PluginInterface $active,
@@ -104,7 +129,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $this->postLoad($event);
     }
 
-    public function it_should_load_configuration(
+    function it_should_load_configuration(
         GenericEvent $event,
         ContainerInterface $container,
         EventDispatcherInterface $dispatcher,
@@ -135,7 +160,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $this->load($event,ConfigEvents::LOAD,$dispatcher);
     }
 
-    public function it_should_reload_configuration(
+    function it_should_reload_configuration(
         GenericEvent $event,
         ContainerInterface $container,
         EventDispatcherInterface $dispatcher,

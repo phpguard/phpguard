@@ -16,25 +16,25 @@ class MockPlugin extends Plugin
 {
     protected $isRunning = false;
 
-    public function getTitle()
+    function getTitle()
     {
         return 'mock';
     }
 
-    public function getName()
+    function getName()
     {
         return 'Mock';
     }
 
-    public function runAll()
+    function runAll()
     {
     }
 
-    public function run(array $paths = array())
+    function run(array $paths = array())
     {
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
             'some' => null,
@@ -44,7 +44,7 @@ class MockPlugin extends Plugin
 
 class PluginSpec extends ObjectBehavior
 {
-    public function let(Watcher $watcher,ContainerInterface $container,Logger $logger)
+    function let(Watcher $watcher,ContainerInterface $container,Logger $logger)
     {
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPlugin');
         $this->addWatcher($watcher);
@@ -65,17 +65,17 @@ class PluginSpec extends ObjectBehavior
         $this->setLogger($logger);
     }
 
-    public function it_is_initializable()
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Plugin\Plugin');
     }
 
-    public function it_should_add_watcher($watcher)
+    function it_should_add_watcher($watcher)
     {
         $this->getWatchers()->shouldContain($watcher);
     }
 
-    public function its_getMatchedFiles_returns_an_array_of_matched_file(
+    function its_getMatchedFiles_returns_an_array_of_matched_file(
         EvaluateEvent $event,
         Watcher $watcher
     )
@@ -90,7 +90,7 @@ class PluginSpec extends ObjectBehavior
         $this->getMatchedFiles($event)->shouldHaveCount(1);
     }
 
-    public function its_getMatchedFiles_returns_an_empty_array_if_there_are_not_matched_files(
+    function its_getMatchedFiles_returns_an_empty_array_if_there_are_not_matched_files(
         EvaluateEvent $event,
         Watcher $watcher
     )
@@ -106,7 +106,7 @@ class PluginSpec extends ObjectBehavior
         $this->getMatchedFiles($event)->shouldNotHaveCount(1);
     }
 
-    public function its_getMatchedFiles_convert_paths_into_SplFileInfo(
+    function its_getMatchedFiles_convert_paths_into_SplFileInfo(
         EvaluateEvent $event,
         Watcher $watcher
     )
@@ -123,7 +123,7 @@ class PluginSpec extends ObjectBehavior
         $paths[0]->shouldHaveType('SplFileInfo');
     }
 
-    public function its_getMatchedFiles_should_only_match_againts_tag_if_defined(
+    function its_getMatchedFiles_should_only_match_againts_tag_if_defined(
         EvaluateEvent $event,
         Watcher $watcher,
         ContainerInterface $container
@@ -150,7 +150,7 @@ class PluginSpec extends ObjectBehavior
         $this->getMatchedFiles($event);
     }
 
-    public function its_getMatchedFiles_returns_false_if_tag_is_not_matched(
+    function its_getMatchedFiles_returns_false_if_tag_is_not_matched(
         EvaluateEvent $event,
         Watcher $watcher,
         ContainerInterface $container
@@ -177,7 +177,7 @@ class PluginSpec extends ObjectBehavior
         $this->getMatchedFiles($event);
     }
 
-    public function its_getMatchedFiles_should_not_process_configuration_file(
+    function its_getMatchedFiles_should_not_process_configuration_file(
         EvaluateEvent $event,
         ContainerInterface $container,
         Watcher $watcher
@@ -192,32 +192,29 @@ class PluginSpec extends ObjectBehavior
         $this->getMatchedFiles($event);
     }
 
-    public function its_options_should_be_mutable()
+    function its_options_should_be_mutable()
     {
         $this->setOptions(array('some' => 'value'))->shouldReturn($this);
         $this->getOptions()->shouldContain('value');
     }
 
-    /*function it_should_create_runner(ContainerInterface $container,OutputInterface $output)
-    {
-        $container->get('ui.output')
-            ->willReturn($output);
-
-        $runner = $this->setupRunner('phpspec',array('foobar'));
-        $runner->shouldHaveType('PhpGuard\\Application\\Runner');
-        $runner->getArguments()->shouldContain('foobar');
-    }*/
-
-    public function its_isActive_returns_false_by_default()
+    function its_isActive_returns_false_by_default()
     {
         $this->shouldNotBeActive();
     }
 
-    public function its_active_should_be_mutable()
+    function its_active_should_be_mutable()
     {
         $this->setActive(true)->shouldReturn($this);
         $this->getActive()->shouldReturn(true);
         $this->shouldBeActive();
+    }
 
+    function its_hasTags_returns_true_if_tag_exists()
+    {
+        $this->hasTags('some')->shouldReturn(false);
+
+        $this->addTags('some');
+        $this->hasTags('some')->shouldReturn(true);
     }
 }

@@ -10,7 +10,7 @@ use Prophecy\Argument;
 
 class LocatorSpec extends ObjectBehavior
 {
-    public function let(ContainerInterface $container,Logger $logger)
+    function let(ContainerInterface $container,Logger $logger)
     {
         $container->get('logger')->willReturn($logger);
         $container->has(Argument::any())
@@ -18,23 +18,24 @@ class LocatorSpec extends ObjectBehavior
         $this->setContainer($container);
     }
 
-    public function it_is_initializable()
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Util\Locator');
     }
 
-    public function it_should_locate_class_file()
+    function it_should_locate_class_file()
     {
         $this->findClassFile('PhpGuard\Application\Container')->shouldHaveType('SplFileInfo');
+        $this->findClassFile('PhpGuard\Application\Foo')->shouldReturn(false);
     }
 
-    public function it_should_find_class_from_file()
+    function it_should_find_class_from_file()
     {
         $this->findClass(getcwd().'/src/Container.php')
             ->shouldReturn('PhpGuard\\Application\\Container');
     }
 
-    public function it_should_delegate_add()
+    function it_should_delegate_add()
     {
         $specDir = getcwd().'/spec/PhpGuard/Application';
         $this->findClass($file = $specDir.'/ContainerSpec.php',false)
@@ -47,7 +48,7 @@ class LocatorSpec extends ObjectBehavior
             ->shouldReturn($class);
     }
 
-    public function it_should_delegate_addPsr4()
+    function it_should_delegate_addPsr4()
     {
         $this->addPsr4(__NAMESPACE__."\\",__DIR__)->shouldReturn($this);
         $this->findClass(__FILE__,false)->shouldReturn(__CLASS__);
@@ -61,7 +62,7 @@ class LocatorSpec extends ObjectBehavior
 
     }
 
-    public function it_should_load_plugin(
+    function it_should_load_plugin(
         ContainerInterface $container,
         GenericEvent $event
     )
@@ -84,6 +85,20 @@ class LocatorSpec extends ObjectBehavior
             ->shouldBeCalled()
         ;
 
+        $this->onApplicationInitialize($event);
+    }
+
+    function it_should_not_load_plugin_when_application_initialized(
+        ContainerInterface $container,
+        GenericEvent $event
+    )
+    {
+        $event->getContainer()->willReturn($container);
+        $container->getParameter('application.initialized',false)
+            ->willReturn(true);
+        $container->setShared(Argument::any(),Argument::any())
+            ->shouldNotBeCalled()
+        ;
         $this->onApplicationInitialize($event);
     }
 }

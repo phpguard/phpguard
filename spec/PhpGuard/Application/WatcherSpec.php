@@ -14,7 +14,7 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class WatcherSpec extends ObjectBehavior
 {
-    public function let(ContainerInterface $container,OutputInterface $output,Logger $logger)
+    function let(ContainerInterface $container,OutputInterface $output,Logger $logger)
     {
         Filesystem::mkdir(self::$tmpDir);
         $this->beConstructedWith($container);
@@ -22,23 +22,23 @@ class WatcherSpec extends ObjectBehavior
         $container->get('ui.output')->willReturn($output);
     }
 
-    public function letgo()
+    function letgo()
     {
         Filesystem::cleanDir(self::$tmpDir);
     }
 
-    public function it_is_initializable()
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Watcher');
     }
 
-    public function it_throws_when_pattern_is_not_set()
+    function it_throws_when_pattern_is_not_set()
     {
         $this->shouldThrow('InvalidArgumentException')
             ->duringSetOptions(array());
     }
 
-    public function it_should_generate_default_options(OptionsResolverInterface $resolver)
+    function it_should_generate_default_options(OptionsResolverInterface $resolver)
     {
         $this->setOptions(array('pattern'=>'some_pattern'));
 
@@ -50,7 +50,24 @@ class WatcherSpec extends ObjectBehavior
         $options->shouldHaveKey('lint');
     }
 
-    public function its_matchFile_returns_SplFileInfo_is_matched()
+    function it_should_throw_when_linter_not_exists(
+        ContainerInterface $container
+    )
+    {
+        $container->has('linters.foo')
+            ->shouldBeCalled()
+            ->willReturn(false);
+
+        $options =array(
+            'pattern' => 'some_pattern',
+            'lint' => 'foo',
+        );
+
+        $this->shouldThrow('InvalidArgumentException')
+            ->duringSetOptions($options);
+    }
+
+    function its_matchFile_returns_SplFileInfo_is_matched()
     {
         $this->setOptions(array(
             'pattern' => '#.*\.php$#',
@@ -61,7 +78,7 @@ class WatcherSpec extends ObjectBehavior
         $this->matchFile($resource)->shouldHaveType('SplFileInfo');
     }
 
-    public function its_matchFile_should_check_with_relative_path_name()
+    function its_matchFile_should_check_with_relative_path_name()
     {
         $this->setOptions(array(
             'pattern' => '#^spec\/.*\.php$#',
@@ -73,12 +90,12 @@ class WatcherSpec extends ObjectBehavior
         $this->matchFile($file)->shouldReturn(false);
     }
 
-    public function its_matchFile_returns_false_if_file_not_exists()
+    function its_matchFile_returns_false_if_file_not_exists()
     {
         $this->matchFile('/tmp/foobar.php')->shouldReturn(false);
     }
 
-    public function its_matchFile_should_transform_file_if_defined()
+    function its_matchFile_should_transform_file_if_defined()
     {
         $this->setOptions(array(
             'pattern' => '#^src\/(.+)\.php$#',
@@ -88,19 +105,19 @@ class WatcherSpec extends ObjectBehavior
         $spl->getRelativePathName()->shouldReturn('spec/PhpGuard/Application/WatcherSpec.php');
     }
 
-    public function its_matchFile_returns_false_if_transformed_file_not_exists()
+    function its_matchFile_returns_false_if_transformed_file_not_exists()
     {
         $this->setOptions(array(
             'pattern' => '#^src\/(.+)\.php$#',
             'transform' => 'spec/${1}SpecFooBar.php'
         ));
 
-        $this->matchFile(getcwd().'/src/PhpGuard/Application/Watcher.php')
+        $this->matchFile(getcwd().'/src/Watcher.php')
             ->shouldReturn(false)
         ;
     }
 
-    public function its_hasGroup_should_check_if_group_exists()
+    function its_hasGroup_should_check_if_group_exists()
     {
         $this->setOptions(array(
             'pattern' => 'some',
@@ -110,7 +127,7 @@ class WatcherSpec extends ObjectBehavior
         $this->shouldNotHaveGroup('bar');
     }
 
-    public function it_should_check_file_with_linter_if_defined(
+    function it_should_check_file_with_linter_if_defined(
         ContainerInterface $container,
         LinterInterface $linter
     )
@@ -136,7 +153,7 @@ class WatcherSpec extends ObjectBehavior
         $this->lint(__FILE__)->shouldReturn(true);
     }
 
-    public function its_hasTag_returns_true_if_tag_exists()
+    function its_hasTag_returns_true_if_tag_exists()
     {
         $this->setOptions(array(
             'pattern' => 'some',
@@ -151,12 +168,12 @@ class WatcherSpec extends ObjectBehavior
         $this->shouldNotHaveTags(array('untag','ungag1','untag2'));
     }
 
-    public function its_tags_should_be_empty_by_default()
+    function its_tags_should_be_empty_by_default()
     {
         $this->getTags()->shouldReturn(array());
     }
 
-    public function its_tags_should_be_mutable()
+    function its_tags_should_be_mutable()
     {
         $this->addTags('foo');
         $this->shouldHaveTags('foo');

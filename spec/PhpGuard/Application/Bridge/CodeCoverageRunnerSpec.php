@@ -22,7 +22,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
 
     static $cwd;
 
-    public function let(
+    function let(
         ContainerInterface $container,
         PHP_CodeCoverage_Filter $filter,
         PHP_CodeCoverage $coverage,
@@ -69,23 +69,23 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $this->setOptions($this->options);
     }
 
-    public function letgo()
+    function letgo()
     {
         Filesystem::cleanDir(static::$tmpDir);
         chdir(static::$cwd);
     }
 
-    public function it_is_initializable()
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Bridge\CodeCoverageRunner');
     }
 
-    public function it_should_be_serializable()
+    function it_should_be_serializable()
     {
         $this->shouldImplement('Serializable');
     }
 
-    public function it_should_set_code_coverage_from_container(
+    function it_should_set_code_coverage_from_container(
         ContainerInterface $container
     )
     {
@@ -97,7 +97,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $this->setContainer($container);
     }
 
-    public function it_should_subscribe_events()
+    function it_should_subscribe_events()
     {
         $this->shouldImplement('Symfony\\Component\\EventDispatcher\\EventSubscriberInterface');
         $events = $this->getSubscribedEvents();
@@ -107,7 +107,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $events->shouldHaveKey(ApplicationEvents::postRunAll);
     }
 
-    public function it_should_enabled_by_container_parameter(
+    function it_should_enabled_by_container_parameter(
         ContainerInterface $container
     )
     {
@@ -122,7 +122,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $this->shouldBeEnabled();
     }
 
-    public function it_should_throws_if_output_html_dir_not_exists()
+    function it_should_throws_if_output_html_dir_not_exists()
     {
         $options = $this->options;
         $options['output.html'] = getcwd().'/foobar/coverage';
@@ -130,7 +130,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
             ->duringSetOptions($options);
     }
 
-    public function it_should_create_html_output_child_dir_if_not_exists()
+    function it_should_create_html_output_child_dir_if_not_exists()
     {
         $options = $this->options;
         $options['output.html'] = getcwd().'/foobar';
@@ -139,12 +139,12 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $this->getOptions()->shouldContain(realpath(getcwd().'/foobar'));
     }
 
-    public function its_getCached_returns_false_if_coverage_not_started()
+    function its_getCached_returns_false_if_coverage_not_started()
     {
         $this->getCached()->shouldReturn(false);
     }
 
-    public function it_delegate_start(
+    function it_delegate_start(
         PHP_CodeCoverage $coverage
     )
     {
@@ -154,7 +154,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $this->start('some',false);
     }
 
-    public function it_delegate_end(
+    function it_delegate_end(
         PHP_CodeCoverage $coverage
     )
     {
@@ -164,7 +164,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $this->stop();
     }
 
-    public function it_configure_coverage_filter_when_configuration_loaded(
+    function it_configure_coverage_filter_when_configuration_loaded(
         PHP_CodeCoverage_Filter $filter
     )
     {
@@ -187,7 +187,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         $this->onConfigPostLoad();
     }
 
-    public function it_should_not_print_report_if_session_has_empty_results(
+    function it_should_not_print_report_if_session_has_empty_results(
         ContainerInterface $container
     )
     {

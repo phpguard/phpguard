@@ -261,11 +261,7 @@ EOF;
 
     public function evaluate()
     {
-        try {
-            $this->container->get('listen.listener')->evaluate();
-        } catch (\Exception $e) {
-            $this->container->get('ui.application')->renderException($e,$this->container->get('ui.output'));
-        }
+        $this->container->get('listen.listener')->evaluate();
     }
 
     public function stop()

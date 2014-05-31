@@ -1,7 +1,7 @@
 <?php
 
 $finder = Symfony\CS\Finder\DefaultFinder::create()
-    ->in(array('spec','tests/functional','src'))
+    ->in(array('src','tests/functional'))
 ;
 
 return Symfony\CS\Config\Config::create()

@@ -11,13 +11,13 @@
 
 namespace PhpGuard\Application\Tests;
 
+use PhpGuard\Application\Functional\TestPlugin;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Functional\TestCase;
 use PhpGuard\Application\Util\Filesystem;
 
 class PhpGuardTest extends TestCase
 {
-
     public function testShouldConfigureOptions()
     {
         $phpGuard = new PhpGuard();
@@ -84,5 +84,23 @@ class PhpGuardTest extends TestCase
 
         $this->assertContains($ftag2,$this->getDisplay());
         $this->assertContains($ftag1,$this->getDisplay());
+    }
+
+    public function testShouldCatchErrorWhenPluginThrowsAnError()
+    {
+        $this->getTester()->run('-vvv');
+        TestPlugin::$throwException = true;
+        file_put_contents($file=getcwd().'/tag1/test4.php','<?php',LOCK_EX);
+        $this->evaluate();
+
+        $this->assertDisplayContains(TestPlugin::THROW_MESSAGE);
+    }
+
+    public function testGetPlugincache()
+    {
+        $cacheDir = PhpGuard::getCacheDir();
+
+        PhpGuard::getPluginCache('foo');
+        $this->assertTrue(is_dir($cacheDir.'/plugins/foo'));
     }
 }

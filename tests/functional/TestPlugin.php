@@ -23,7 +23,7 @@ class TestPlugin extends Plugin
     const RUN_MESSAGE = 'Test Plugin Run';
     public $runCount = 0;
 
-    public $throwException = false;
+    static public $throwException = false;
 
     public function configure()
     {
@@ -50,7 +50,8 @@ class TestPlugin extends Plugin
      */
     public function runAll()
     {
-        if ($this->throwException) {
+        if (static::$throwException) {
+            static::$throwException = false;
             throw new \RuntimeException(self::THROW_MESSAGE);
         }
         $event = new ResultEvent(ResultEvent::SUCCEED,self::RUN_ALL_MESSAGE);
@@ -67,7 +68,8 @@ class TestPlugin extends Plugin
     public function run(array $paths = array())
     {
         $this->logger->addDebug('Fooo bar');
-        if ($this->throwException) {
+        if (static::$throwException) {
+            static::$throwException = false;
             throw new \RuntimeException(self::THROW_MESSAGE);
         }
         $this->runCount++;

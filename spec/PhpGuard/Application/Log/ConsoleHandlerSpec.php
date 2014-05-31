@@ -10,34 +10,34 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ConsoleHandlerSpec extends ObjectBehavior
 {
-    public function let(ConsoleOutputInterface $output)
+    function let(ConsoleOutputInterface $output)
     {
         $this->beConstructedWith($output);
     }
 
-    public function it_is_initializable()
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Log\ConsoleHandler');
     }
 
-    public function its_getFormatter_should_return_ConsoleFormatter_by_default()
+    function its_getFormatter_should_return_ConsoleFormatter_by_default()
     {
         $this->getFormatter()->shouldHaveType('PhpGuard\\Application\\Log\\ConsoleFormatter');
     }
 
-    public function its_bubble_parameter_should_not_gets_propagated()
+    function its_bubble_parameter_should_not_gets_propagated()
     {
         $this->beConstructedWith(null,false);
         $this->getBubble()->shouldReturn(false);
     }
 
-    public function its_isHandling_returns_false_when_no_output_is_set()
+    function its_isHandling_returns_false_when_no_output_is_set()
     {
         $this->beConstructedWith(null);
         $this->shouldNotBeHandling(array());
     }
 
-    public function it_should_not_handle_log_when_verbosity_set_to_quiet(OutputInterface $output)
+    function it_should_not_handle_log_when_verbosity_set_to_quiet(OutputInterface $output)
     {
         $output->getVerbosity()
             ->shouldBeCalled()
@@ -51,7 +51,7 @@ class ConsoleHandlerSpec extends ObjectBehavior
         $this->isHandling(array('level'=>Logger::NOTICE))->shouldReturn(true);
     }
 
-    public function it_should_handling_the_log_as_bubble(
+    function it_should_handling_the_log_as_bubble(
         ConsoleOutputInterface $output,
         ConsoleOutputInterface $errorOutput
     )
@@ -101,7 +101,7 @@ class ConsoleHandlerSpec extends ObjectBehavior
         $this->handle($errorRecord)->shouldReturn(true);
     }
 
-    public function its_write_behavior_should_be_detected()
+    function its_write_behavior_should_be_detected()
     {
         $infoRecord = array(
             'message' => 'My info message',

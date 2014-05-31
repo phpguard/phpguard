@@ -98,9 +98,16 @@ interface PluginInterface extends LoggerAwareInterface
     public function reload();
 
     /**
-     * @param mixed $tag
+     * @param mixed $tags
      *
      * @return void
      */
-    public function addTag($tag);
+    public function addTags($tags);
+
+    /**
+     * @param $tags
+     *
+     * @return bool True if tags exists
+     */
+    public function hasTags($tags);
 }

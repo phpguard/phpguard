@@ -12,7 +12,7 @@ use Prophecy\Argument;
 
 class RunnerSpec extends ObjectBehavior
 {
-    public function let(
+    function let(
         ContainerInterface $container,
         OutputInterface $output,
         Logger $logger,
@@ -35,12 +35,12 @@ class RunnerSpec extends ObjectBehavior
         $this->setContainer($container);
     }
 
-    public function it_is_initializable()
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Util\Runner');
     }
 
-    public function it_should_run_process_builder(
+    function it_should_run_process_builder(
         ProcessBuilder $builder,
         Process $process
     )
@@ -52,7 +52,7 @@ class RunnerSpec extends ObjectBehavior
         $this->run($builder)->shouldHaveType('Symfony\\Component\\Process\\Process');
     }
 
-    public function it_should_find_executable(
+    function it_should_find_executable(
         ContainerInterface $container
     )
     {

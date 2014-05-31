@@ -2,6 +2,7 @@
 
 namespace spec\PhpGuard\Application;
 
+use PhpGuard\Application\Bridge\CodeCoverageRunner;
 use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Console\Application;
@@ -22,7 +23,7 @@ class PhpGuardSpec extends ObjectBehavior
 {
     static $cwd;
 
-    public function let(
+    function let(
         ContainerInterface $container,
         ConsoleOutput $output,
         EventDispatcherInterface $dispatcher,
@@ -63,18 +64,18 @@ class PhpGuardSpec extends ObjectBehavior
         }
     }
 
-    public function letgo()
+    function letgo()
     {
         chdir(self::$cwd);
         Filesystem::cleanDir(self::$tmpDir.'/test-config');
     }
 
-    public function it_is_initializable()
+    function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\PhpGuard');
     }
 
-    public function it_should_set_default_options()
+    function it_should_set_default_options()
     {
         $this->setOptions(array());
         $options = $this->getOptions();
@@ -83,7 +84,23 @@ class PhpGuardSpec extends ObjectBehavior
         $options->shouldHaveKey('latency');
     }
 
-    public function it_should_evaluate_when_the_file_system_change(
+    function it_should_set_coverage_options_if_defined(
+        ContainerInterface $container,
+        CodeCoverageRunner $runner
+    )
+    {
+        $container->get('coverage.runner')
+            ->shouldBeCalled()
+            ->willReturn($runner)
+        ;
+        $runner->setOptions(array('enabled'=>true))
+            ->shouldBeCalled()
+        ;
+
+        $this->setOptions(array('coverage'=>array('enabled'=>true)));
+    }
+
+    function it_should_evaluate_when_the_file_system_change(
         EventDispatcherInterface $dispatcher,
         ChangeSetEvent $event,
         ContainerInterface $container
@@ -99,7 +116,20 @@ class PhpGuardSpec extends ObjectBehavior
         $this->listen($event);
     }
 
-    public function it_should_reload_when_configuration_changed(
+    function it_should_not_evaluate_when_changese_file_is_empty(
+        EventDispatcherInterface $dispatcher,
+        ChangeSetEvent $event,
+        ContainerInterface $container
+    )
+    {
+        $event->getFiles()
+            ->willReturn(array());
+        $dispatcher->dispatch(ApplicationEvents::postEvaluate,Argument::cetera())
+            ->shouldNotBeCalled();
+        $this->listen($event);
+    }
+
+    function it_should_reload_when_configuration_changed(
         ContainerInterface $container,
         ChangeSetEvent $event,
         EventDispatcherInterface $dispatcher,
@@ -127,7 +157,7 @@ class PhpGuardSpec extends ObjectBehavior
         $this->listen($event);
     }
 
-    public function it_should_run_shell_when_started(ShellInterface $shell)
+    function it_should_run_shell_when_started(ShellInterface $shell)
     {
         $shell->run()
             ->shouldBeCalled()
@@ -139,7 +169,7 @@ class PhpGuardSpec extends ObjectBehavior
         $this->start();
     }
 
-    public function it_should_stop_application(EventDispatcherInterface $dispatcher)
+    function it_should_stop_application(EventDispatcherInterface $dispatcher)
     {
         $this->stop();
         $this->shouldNotBeRunning();
