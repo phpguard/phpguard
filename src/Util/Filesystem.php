@@ -66,4 +66,35 @@ class Filesystem
             copy($path->getRealPath(),$target);
         }
     }
+
+    static public function mkdir($dir,$mode=0777,$recursive=true)
+    {
+        @mkdir($dir,$mode,$recursive);
+    }
+
+    /**
+     * @param string $dir
+     */
+    static public function cleanDir($dir)
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $flags = \FilesystemIterator::SKIP_DOTS;
+        $iterator = new \RecursiveDirectoryIterator($dir, $flags);
+        $iterator = new \RecursiveIteratorIterator(
+            $iterator, \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $path) {
+            if ($path->isDir()) {
+                @rmdir((string) $path);
+            } else {
+                @unlink((string) $path);
+            }
+        }
+
+        @rmdir($dir);
+    }
 }

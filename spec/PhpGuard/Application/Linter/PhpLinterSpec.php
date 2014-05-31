@@ -5,6 +5,7 @@ namespace spec\PhpGuard\Application\Linter;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Spec\ObjectBehavior;
+use PhpGuard\Application\Util\Filesystem;
 use Prophecy\Argument;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -12,7 +13,7 @@ class PhpLinterSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,OutputInterface $output,ConsoleHandler $handler)
     {
-        self::mkdir(self::$tmpDir);
+        Filesystem::mkdir(self::$tmpDir);
         $container->get('logger.handler')
             ->willReturn($handler);
         $this->setContainer($container);
@@ -26,7 +27,7 @@ class PhpLinterSpec extends ObjectBehavior
 
     function letgo()
     {
-        self::cleanDir(self::$tmpDir);
+        Filesystem::cleanDir(self::$tmpDir);
     }
 
     function it_is_initializable()

@@ -6,13 +6,14 @@ use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Console\ShellInterface;
-use \PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Listen\Listener;
+use PhpGuard\Application\Util\Filesystem;
 use Prophecy\Argument;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -65,7 +66,7 @@ class PhpGuardSpec extends ObjectBehavior
     function letgo()
     {
         chdir(self::$cwd);
-        self::cleanDir(self::$tmpDir.'/test-config');
+        Filesystem::cleanDir(self::$tmpDir.'/test-config');
     }
 
     function it_is_initializable()

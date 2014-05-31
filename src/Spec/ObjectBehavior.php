@@ -22,36 +22,6 @@ use PhpSpec\ObjectBehavior as BaseObjectBehavior;
 abstract class ObjectBehavior extends BaseObjectBehavior
 {
     static public $tmpDir;
-    static public function mkdir($dir)
-    {
-        @mkdir($dir,0755,true);
-    }
-
-    /**
-     * @param string $dir
-     */
-    static public function cleanDir($dir)
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $flags = \FilesystemIterator::SKIP_DOTS;
-        $iterator = new \RecursiveDirectoryIterator($dir, $flags);
-        $iterator = new \RecursiveIteratorIterator(
-            $iterator, \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($iterator as $path) {
-            if ($path->isDir()) {
-                @rmdir((string) $path);
-            } else {
-                @unlink((string) $path);
-            }
-        }
-
-        @rmdir($dir);
-    }
 }
 
 ObjectBehavior::$tmpDir = sys_get_temp_dir().'/phpguard-test';

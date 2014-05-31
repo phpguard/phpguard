@@ -6,6 +6,7 @@ use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Linter\LinterInterface;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
+use PhpGuard\Application\Util\Filesystem;
 use PhpGuard\Listen\Resource\FileResource;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
@@ -16,7 +17,7 @@ class WatcherSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,OutputInterface $output,Logger $logger)
     {
-        self::mkdir(self::$tmpDir);
+        Filesystem::mkdir(self::$tmpDir);
         $this->beConstructedWith($container);
         $container->get('logger')->willReturn($logger);
         $container->get('ui.output')->willReturn($output);
@@ -24,7 +25,7 @@ class WatcherSpec extends ObjectBehavior
 
     function letgo()
     {
-        self::cleanDir(self::$tmpDir);
+        Filesystem::cleanDir(self::$tmpDir);
     }
 
     function it_is_initializable()

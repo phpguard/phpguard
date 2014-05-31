@@ -10,6 +10,7 @@ use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Spec\ObjectBehavior;
+use PhpGuard\Application\Util\Filesystem;
 use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,7 +37,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
         if(is_null(static::$cwd)){
             static::$cwd = getcwd();
         }
-        static::mkdir(static::$tmpDir);
+        Filesystem::mkdir(static::$tmpDir);
         chdir(static::$tmpDir);
         $container->get('coverage.filter')
             ->willReturn($filter)
@@ -73,7 +74,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
 
     function letgo()
     {
-        static::cleanDir(static::$tmpDir);
+        Filesystem::cleanDir(static::$tmpDir);
         chdir(static::$cwd);
     }
 

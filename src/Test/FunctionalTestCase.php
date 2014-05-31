@@ -14,6 +14,7 @@ namespace PhpGuard\Application\Test;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Container;
 use PhpGuard\Application\PhpGuard;
+use PhpGuard\Application\Util\Filesystem;
 use PHPUnit_Framework_TestCase;
 
 /**
@@ -27,11 +28,11 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     /**
      * @var ContainerInterface
      */
-    static $container;
+    static protected $container;
 
-    static $tmpDir;
+    static protected $tmpDir;
 
-    static $cwd;
+    static protected $cwd;
 
     public static function setUpBeforeClass()
     {
@@ -39,7 +40,7 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
         if(is_null(static::$tmpDir)){
             static::$tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpguard');
         }
-        static::mkdir(static::$tmpDir);
+        Filesystem::mkdir(static::$tmpDir);
         if(is_null(static::$cwd)){
             static::$cwd = getcwd();
         }
@@ -49,42 +50,9 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     public static function tearDownAfterClass()
     {
         parent::tearDownAfterClass();
-        static::cleanDir(static::$tmpDir);
+        Filesystem::cleanDir(static::$tmpDir);
         @chdir(static::$cwd);
     }
-
-
-    static public function mkdir($dir)
-    {
-        @mkdir($dir,0755,true);
-    }
-
-    /**
-     * @param string $dir
-     */
-    static public function cleanDir($dir)
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $flags = \FilesystemIterator::SKIP_DOTS;
-        $iterator = new \RecursiveDirectoryIterator($dir, $flags);
-        $iterator = new \RecursiveIteratorIterator(
-            $iterator, \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($iterator as $path) {
-            if ($path->isDir()) {
-                @rmdir((string) $path);
-            } else {
-                @unlink((string) $path);
-            }
-        }
-
-        @rmdir($dir);
-    }
-
 
     static public function createApplication()
     {

@@ -6,14 +6,15 @@ use PhpGuard\Application\PhpGuard;
 use \PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
+use PhpGuard\Application\Util\Filesystem;
 use Prophecy\Argument;
 
 class ProcessorSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,PhpGuard $guard, PluginInterface $plugin)
     {
-        self::cleanDir(self::$tmpDir);
-        self::mkdir(self::$tmpDir);
+        Filesystem::cleanDir(self::$tmpDir);
+        Filesystem::mkdir(self::$tmpDir);
         $container->get('phpguard')
             ->willReturn($guard)
         ;
