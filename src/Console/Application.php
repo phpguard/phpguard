@@ -147,7 +147,6 @@ class Application extends BaseApplication
         $phpGuard->setupServices($container);
         $phpGuard->setupCommands($container);
         $phpGuard->setupListeners($container);
-        $phpGuard->loadPlugins($container);
         $container->set('phpguard',$phpGuard);
         $this->setDispatcher($container->get('dispatcher'));
         $this->container = $container;

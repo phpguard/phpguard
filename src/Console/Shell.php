@@ -148,6 +148,7 @@ class Shell implements ShellInterface
             $input = new StringInput($command);
             $retVal = $this->application->run($input, $this->output);
             $this->setStreamBlocking();
+            $this->showPrompt();
             return $retVal;
         }
     }
@@ -204,16 +205,13 @@ class Shell implements ShellInterface
         return $list;
     }
 
-    public function readline($prompt=true)
+    public function readline()
     {
         if(!$this->hasReadline){
             // read a character, will call the callback when a newline is entered
             $line = fgets(STDIN, 1024);
             $line = (!$line && strlen($line) == 0) ? false : rtrim($line);
             $this->runCommand($line);
-            if($prompt){
-                $this->showPrompt();
-            }
         }
         // @codeCoverageIgnoreStart
         else{

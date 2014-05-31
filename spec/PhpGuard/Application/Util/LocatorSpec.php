@@ -2,11 +2,22 @@
 
 namespace spec\PhpGuard\Application\Util;
 
+use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Event\GenericEvent;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 
 class LocatorSpec extends ObjectBehavior
 {
+    function let(ContainerInterface $container,Logger $logger)
+    {
+        $container->get('logger')->willReturn($logger);
+        $container->has(Argument::any())
+            ->willReturn(true);
+        $this->setContainer($container);
+    }
+
     function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Util\Locator');
@@ -48,5 +59,31 @@ class LocatorSpec extends ObjectBehavior
         $this->addPsr4('spec\\PhpGuard\\Application\\',$specDir);
         $this->findClass($file,false)->shouldReturn('spec\\PhpGuard\\Application\\ContainerSpec');
 
+    }
+
+    function it_should_load_plugin(
+        ContainerInterface $container,
+        GenericEvent $event
+    )
+    {
+        $event->getContainer()->willReturn($container);
+        $container->getParameter('application.initialized',false)
+            ->willReturn(false);
+        $this->addPsr4(
+            'PhpGuard\\Plugins\\Some\\',
+            getcwd().'/tests/fixtures/locator/plugin'
+        );
+
+        $container->has('plugins.some')
+            ->shouldBeCalled()
+            ->willReturn(false);
+        $container->setShared('plugins.some',Argument::any())
+            ->shouldBeCalled()
+        ;
+        $container->setShared('linters.php',Argument::any())
+            ->shouldBeCalled()
+        ;
+
+        $this->onApplicationInitialize($event);
     }
 }

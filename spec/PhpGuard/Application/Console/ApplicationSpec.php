@@ -34,8 +34,6 @@ class ApplicationSpec extends ObjectBehavior
         $container->setShared('ui.shell',Argument::any())
             ->shouldBeCalled();
 
-        $container->setShared(Argument::containingString('plugins'),Argument::any())
-            ->shouldBeCalled();
         $container->setShared(Argument::containingString('listeners'),Argument::any())
             ->shouldBeCalled();
 

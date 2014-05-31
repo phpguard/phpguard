@@ -53,6 +53,7 @@ class ShellSpec extends ObjectBehavior
         OutputInterface $output
     )
     {
+        $application->getName()->willReturn('some');
         $application
             ->run(Argument::any(function(StringInput $value){
                 return $value->getFirstArgument()==='some';
@@ -67,6 +68,7 @@ class ShellSpec extends ObjectBehavior
         OutputInterface $output
     )
     {
+        $application->getName()->willReturn('some');
         $application
             ->run(Argument::that(function(StringInput $value){
                 return $value->getFirstArgument() == 'all';

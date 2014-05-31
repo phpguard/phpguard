@@ -11,15 +11,21 @@
 
 namespace PhpGuard\Application\Util;
 
+use PhpGuard\Application\ApplicationEvents;
+use PhpGuard\Application\Container\ContainerAware;
+use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Event\GenericEvent;
+use PhpGuard\Application\Linter\PhpLinter;
 use PhpGuard\Listen\Util\PathUtil;
 use SplObjectStorage;
 use Composer\Autoload\ClassLoader;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Class Locator
  *
  */
-class Locator implements \Serializable
+class Locator extends ContainerAware implements EventSubscriberInterface
 {
     /**
      * @var SplObjectStorage
@@ -31,6 +37,7 @@ class Locator implements \Serializable
 
     protected $fallbackDirs = array();
     protected $fallbackDirsPsr4 = array();
+
     /**
      * @var ClassLoader
      */
@@ -42,6 +49,54 @@ class Locator implements \Serializable
         $this->initialize();
 
         spl_autoload_register(array($this,'loadClass'));
+    }
+
+    static public function getSubscribedEvents()
+    {
+        return array(
+            ApplicationEvents::initialize => array('onApplicationInitialize',1000),
+        );
+    }
+
+    public function onApplicationInitialize(GenericEvent $event)
+    {
+        $container = $event->getContainer();
+        if($container->getParameter('application.initialized',false)){
+            return;
+        }
+        $logger = $container->get('logger');
+        $logger->addDebug('Loading plugins');
+        $prefixes = array_merge($this->prefixesPsr4);
+        foreach($prefixes as $ns=>$dir){
+            $pluginPrefix = 'PhpGuard\\Plugins';
+            $ns = rtrim($ns,'\\');
+            if(false!==strpos($ns,$pluginPrefix)){
+                $parts = explode('\\',$ns);
+                $lastPart = array_pop($parts);
+                $class = $ns.'\\'.$lastPart.'Plugin';
+                $this->loadPlugin($container,$class);
+            }
+        }
+
+        $container->setShared('linters.php',function($c){
+            $linter = new PhpLinter();
+            $linter->setContainer($c);
+            return $linter;
+        });
+    }
+
+    private function loadPlugin(ContainerInterface $container,$class)
+    {
+        if(class_exists($class)){
+            $r = new \ReflectionClass($class);
+            $ob = new $class();
+            $id = 'plugins.'.$ob->getName();
+            if(!$container->has($id) && !$r->isAbstract()){
+                $container->setShared($id,function($c) use($class){
+                    return new $class();
+                });
+            }
+        }
     }
 
     public function loadClass($class)
@@ -266,29 +321,4 @@ class Locator implements \Serializable
 
         $this->autoLoaders->attach($object);
     }
-
-    /**
-     * (PHP 5 &gt;= 5.1.0)<br/>
-     * String representation of object
-     *
-     * @link http://php.net/manual/en/serializable.serialize.php
-     * @return string the string representation of the object or null
-     */
-    public function serialize(){}
-
-    /**
-     * (PHP 5 &gt;= 5.1.0)<br/>
-     * Constructs the object
-     *
-     * @link http://php.net/manual/en/serializable.unserialize.php
-     *
-     * @param string $serialized <p>
-     *                           The string representation of the object.
-     *                           </p>
-     *
-     * @return void
-     */
-    public function unserialize($serialized){}
-
-
 }

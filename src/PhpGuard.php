@@ -134,6 +134,9 @@ class PhpGuard
             $locator = new Locator();
             return $locator;
         });
+        $container->setShared('dispatcher.listeners.locator',function($c){
+            return $c->get('locator');
+        });
 
         $container->setShared('runner.logger',function($c){
             $logger = new Logger('Runner');
@@ -157,28 +160,6 @@ class PhpGuard
 
         $container->setShared('commands.run_all',function(){
             return new RunAllCommand();
-        });
-    }
-
-    public function loadPlugins(ContainerInterface $container)
-    {
-        $container->setShared('plugins.phpspec',function(){
-            $plugin = new PhpSpecPlugin();
-            return $plugin;
-        });
-        $container->setShared('plugins.phpunit',function($c){
-            return new PHPUnitPlugin();
-        });
-        $container->setShared('phpunit.inspector',function($c){
-            $file = PhpGuard::getPluginCache('phpunit').'/result.dat';
-            $c->setParameter(Inspector::CONTAINER_RESULT_ID,$file);
-            return new Inspector();
-        });
-
-        $container->setShared('linters.php',function($c){
-            $linter = new Linter\PhpLinter();
-            $linter->setContainer($c);
-            return $linter;
         });
     }
 
