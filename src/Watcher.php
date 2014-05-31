@@ -13,6 +13,7 @@ namespace PhpGuard\Application;
 
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Container\ContainerInterface;
+use PhpGuard\Application\Linter\LinterException;
 use PhpGuard\Application\Plugin\TaggableInterface;
 use PhpGuard\Listen\Exception\InvalidArgumentException;
 use PhpGuard\Listen\Resource\FileResource;
@@ -33,6 +34,11 @@ class Watcher extends ContainerAware implements TaggableInterface
         'tags' => array(),
     );
 
+    /**
+     * @var \PhpGuard\Application\Linter\LinterInterface[]
+     */
+    private $linters = array();
+
     public function __construct(ContainerInterface $container)
     {
         $this->setContainer($container);
@@ -43,6 +49,7 @@ class Watcher extends ContainerAware implements TaggableInterface
         $resolver = new OptionsResolver();
         $this->setDefaultOptions($resolver);
         $this->options = $resolver->resolve($options);
+        $this->linters = isset($this->options['lint']) ? $this->options['lint']:array();
     }
 
     public function getOptions()
@@ -174,16 +181,18 @@ class Watcher extends ContainerAware implements TaggableInterface
 
     public function lint($file)
     {
-        /* @var \PhpGuard\Application\Linter\LinterInterface $linter */
-        /* @var \PhpGuard\Application\Log\Logger $logger */
-
-        $retVal = true;
-
-        foreach($this->options['lint'] as $linter){
-            if(!$linter->check($file)){
-                $retVal = false;
+        $output = array();
+        foreach($this->linters as $linter){
+            try{
+                $linter->check($file);
+            }catch(LinterException $e){
+                $output[] = $e->getFormattedOutput();
             }
         }
-        return $retVal;
+        if(empty($output)){
+            return true;
+        }else{
+            return $output;
+        }
     }
 }

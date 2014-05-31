@@ -20,8 +20,6 @@ use Monolog\Logger as BaseLogger;
  */
 class Logger extends BaseLogger
 {
-    const DEVELOPMENT   = 50;
-
     const COMMON        = 301;
 
     const SUCCESS       = 302;
@@ -39,7 +37,6 @@ class Logger extends BaseLogger
      * @var array $levels Logging levels
      */
     protected static $levels = array(
-        50  => 'DEVELOPMENT',
         100 => 'DEBUG',
         200 => 'INFO',
         250 => 'NOTICE',
@@ -66,17 +63,6 @@ class Logger extends BaseLogger
     public function addFail($message,array $context=array())
     {
         return $this->addRecord(static::FAIL,$message,$context);
-    }
-
-    /**
-     * @param string    $message
-     * @param array     $context
-     *
-     * @return bool
-     */
-    public function addDevelopment($message,array $context=array())
-    {
-        return $this->addRecord(static::DEVELOPMENT,$message,$context);
     }
 
     /**

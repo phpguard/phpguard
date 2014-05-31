@@ -42,6 +42,7 @@ class PhpLinterSpec extends ObjectBehavior
     function its_check_throws_if_file_have_syntax_error()
     {
         file_put_contents($file=self::$tmpDir.'/error.php','<?php adakaa');
-        $this->check($file)->shouldReturn(false);
+        $this->shouldThrow('PhpGuard\\Application\\Linter\\LinterException')
+            ->duringCheck($file);
     }
 }

@@ -48,11 +48,6 @@ class ResultEvent
     private $result;
 
     /**
-     * @var \PhpGuard\Application\Plugin\PluginInterface
-     */
-    private $plugin;
-
-    /**
      * @var string
      */
     private $message;
@@ -83,6 +78,7 @@ class ResultEvent
 
         if(!empty($trace)){
             // always use passed argument as trace
+            // useful for fatal error
             $this->trace = $trace;
         }
         elseif ($exception) {
@@ -152,6 +148,11 @@ class ResultEvent
         return static::BROKEN === $this->result;
     }
 
+    public function isError()
+    {
+        return static::ERROR === $this->result;
+    }
+
     public function getMessage()
     {
         return $this->message;
@@ -163,14 +164,6 @@ class ResultEvent
     public function getException()
     {
         return $this->exception;
-    }
-
-    /**
-     * @return \PhpGuard\Application\Plugin\PluginInterface
-     */
-    public function getPlugin()
-    {
-        return $this->plugin;
     }
 
     /**
@@ -213,9 +206,6 @@ class ResultEvent
     {
         for ($i = 0, $count = count($trace); $i < $count; $i++) {
             $file = isset($trace[$i]['file']) ? $trace[$i]['file']:'n/a';
-            if($file==__FILE__){
-                continue;
-            }
             $class = isset($trace[$i]['class']) ? $trace[$i]['class'] : '';
             $type = isset($trace[$i]['type']) ? $trace[$i]['type'] : '';
             $function = $trace[$i]['function'];

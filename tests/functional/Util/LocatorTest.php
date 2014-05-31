@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Tests\Util;
+namespace PhpGuard\Application\Functional\Util;
 
 use PhpGuard\Application\Util\Locator;
 

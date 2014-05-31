@@ -190,11 +190,20 @@ abstract class Plugin extends ContainerAware implements PluginInterface
                 continue;
             }
             if($matched = $watcher->matchFile($file)){
-                if($watcher->lint($file)){
+                if(true===($output=$watcher->lint($file))){
                     return $matched;
+                }else{
+                    $this->renderLintOutput($output);
                 }
             }
         }
         return false;
+    }
+
+    private function renderLintOutput($output)
+    {
+        foreach($output as $message){
+            $this->logger->addFail($message);
+        }
     }
 }

@@ -18,7 +18,7 @@ phpunit:
         all_after_pass: true
         keep_failed:    true
     watch:
-        - { pattern: "#^src\/(.+)\.php$#", transform: "tests/functional/${1}.php" }
+        - { pattern: "#^src\/(.+)\.php$#", transform: "tests/functional/${1}Test.php" }
         - { pattern: "#^tests\/functional\/.*Test\.php$#" }
 
 phpspec:
@@ -28,7 +28,8 @@ phpspec:
         all_after_pass:     true
         keep_failed:        true
         import_suites:      false
-        run_all: "--format=pretty"
+        run_all:
+            cli:            "--format=pretty"
 
     watch:
         - { pattern: "#^src\/(.+)\.php$#", transform: "spec/PhpGuard/Application/${1}Spec.php" }

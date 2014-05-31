@@ -90,14 +90,14 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         }
         $this->renderResults($container,$results);
         $this->results = $results;
-        //$loggerHandler->reset();
+        $container->setParameter('session.results',$results);
     }
 
     public function showPrompt()
     {
         $loggerHandler = $this->container->get('logger.handler');
         if(count($this->results) > 0 || $loggerHandler->isLogged()){
-            $this->container->get('ui.shell')->installReadlineCallback();
+            $this->container->get('ui.shell')->showPrompt();
         }
         $loggerHandler->reset();
     }
@@ -166,6 +166,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         if(count($results) > 0){
             $this->renderResults($event->getSubject(),$results);
         }
+        $event->getSubject()->setParameter('session.results',$results);
     }
 
     /**

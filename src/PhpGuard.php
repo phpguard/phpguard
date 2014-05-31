@@ -133,7 +133,6 @@ class PhpGuard
         $container->setShared('locator',function(){
             $locator = new Locator();
             return $locator;
-
         });
 
         $container->setShared('runner.logger',function($c){
@@ -213,6 +212,11 @@ class PhpGuard
 
     public function setOptions(array $options=array())
     {
+        if(isset($options['coverage'])){
+            $this->container->get('coverage.runner')->setOptions($options['coverage']);
+            unset($options['coverage']);
+        }
+
         $resolver = new OptionsResolver();
         $this->setDefaultOptions($resolver);
         $this->options = $resolver->resolve($options);
@@ -238,7 +242,6 @@ class PhpGuard
         $shell = $container->get('ui.shell');
         $this->showHeader();
         $shell->showPrompt();
-
         while($this->running){
             $return = $shell->run();
             if(!$return){

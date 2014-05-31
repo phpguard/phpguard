@@ -64,7 +64,7 @@ class PhpGuardTest extends TestCase
         $this->getTester()->run('--tags=tag1');
         file_put_contents($ftag1,'Hello World');
         file_put_contents($ftag2,'Hello WOrld');
-        static::getShell()->evaluate();
+        $this->evaluate();
         $this->assertContains($ftag1,$this->getDisplay());
         $this->assertNotContains($ftag2,$this->getDisplay());
 
@@ -73,14 +73,14 @@ class PhpGuardTest extends TestCase
         touch($ftag1 = $dirTag1.'/test2.php');
         touch($ftag2 = $dirTag2.'/test2.php');
 
-        static::getShell()->evaluate();
+        $this->evaluate();
         $this->assertContains($ftag2,$this->getDisplay());
         $this->assertNotContains($ftag1,$this->getDisplay());
 
         $this->getTester()->run('--tags=tag1,tag2');
         touch($ftag1 = $dirTag1.'/test3.php');
         touch($ftag2 = $dirTag2.'/test3.php');
-        static::getShell()->evaluate();
+        $this->evaluate();
 
 
         $this->assertContains($ftag2,$this->getDisplay());

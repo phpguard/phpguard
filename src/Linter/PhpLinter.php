@@ -22,6 +22,9 @@ use Symfony\Component\Process\Process;
  */
 class PhpLinter extends ContainerAware implements LinterInterface
 {
+    /**
+     * @var \PhpGuard\Application\Log\Logger
+     */
     protected $logger;
 
     public function setContainer(ContainerInterface $container)
@@ -45,8 +48,9 @@ class PhpLinter extends ContainerAware implements LinterInterface
         if(0===$process->getExitCode()){
             return true;
         }else{
-            $this->logger->addFail('Check syntax failed <comment>'.$process->getOutput().'</comment>');
-            return false;
+            //$this->logger->addFail('Check syntax failed <comment>'.$process->getOutput().'</comment>');
+            throw new LinterException($this,$process->getOutput());
+            //return false;
         }
     }
 

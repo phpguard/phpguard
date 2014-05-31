@@ -38,7 +38,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @author Tobias Schultze <http://tobion.de>
  * @author Anthonius Munthi <me@itstoni.com>
  */
-class ConsoleHandler extends AbstractProcessingHandler implements EventSubscriberInterface
+class ConsoleHandler extends AbstractProcessingHandler
 {
     /**
      * @var OutputInterface|null
@@ -126,38 +126,6 @@ class ConsoleHandler extends AbstractProcessingHandler implements EventSubscribe
         $this->output = null;
 
         parent::close();
-    }
-
-    /**
-     * Before a command is executed, the handler gets activated and the console output
-     * is set in order to know where to write the logs.
-     *
-     * @param ConsoleCommandEvent $event
-     */
-    public function onCommand(ConsoleCommandEvent $event)
-    {
-        $this->setOutput($event->getOutput());
-    }
-
-    /**
-     * After a command has been executed, it disables the output.
-     *
-     * @param ConsoleTerminateEvent $event
-     */
-    public function onTerminate(ConsoleTerminateEvent $event)
-    {
-        //$this->close();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedEvents()
-    {
-        return array(
-            //ConsoleEvents::COMMAND => 'onCommand',
-            //ConsoleEvents::TERMINATE => 'onTerminate'
-        );
     }
 
     /**

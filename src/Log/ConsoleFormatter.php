@@ -29,6 +29,9 @@ class ConsoleFormatter extends LineFormatter
      */
     public function format(array $record)
     {
+        $record['start_tag'] = '';
+        $record['end_tag']   = '';
+        
         if ($record['level'] >= Logger::ERROR) {
             $record['start_tag'] = '<error>';
             $record['end_tag']   = '</error>';
@@ -47,9 +50,6 @@ class ConsoleFormatter extends LineFormatter
         } elseif ($record['level'] >= Logger::DEBUG) {
             $record['start_tag'] = '<comment>';
             $record['end_tag']   = '</comment>';
-        } else {
-            $record['start_tag'] = '';
-            $record['end_tag']   = '';
         }
         return parent::format($record);
     }

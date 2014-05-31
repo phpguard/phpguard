@@ -3,7 +3,6 @@
 namespace spec\PhpGuard\Application\Event;
 
 use PhpGuard\Application\Event\ResultEvent;
-use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
 
@@ -55,6 +54,19 @@ class ResultEventSpec extends ObjectBehavior
         $ob->shouldBeBroken();
     }
 
+    function it_should_create_error_event()
+    {
+        $exception = new \Exception('foo bar');
+        $ob = $this->createError('Error',array(),$exception );
+        $ob->shouldBeError();
+        $ob->getException()->shouldReturn($exception);
+        $ob->getTrace()->shouldNotReturn(array());
+
+        $trace = array('some_trace');
+        $ob = $this->createError('Error',array(),$exception,$trace);
+        $ob->getTrace()->shouldContain('some_trace');
+    }
+
     function it_stores_arguments()
     {
         $arguments = array(
@@ -64,5 +76,7 @@ class ResultEventSpec extends ObjectBehavior
         $this->beConstructedWith(ResultEvent::SUCCEED,'Succeed',$arguments);
         $this->getArgument('foo')->shouldReturn('bar');
         $this->getArgument('hello')->shouldReturn('world');
+
+        $this->getArguments()->shouldReturn($arguments);
     }
 }

@@ -19,22 +19,36 @@ use PhpGuard\Application\Event\GenericEvent;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Class TestApplication
  *
  * @package PhpGuard\Application\Test
- * @covers \PhpGuard\Application\Console\Application
+ * @codeCoverageIgnore
  */
-class TestApplication extends Application
+class TestApplication extends Application implements EventSubscriberInterface
 {
     public function __construct(ContainerInterface $container = null)
     {
         parent::__construct($container);
         $this->setAutoExit(false);
         $this->setCatchExceptions(true);
-
     }
+
+    public static function getSubscribedEvents()
+    {
+        return array(
+            ApplicationEvents::postEvaluate => 'postEvaluate'
+        );
+    }
+
+    public function postEvaluate()
+    {
+        $this->getContainer()->get('logger')->addDebug('stopped');
+        $this->getContainer()->get('phpguard')->stop();
+    }
+
 
     public function setupContainer(ContainerInterface $container)
     {
@@ -45,20 +59,16 @@ class TestApplication extends Application
         $container->setShared('ui.shell',function($c){
             return new TestShell($c);
         });
-    }
-
-
-    public function boot()
-    {
-        $event = new GenericEvent($this->getContainer());
-        $this->getContainer()->get('dispatcher')
-            ->dispatch(ApplicationEvents::initialize,$event)
-        ;
+        $container->setShared('dispatcher.listeners.test_application',function($c){
+            return $c->get('ui.application');
+        });
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $this->getContainer()->setParameter('runner.tty',false);
+        $command = $this->getCommandName($input);
+        $output->writeln('Running start: '.$command);
         return parent::doRun($input,$output);
     }
 

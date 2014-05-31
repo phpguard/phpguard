@@ -30,7 +30,7 @@ class Shell implements ShellInterface
     /**
      * @var \PhpGuard\Application\Console\Application
      */
-    private $application;
+    protected $application;
 
     /**
      * @var string
@@ -40,17 +40,12 @@ class Shell implements ShellInterface
     /**
      * @var OutputInterface
      */
-    private $output;
+    protected $output;
 
     /**
      * @var bool
      */
-    private $hasReadline;
-
-    /**
-     * @var bool
-     */
-    private $initialized = false;
+    protected $hasReadline;
 
     /**
      * @var \PhpGuard\Application\Container\ContainerInterface
@@ -66,13 +61,16 @@ class Shell implements ShellInterface
         $this->application = $container->get('ui.application');
 
         $file = getenv('HOME').'/.history_phpguard';
-        if(is_file($file)){
-            unlink($file);
-        }
         $this->historyFile = $file;
         $this->output = $container->get('ui.output');
         $this->container = $container;
-        $this->initialize();
+
+        // @codeCoverageIgnoreStart
+        if ($this->hasReadline) {
+            readline_read_history($this->historyFile);
+            readline_completion_function(array($this, 'autocompleter'));
+        }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -97,21 +95,13 @@ class Shell implements ShellInterface
 
     public function showPrompt()
     {
-        $this->installReadlineCallback();
-    }
-
-    public function setOptions(array $options = array())
-    {
-        // TODO: Implement setOptions() method.
-    }
-
-    public function evaluate()
-    {
-        try{
-            $this->container->get('listen.listener')->evaluate();
+        // @codeCoverageIgnoreStart
+        if($this->hasReadline){
+            readline_callback_handler_install($this->getPrompt(),array($this, 'runCommand'));
         }
-        catch(\Exception $e){
-            $this->container->get('ui.application')->renderException($e,$this->output);
+        // @codeCoverageIgnoreEnd
+        else {
+            $this->output->write($this->getPrompt());
         }
     }
 
@@ -137,24 +127,6 @@ class Shell implements ShellInterface
     }
 
     /**
-     * @codeCoverageIgnore
-     */
-    public function installReadlineCallback()
-    {
-        if($this->hasReadline){
-            readline_callback_handler_install($this->getPrompt(),array($this, 'runCommand'));
-        }
-    }
-
-    /**
-     * @return bool
-     */
-    public function isRunning()
-    {
-        return $this->running;
-    }
-
-    /**
      * @param   false|string $command
      * @return  int
      */
@@ -175,7 +147,6 @@ class Shell implements ShellInterface
             $this->readlineWriteHistory($command);
             $input = new StringInput($command);
             $retVal = $this->application->run($input, $this->output);
-            $this->installReadlineCallback();
             $this->setStreamBlocking();
             return $retVal;
         }
@@ -186,18 +157,18 @@ class Shell implements ShellInterface
      *
      * @return string The prompt
      */
-    protected function getPrompt()
+    public function getPrompt()
     {
         // using the formatter here is required when using readline
         return $this->output->getFormatter()->format("\n".$this->application->getName().'>> ');
     }
-
 
     /**
      * Tries to return autocompletion for the current entered text.
      *
      *
      * @return bool|array    A list of guessed strings or true
+     * @codeCoverageIgnore
      */
     private function autocompleter()
     {
@@ -233,39 +204,27 @@ class Shell implements ShellInterface
         return $list;
     }
 
-    /**
-     * Runs on shell first start
-     */
-    public function initialize()
-    {
-        if($this->initialized){
-            return;
-        }
-        if ($this->hasReadline) {
-            readline_read_history($this->historyFile);
-            readline_completion_function(array($this, 'autocompleter'));
-        }
-        $this->initialized = true;
-    }
-
     public function readline($prompt=true)
     {
-        if($this->hasReadline){
+        if(!$this->hasReadline){
             // read a character, will call the callback when a newline is entered
-            readline_callback_read_char();
-        }
-        else{
-            if($prompt){
-                $this->output->write($this->getPrompt());
-            }
             $line = fgets(STDIN, 1024);
             $line = (!$line && strlen($line) == 0) ? false : rtrim($line);
             $this->runCommand($line);
+            if($prompt){
+                $this->showPrompt();
+            }
         }
+        // @codeCoverageIgnoreStart
+        else{
+            readline_callback_read_char();
+        }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
      * @param string $command
+     * @codeCoverageIgnore
      */
     private function readlineWriteHistory($command)
     {

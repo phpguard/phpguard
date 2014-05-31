@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Tests\Linter;
+namespace PhpGuard\Application\Functional\Linter;
 
 
 use PhpGuard\Application\Linter\PhpLinter;
@@ -24,7 +24,7 @@ class PhpLinterTest extends TestCase
         $linter = new PhpLinter();
         $file = self::$tmpDir.'/src/unchecked.php';
         file_put_contents($file,'<?php errror');
-        self::getShell()->evaluate();
+        $this->evaluate();
 
         $display = $this->getDisplay();
         $this->assertContains($linter->getTitle(),$display);

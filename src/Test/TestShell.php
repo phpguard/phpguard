@@ -14,7 +14,6 @@ namespace PhpGuard\Application\Test;
 
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Container\ContainerInterface;
-use PhpGuard\Application\Spec\ObjectBehavior;
 
 /**
  * Class TestShell
@@ -29,30 +28,16 @@ class TestShell extends Shell
     public function __construct(ContainerInterface $container)
     {
         parent::__construct($container);
-        $this->copyContainer = $container;
         $file = sys_get_temp_dir().'/history_phpguard_test';
         if(is_file($file)){
             unlink($file);
         }
         $this->historyFile = $file;
+        $this->hasReadline = false;
     }
 
     public function run()
     {
         return false;
-    }
-
-    public function exitShell()
-    {
-        $this->copyContainer->get('logger')
-            ->addCommon(self::EXIT_SHELL_MESSAGE);
-    }
-
-    /**
-     * @codeCoverageIgnore
-     */
-    public function installReadlineCallback()
-    {
-        return;
     }
 }

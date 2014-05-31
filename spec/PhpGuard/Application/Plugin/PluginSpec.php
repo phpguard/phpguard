@@ -220,5 +220,6 @@ class PluginSpec extends ObjectBehavior
         $this->setActive(true)->shouldReturn($this);
         $this->getActive()->shouldReturn(true);
         $this->shouldBeActive();
+
     }
 }

@@ -14,6 +14,7 @@ namespace PhpGuard\Application\Functional;
 
 use PhpGuard\Application\Test\FunctionalTestCase;
 use PhpGuard\Application\Test\TestApplication;
+use PhpGuard\Application\Util\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 class TestCase extends FunctionalTestCase
@@ -27,13 +28,7 @@ class TestCase extends FunctionalTestCase
     static public function buildFixtures($suffix='common')
     {
         $finder = Finder::create();
-        $finder->in(static::$cwd.'/tests/fixtures/'.$suffix);
-
-        foreach($finder->files() as $file){
-            $target = static::$tmpDir.'/'.$file->getRelativePathname();
-            self::mkdir(dirname($target));
-            copy($file,$target);
-        }
+        Filesystem::copyDir(static::$cwd.'/tests/fixtures/'.$suffix,static::$tmpDir,$finder);
     }
 
 

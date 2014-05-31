@@ -13,13 +13,10 @@ namespace PhpGuard\Application\Bridge;
 
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Configuration\ConfigEvents;
-use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Util\Filesystem;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
 use Serializable;
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Container\ContainerInterface;
@@ -50,6 +47,11 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
      */
     private $logger;
 
+    public function __construct()
+    {
+        $this->setOptions(array());
+    }
+
     /**
      * Returns an array of event names this subscriber wants to listen to.
      *
@@ -74,13 +76,12 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     {
         return array(
             ConfigEvents::POSTLOAD => array('onConfigPostLoad',-100),
-
+            ApplicationEvents::preRunCommand => array('preCoverage',100),
             ApplicationEvents::postEvaluate => array(
-                array('onPostEvaluate',-100),
-                array('preCoverage',0)
+                array('process',-100)
             ),
             ApplicationEvents::preRunAll => array('preCoverage',10),
-            ApplicationEvents::postRunAll => array('onPostRunAll',10),
+            ApplicationEvents::postRunAll => array('process',10),
         );
     }
 
@@ -102,25 +103,6 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
 
         $container->setShared('dispatcher.listeners.coverage',function($c){
             return $c->get('coverage.runner');
-        });
-
-        $container->setShared('coverage.report.text',function($c){
-            $options = $c->get('coverage.runner')->getOptions();
-
-            return new \PHP_CodeCoverage_Report_Text(
-                $options['lower_upper_bound'],
-                $options['high_lower_bound'],
-                $options['show_uncovered_files'],
-                /* $showOnlySummary */ false
-            );
-        });
-
-        $container->setShared('coverage.report.html',function($c){
-            return new \PHP_CodeCoverage_Report_HTML();
-        });
-
-        $container->setShared('coverage.report.clover',function($c){
-            return new \PHP_CodeCoverage_Report_HTML();
         });
     }
 
@@ -160,6 +142,13 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         $this->coverage = $data['coverage'];
         $this->filter   = $data['filter'];
         $this->options  = $data['options'];
+    }
+
+    public function setOptions($options)
+    {
+        $resolver = new OptionsResolver();
+        $this->setDefaultOptions($resolver);
+        $this->options = $options = $resolver->resolve($options);
     }
 
     public function getOptions()
@@ -232,20 +221,12 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
 
     public function preCoverage()
     {
-        $this->logger->addDebug('Coverage saving state...');
-        $enabled = $this->isEnabled() ? 'enabled':'disabled';
-        $this->logger->addCommon('Coverage is <highlight>'.$enabled.'</highlight>');
         $this->saveState();
     }
 
     public function onConfigPostLoad()
     {
-        $guard = $this->container->get('phpguard');
-        $options = $guard->getOptions();
-        $resolver = new OptionsResolver();
-        $this->setDefaultOptions($resolver);
-        $this->options = $options = $resolver->resolve($options['coverage']);
-
+        $options = $this->options;
         $filter = $this->filter;
         array_map(array($filter, 'addDirectoryToWhitelist'), $options['whitelist']);
         array_map(array($filter, 'addDirectoryToBlacklist'), $options['blacklist']);
@@ -255,19 +236,9 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         $enabled = $this->container->getParameter('coverage.enabled',false);
         $this->options['input.option.enabled'] = $enabled;
 
+        $this->container->setParameter('coverage.options',$options);
+
         $this->logger->addDebug('Coverage configured');
-    }
-
-    public function onPostEvaluate()
-    {
-        $this->logger->addDebug('Coverage Post Evaluate');
-    }
-
-    public function onPostRunAll()
-    {
-        $this->importCached();
-        $this->logger->addDebug('coverage post run all');
-        $this->process();
     }
 
     public function getFilter()
@@ -288,13 +259,6 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     public function isEnabled()
     {
         return $this->options['input.option.enabled'] || $this->options['enabled'];
-    }
-
-    private function importCached()
-    {
-        $runner = static::getCached();
-        $this->coverage = $runner->getCoverage();
-        $this->filter = $runner->getFilter();
     }
 
     static public function getCacheFile()
@@ -318,15 +282,20 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         }
     }
 
-    private function process()
+    public function process()
     {
-        if(!$this->isEnabled()){
+        $results = $this->container->getParameter('session.results',array());
+        if(empty($results) || !$this->isEnabled()){
             return;
         }
-        $options = $this->options;
-        if($options['output.text']){
-            $this->reportText();
+
+        if(!$this->importCached()){
+            return;
         }
+
+        $options = $this->options;
+
+
         if($options['output.html']){
             $this->reportHtml($options['output.html']);
         }
@@ -334,10 +303,16 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         if($options['output.clover']){
             $this->reportClover($options['output.clover']);
         }
+
+        if($options['output.text']){
+            $this->reportText();
+        }
     }
 
     private function reportText()
     {
+        /* @var \PHP_CodeCoverage_Report_Text $report */
+
         $this->logger->addCommon('Processing text output... please wait!');
         $options = $this->options;
         $report = new \PHP_CodeCoverage_Report_Text(
@@ -346,29 +321,51 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
             $options['show_uncovered_files'],
             $options['show_only_summary']
         );
-        $output = $report->process($this->coverage,true);
-        $this->container->get('ui.output')->writeln($output);
+
+        /* @var \Symfony\Component\Console\Output\ConsoleOutputInterface $writer */
+
+        $writer = $this->container->get('ui.output');
+
+        $output = $report->process($this->coverage,$writer->getFormatter()->isDecorated());
+
+        $writer->writeln($output);
     }
 
     private function reportHtml($target)
     {
+        /* @var \PHP_CodeCoverage_Report_HTML $report */
         $relative = str_replace(getcwd().DIRECTORY_SEPARATOR,'',$target);
         $this->logger->addCommon(sprintf(
             'Generating html output to: <comment>%s</comment> please wait!',
             $relative
         ));
+
         $report = new \PHP_CodeCoverage_Report_HTML();
         $report->process($this->coverage,$target);
     }
 
     private function reportClover($target)
     {
+        /* @var \PHP_CodeCoverage_Report_Clover $report */
+
         $relative = str_replace(getcwd().DIRECTORY_SEPARATOR,'',$target);
         $this->logger->addCommon(sprintf(
             'Generating clover output to: <comment>%s</comment> please wait!',
             $relative
         ));
+
         $report = new \PHP_CodeCoverage_Report_Clover();
         $report->process($this->coverage,$target);
+    }
+
+    private function importCached()
+    {
+        $runner = static::getCached();
+        if(!$runner){
+            return false;
+        }
+        $this->coverage = $runner->getCoverage();
+        $this->filter = $runner->getFilter();
+        return true;
     }
 }

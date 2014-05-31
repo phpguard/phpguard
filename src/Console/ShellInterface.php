@@ -14,8 +14,6 @@ namespace PhpGuard\Application\Console;
 
 interface ShellInterface
 {
-    public function setOptions(array $options=array());
-
     public function run();
 
     public function showPrompt();

@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Tests\Log;
+namespace PhpGuard\Application\Functional\Log;
 
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Log\ConsoleHandler;

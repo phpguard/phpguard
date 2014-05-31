@@ -17,4 +17,19 @@ class ProcessEventSpec extends ObjectBehavior
     {
         $this->shouldHaveType('PhpGuard\Application\Event\ProcessEvent');
     }
+
+    function it_returns_related_plugin_for_event(
+        PluginInterface $plugin
+    )
+    {
+        $this->getPlugin()->shouldReturn($plugin);
+    }
+
+    function it_returns_results(
+        PluginInterface $plugin
+    )
+    {
+        $this->beConstructedWith($plugin,array('foo'));
+        $this->getResults()->shouldContain('foo');
+    }
 }

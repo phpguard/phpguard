@@ -73,10 +73,8 @@ class Application extends BaseApplication
         $container->get('dispatcher')->dispatch(ApplicationEvents::initialize,$event);
 
         $command = $this->getCommandName($input);
-        if(!$command){
+        if(trim($command)===''){
             $input = new StringInput('start');
-        }else{
-            $container->get('logger')->addCommon($command);
         }
 
         return parent::doRun($input, $output);

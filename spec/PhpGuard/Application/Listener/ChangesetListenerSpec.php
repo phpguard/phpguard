@@ -57,7 +57,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $container->getParameter('config.file')
             ->willReturn('config_file');
 
-        $container->setParameter('application.exit_code',0)
+        $container->setParameter(Argument::cetera())
             ->willReturn(true);
 
         $plugin->isActive()->willReturn(true);

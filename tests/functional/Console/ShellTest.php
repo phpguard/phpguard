@@ -13,19 +13,16 @@ namespace PhpGuard\Application\Functional\Console;
 
 use PhpGuard\Application\Functional\TestCase;
 use PhpGuard\Application\Functional\TestPlugin;
+use PhpGuard\Application\PhpGuard;
 
 class ShellTest extends TestCase
 {
     protected function setUp()
     {
         parent::setUp();
-        $this->getTester()->run('');
+        $this->getTester()->run();
     }
 
-
-    /**
-     *
-     */
     public function testShouldEvaluateChange()
     {
         touch($file1 = static::$tmpDir.'/src/PhpGuardTest/Namespace1/NewClass.php');
