@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Plugin;
 
-
 interface TaggableInterface
 {
     /**
@@ -22,15 +21,15 @@ interface TaggableInterface
 
     /**
      * Check if tags supported
-     * @param   mixed $tags String or an array of tags
+     * @param mixed $tags String or an array of tags
      *
-     * @return  bool True if tags supported
+     * @return bool True if tags supported
      */
     public function hasTags($tags);
 
     /**
      * Add a new tags
-     * @param   mixed $tags
+     * @param mixed $tags
      *
      * @return  $this
      */

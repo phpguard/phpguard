@@ -45,9 +45,9 @@ class PhpLinter extends ContainerAware implements LinterInterface
     {
         $process = new Process('php -lf '.$file);
         $process->run();
-        if(0===$process->getExitCode()){
+        if (0===$process->getExitCode()) {
             return true;
-        }else{
+        } else {
             //$this->logger->addFail('Check syntax failed <comment>'.$process->getOutput().'</comment>');
             throw new LinterException($this,$process->getOutput());
             //return false;

@@ -25,25 +25,26 @@ class Processor extends ContainerAware
 {
     public function compileFile($file)
     {
-        if(!is_file($file)){
+        if (!is_file($file)) {
             throw new \RuntimeException(sprintf(
                 'Processor file: "%s" not exist.',
                 $file
             ));
         }
+
         return $this->compile($file);
     }
 
     public function compile($text)
     {
         $parsed = Yaml::parse($text);
-        if(!is_array($parsed)){
+        if (!is_array($parsed)) {
             return;
         }
-        foreach($parsed as $plugin=>$definitions){
-            if($plugin=='phpguard'){
+        foreach ($parsed as $plugin=>$definitions) {
+            if ($plugin=='phpguard') {
                 $this->parseGuardSection($definitions);
-            }else{
+            } else {
                 $this->parsePluginSection($plugin,$definitions);
             }
         }
@@ -63,7 +64,7 @@ class Processor extends ContainerAware
         $container = $this->container;
         $id = 'plugins.'.$name;
 
-        if(!$container->has($id)){
+        if (!$container->has($id)) {
             throw new ConfigurationException(sprintf(
                 'PhpGuard plugin with name: "%s" is not installed.',
                 $name
@@ -73,17 +74,17 @@ class Processor extends ContainerAware
         /* @var \PhpGuard\Application\Plugin\PluginInterface $plugin */
         $plugin = $container->get($id);
         $plugin->setActive(true);
-        if(isset($definitions['options'])){
+        if (isset($definitions['options'])) {
             $plugin->setOptions($definitions['options']);
         }
-        if(isset($definitions['watch'])){
+        if (isset($definitions['watch'])) {
             $this->parseWatchSection($plugin,$definitions['watch']);
         }
     }
 
     private function parseWatchSection(PluginInterface $plugin,$definitions)
     {
-        foreach($definitions as $options){
+        foreach ($definitions as $options) {
             $watcher = new Watcher($this->container);
             $watcher->setOptions($options);
             $plugin->addWatcher($watcher);

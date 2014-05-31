@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Test;
 
-
 use PhpGuard\Application\Console\Shell;
 use PhpGuard\Application\Container\ContainerInterface;
 
@@ -29,7 +28,7 @@ class TestShell extends Shell
     {
         parent::__construct($container);
         $file = sys_get_temp_dir().'/history_phpguard_test';
-        if(is_file($file)){
+        if (is_file($file)) {
             unlink($file);
         }
         $this->historyFile = $file;

@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Functional\Log;
 
-
 use PhpGuard\Application\Functional\TestCase;
 use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
@@ -29,7 +28,7 @@ class LoggerTest extends TestCase
      */
     public function testLogOutput($type,$message,$expected=null,$context=array())
     {
-        if(is_null($expected)){
+        if (is_null($expected)) {
             $expected = $message;
         }
         $handler = new ConsoleHandler(static::$container->get('ui.output'));

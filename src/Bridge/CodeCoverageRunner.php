@@ -85,23 +85,25 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         );
     }
 
-    static public function setupContainer(ContainerInterface $container)
+    public static function setupContainer(ContainerInterface $container)
     {
-        $container->setShared('coverage.filter',function(){
+        $container->setShared('coverage.filter',function () {
             return new \PHP_CodeCoverage_Filter();
         });
 
-        $container->setShared('coverage',function($c){
+        $container->setShared('coverage',function ($c) {
             $filter = $c->get('coverage.filter');
+
             return new \PHP_CodeCoverage(null,$filter);
         });
 
-        $container->setShared('coverage.runner',function($c){
+        $container->setShared('coverage.runner',function ($c) {
             $runner = new CodeCoverageRunner();
+
             return new $runner;
         });
 
-        $container->setShared('dispatcher.listeners.coverage',function($c){
+        $container->setShared('dispatcher.listeners.coverage',function ($c) {
             return $c->get('coverage.runner');
         });
     }
@@ -186,35 +188,36 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         ));
 
         $resolver->setNormalizers(array(
-            'output.html' => function($options,$value){
-                if($value){
+            'output.html' => function ($options,$value) {
+                if ($value) {
                     $dir = dirname($value);
-                    if(!is_dir($dir)){
+                    if (!is_dir($dir)) {
                         throw new ConfigurationException(sprintf(
                             'Can not output coverage html to : "%s". Please ensure that directory %s exists and readable',
                             $value,$dir
                         ));
                     }
-                    if(!is_dir($value)){
+                    if (!is_dir($value)) {
                         mkdir($value,0755,true);
                     }
                     $value = realpath($value);
+
                     return $value;
                 }
             }
         ));
     }
 
-    public function start($id, $clear = false )
+    public function start($id, $clear = false)
     {
-        if($this->isEnabled()){
+        if ($this->isEnabled()) {
             $this->coverage->start($id,$clear);
         }
     }
 
     public function stop($append=true,$linesToBeCovered=array(),array $linesToBeUsed=array())
     {
-        if($this->isEnabled()){
+        if ($this->isEnabled()) {
             $this->coverage->stop($append,$linesToBeCovered,$linesToBeUsed);
         }
     }
@@ -261,23 +264,24 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         return $this->options['input.option.enabled'] || $this->options['enabled'];
     }
 
-    static public function getCacheFile()
+    public static function getCacheFile()
     {
         $dir = PhpGuard::getCacheDir().'/coverage';
-        if(!is_dir($dir)){
+        if (!is_dir($dir)) {
             mkdir($dir,0775,true);
         }
+
         return $dir.'/runner.dat';
     }
 
     /**
      * @return CodeCoverageRunner
      */
-    static public function getCached()
+    public static function getCached()
     {
-        if(file_exists(static::getCacheFile())){
+        if (file_exists(static::getCacheFile())) {
             return Filesystem::unserialize(static::getCacheFile());
-        }else{
+        } else {
             return false;
         }
     }
@@ -285,26 +289,25 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     public function process()
     {
         $results = $this->container->getParameter('session.results',array());
-        if(empty($results) || !$this->isEnabled()){
+        if (empty($results) || !$this->isEnabled()) {
             return;
         }
 
-        if(!$this->importCached()){
+        if (!$this->importCached()) {
             return;
         }
 
         $options = $this->options;
 
-
-        if($options['output.html']){
+        if ($options['output.html']) {
             $this->reportHtml($options['output.html']);
         }
 
-        if($options['output.clover']){
+        if ($options['output.clover']) {
             $this->reportClover($options['output.clover']);
         }
 
-        if($options['output.text']){
+        if ($options['output.text']) {
             $this->reportText();
         }
     }
@@ -361,11 +364,12 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     private function importCached()
     {
         $runner = static::getCached();
-        if(!$runner){
+        if (!$runner) {
             return false;
         }
         $this->coverage = $runner->getCoverage();
         $this->filter = $runner->getFilter();
+
         return true;
     }
 }

@@ -10,34 +10,34 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ConsoleHandlerSpec extends ObjectBehavior
 {
-    function let(ConsoleOutputInterface $output)
+    public function let(ConsoleOutputInterface $output)
     {
         $this->beConstructedWith($output);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Log\ConsoleHandler');
     }
 
-    function its_getFormatter_should_return_ConsoleFormatter_by_default()
+    public function its_getFormatter_should_return_ConsoleFormatter_by_default()
     {
         $this->getFormatter()->shouldHaveType('PhpGuard\\Application\\Log\\ConsoleFormatter');
     }
 
-    function its_bubble_parameter_should_not_gets_propagated()
+    public function its_bubble_parameter_should_not_gets_propagated()
     {
         $this->beConstructedWith(null,false);
         $this->getBubble()->shouldReturn(false);
     }
 
-    function its_isHandling_returns_false_when_no_output_is_set()
+    public function its_isHandling_returns_false_when_no_output_is_set()
     {
         $this->beConstructedWith(null);
         $this->shouldNotBeHandling(array());
     }
 
-    function it_should_not_handle_log_when_verbosity_set_to_quiet(OutputInterface $output)
+    public function it_should_not_handle_log_when_verbosity_set_to_quiet(OutputInterface $output)
     {
         $output->getVerbosity()
             ->shouldBeCalled()
@@ -51,7 +51,7 @@ class ConsoleHandlerSpec extends ObjectBehavior
         $this->isHandling(array('level'=>Logger::NOTICE))->shouldReturn(true);
     }
 
-    function it_should_handling_the_log_as_bubble(
+    public function it_should_handling_the_log_as_bubble(
         ConsoleOutputInterface $output,
         ConsoleOutputInterface $errorOutput
     )
@@ -80,7 +80,6 @@ class ConsoleHandlerSpec extends ObjectBehavior
         );
         $this->handle($infoRecord)->shouldReturn(true);
 
-
         $output
             ->getErrorOutput()
             ->willReturn($errorOutput)
@@ -102,7 +101,7 @@ class ConsoleHandlerSpec extends ObjectBehavior
         $this->handle($errorRecord)->shouldReturn(true);
     }
 
-    function its_write_behavior_should_be_detected()
+    public function its_write_behavior_should_be_detected()
     {
         $infoRecord = array(
             'message' => 'My info message',

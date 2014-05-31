@@ -29,9 +29,6 @@ use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Listener\ConfigurationListener;
 use PhpGuard\Application\Listener\ChangesetListener;
-use PhpGuard\Plugins\PhpSpec\PhpSpecPlugin;
-use PhpGuard\Plugins\PHPUnit\Inspector;
-use PhpGuard\Plugins\PHPUnit\PHPUnitPlugin;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -68,22 +65,22 @@ class PhpGuard
 
     public function setupListeners(ContainerInterface $container)
     {
-        $container->setShared('dispatcher.listeners.application',function(){
+        $container->setShared('dispatcher.listeners.application',function () {
             return new ApplicationListener();
         });
 
-        $container->setShared('dispatcher.listeners.config',function(){
+        $container->setShared('dispatcher.listeners.config',function () {
             return new ConfigurationListener();
         });
 
-        $container->setShared('dispatcher.listeners.changeset',function(){
+        $container->setShared('dispatcher.listeners.changeset',function () {
             return new ChangesetListener();
         });
     }
 
     public function setupServices(ContainerInterface $container)
     {
-        $container->setShared('config',function(){
+        $container->setShared('config',function () {
             return new Processor();
         });
 
@@ -98,53 +95,59 @@ class PhpGuard
             return $dispatcher;
         });
 
-        $container->setShared('logger.handler', function($c){
+        $container->setShared('logger.handler', function ($c) {
             $format = "%start_tag%[%datetime%][%channel%][%level_name%] %message% %context% %extra% %end_tag%\n";
             $formatter = new ConsoleFormatter($format);
             $handler = new ConsoleHandler(null,true);
             $handler->setFormatter($formatter);
+
             return $handler;
         });
 
-        $container->setShared('logger', function($c){
+        $container->setShared('logger', function ($c) {
             $logger = new Logger('Main');
             $logger->pushHandler($c->get('logger.handler'));
+
             return $logger;
         });
 
-        $container->setShared('listen.listener',function($c){
+        $container->setShared('listen.listener',function ($c) {
             $listener = Listen::to(getcwd());
             $options = $c->get('phpguard')->getOptions();
-            foreach($options['ignores'] as $ignored){
+            foreach ($options['ignores'] as $ignored) {
                 $listener->ignores($ignored);
             }
 
             $phpguard = $c->get('phpguard');
             $listener->latency($options['latency']);
             $listener->callback(array($phpguard,'listen'));
+
             return $listener;
         });
 
-        $container->setShared('listen.adapter',function(){
+        $container->setShared('listen.adapter',function () {
             $adapter = Listen::getDefaultAdapter();
+
             return $adapter;
         });
 
-        $container->setShared('locator',function(){
+        $container->setShared('locator',function () {
             $locator = new Locator();
+
             return $locator;
         });
-        $container->setShared('dispatcher.listeners.locator',function($c){
+        $container->setShared('dispatcher.listeners.locator',function ($c) {
             return $c->get('locator');
         });
 
-        $container->setShared('runner.logger',function($c){
+        $container->setShared('runner.logger',function ($c) {
             $logger = new Logger('Runner');
             $logger->pushHandler($c->get('logger.handler'));
+
             return $logger;
         });
 
-        $container->setShared('runner',function(){
+        $container->setShared('runner',function () {
             return new Runner();
         });
 
@@ -153,12 +156,13 @@ class PhpGuard
 
     public function setupCommands($container)
     {
-        $container->setShared('commands.start',function(){
+        $container->setShared('commands.start',function () {
             $command = new StartCommand();
+
             return $command;
         });
 
-        $container->setShared('commands.run_all',function(){
+        $container->setShared('commands.run_all',function () {
             return new RunAllCommand();
         });
     }
@@ -166,7 +170,7 @@ class PhpGuard
     public function listen(ChangeSetEvent $event)
     {
         $files = $event->getFiles();
-        if(empty($files)){
+        if (empty($files)) {
             return;
         }
 
@@ -174,7 +178,7 @@ class PhpGuard
         $dispatcher = $container->get('dispatcher');
         $configFile = $container->getParameter('config.file');
 
-        if(in_array($configFile,$files)){
+        if (in_array($configFile,$files)) {
             $container->get('logger.handler')->reset();
             $container->get('logger')->addCommon("Reloading Configuration");
             $reloadEvent = new GenericEvent($container);
@@ -182,7 +186,6 @@ class PhpGuard
             $container->get('logger')->addCommon('Configuration Reloaded');
             $container->get('ui.shell')->showPrompt();
         }
-
 
         $evaluateEvent = new EvaluateEvent($event);
         $dispatcher->dispatch(
@@ -193,7 +196,7 @@ class PhpGuard
 
     public function setOptions(array $options=array())
     {
-        if(isset($options['coverage'])){
+        if (isset($options['coverage'])) {
             $this->container->get('coverage.runner')->setOptions($options['coverage']);
             unset($options['coverage']);
         }
@@ -223,9 +226,9 @@ class PhpGuard
         $shell = $container->get('ui.shell');
         $this->showHeader();
         $shell->showPrompt();
-        while($this->running){
+        while ($this->running) {
             $return = $shell->run();
-            if(!$return){
+            if (!$return) {
                 $this->stop();
             }
             $this->evaluate();
@@ -258,9 +261,9 @@ EOF;
 
     public function evaluate()
     {
-        try{
+        try {
             $this->container->get('listen.listener')->evaluate();
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $this->container->get('ui.application')->renderException($e,$this->container->get('ui.output'));
         }
     }
@@ -275,21 +278,23 @@ EOF;
         return $this->running;
     }
 
-    static public function getCacheDir()
+    public static function getCacheDir()
     {
         $hash = md5(getcwd());
         $dir = sys_get_temp_dir().'/phpguard/cache/'.$hash;
         @mkdir($dir,0755,true);
+
         return $dir;
     }
 
-    static public function getPluginCache($plugin)
+    public static function getPluginCache($plugin)
     {
         $cache = static::getCacheDir();
         $dir = $cache.DIRECTORY_SEPARATOR.'plugins'.DIRECTORY_SEPARATOR.$plugin;
-        if(!is_dir($dir)){
+        if (!is_dir($dir)) {
             mkdir($dir,0755,true);
         }
+
         return $dir;
     }
 
@@ -302,10 +307,11 @@ EOF;
         ));
 
         $resolver->setNormalizers(array(
-            'ignores' => function(Options $options,$value){
-                if(!is_array($value)){
+            'ignores' => function (Options $options,$value) {
+                if (!is_array($value)) {
                     $value = array($value);
                 }
+
                 return $value;
             }
         ));

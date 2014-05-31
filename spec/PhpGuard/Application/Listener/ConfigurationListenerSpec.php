@@ -9,7 +9,6 @@ use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Container\ContainerInterface;
-use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Listen\Adapter\AdapterInterface;
 use PhpGuard\Listen\Listener;
@@ -20,7 +19,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ConfigurationListenerSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         ContainerInterface $container,
         PluginInterface $plugin,
         AdapterInterface $adapter,
@@ -52,22 +51,22 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $this->setContainer($container);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Listener\ConfigurationListener');
     }
 
-    function it_should_subscribe_config_preLoad_event()
+    public function it_should_subscribe_config_preLoad_event()
     {
         $this->getSubscribedEvents()->shouldHaveKey(ConfigEvents::PRELOAD);
     }
 
-    function it_should_subscribe_config_postLoad_event()
+    public function it_should_subscribe_config_postLoad_event()
     {
         $this->getSubscribedEvents()->shouldHaveKey(ConfigEvents::POSTLOAD);
     }
 
-    function it_should_pre_load_configuration_properly(
+    public function it_should_pre_load_configuration_properly(
         GenericEvent $event,
         ContainerInterface $container,
         PhpGuard $guard
@@ -80,7 +79,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $this->preLoad($event);
     }
 
-    function it_postLoad_should_configure_only_active_plugin(
+    public function it_postLoad_should_configure_only_active_plugin(
         GenericEvent $event,
         ContainerInterface $container,
         PluginInterface $active,
@@ -105,7 +104,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $this->postLoad($event);
     }
 
-    function it_should_load_configuration(
+    public function it_should_load_configuration(
         GenericEvent $event,
         ContainerInterface $container,
         EventDispatcherInterface $dispatcher,
@@ -136,7 +135,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $this->load($event,ConfigEvents::LOAD,$dispatcher);
     }
 
-    function it_should_reload_configuration(
+    public function it_should_reload_configuration(
         GenericEvent $event,
         ContainerInterface $container,
         EventDispatcherInterface $dispatcher,

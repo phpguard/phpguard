@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Functional\Util;
 
-
 use PhpGuard\Application\Functional\TestCase;
 use PhpGuard\Application\Util\Filesystem;
 use Symfony\Component\Finder\Finder;

@@ -16,13 +16,13 @@ use PhpGuard\Application\Util\Locator;
 class LocatorTest extends \PHPUnit_Framework_TestCase
 {
     protected $fixtures;
-    
+
     protected function setUp()
     {
         parent::setUp();
         $this->fixtures = getcwd()."/tests/fixtures/locator";
     }
-    
+
     /**
      * @dataProvider getClassFile
      *
@@ -106,4 +106,3 @@ class LocatorTest extends \PHPUnit_Framework_TestCase
         );
     }
 }
- 

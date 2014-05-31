@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Functional;
 
-
 use PhpGuard\Application\Event\ResultEvent;
 use PhpGuard\Application\Event\ProcessEvent;
 use PhpGuard\Application\Plugin\Plugin;
@@ -30,7 +29,6 @@ class TestPlugin extends Plugin
     {
     }
 
-
     /**
      * @return string
      */
@@ -47,16 +45,16 @@ class TestPlugin extends Plugin
         return 'Test';
     }
 
-
     /**
      * @return ResultEvent
      */
     public function runAll()
     {
-        if($this->throwException){
+        if ($this->throwException) {
             throw new \RuntimeException(self::THROW_MESSAGE);
         }
         $event = new ResultEvent(ResultEvent::SUCCEED,self::RUN_ALL_MESSAGE);
+
         return new ProcessEvent($this,array($event));
     }
 
@@ -69,17 +67,18 @@ class TestPlugin extends Plugin
     public function run(array $paths = array())
     {
         $this->logger->addDebug('Fooo bar');
-        if($this->throwException){
+        if ($this->throwException) {
             throw new \RuntimeException(self::THROW_MESSAGE);
         }
         $this->runCount++;
         $results = array();
-        foreach($paths as $path){
+        foreach ($paths as $path) {
             $message =  self::RUN_MESSAGE.' Modified path: '.$path;
             $event = new ResultEvent(ResultEvent::SUCCEED,$message);
             $results[] = $event;
         }
         $event = new ProcessEvent($this,$results);
+
         return $event;
     }
 
@@ -93,4 +92,4 @@ class TestPlugin extends Plugin
         // TODO: Implement setDefaultOptions() method.
     }
 
-} 
+}

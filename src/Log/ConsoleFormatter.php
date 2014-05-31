@@ -31,11 +31,11 @@ class ConsoleFormatter extends LineFormatter
     {
         $record['start_tag'] = '';
         $record['end_tag']   = '';
-        
+
         if ($record['level'] >= Logger::ERROR) {
             $record['start_tag'] = '<error>';
             $record['end_tag']   = '</error>';
-        } elseif ($record['level'] == Logger::FAIL){
+        } elseif ($record['level'] == Logger::FAIL) {
             $record['start_tag'] = '<fail>';
             $record['end_tag'] = '</fail>';
         } elseif ($record['level'] >= Logger::WARNING) {
@@ -51,6 +51,7 @@ class ConsoleFormatter extends LineFormatter
             $record['start_tag'] = '<comment>';
             $record['end_tag']   = '</comment>';
         }
+
         return parent::format($record);
     }
 }

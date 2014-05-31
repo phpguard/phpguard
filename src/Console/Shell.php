@@ -90,13 +90,14 @@ class Shell implements ShellInterface
         if ($n && in_array(STDIN, $r)) {
             $this->readline();
         }
+
         return true;
     }
 
     public function showPrompt()
     {
         // @codeCoverageIgnoreStart
-        if($this->hasReadline){
+        if ($this->hasReadline) {
             readline_callback_handler_install($this->getPrompt(),array($this, 'runCommand'));
         }
         // @codeCoverageIgnoreEnd
@@ -112,7 +113,7 @@ class Shell implements ShellInterface
     {
         // normalize console behavior first
         stream_set_blocking(STDIN,1);
-        if($this->hasReadline){
+        if ($this->hasReadline) {
             readline_callback_handler_remove();
         }
     }
@@ -127,28 +128,28 @@ class Shell implements ShellInterface
     }
 
     /**
-     * @param   false|string $command
-     * @return  int
+     * @param  false|string $command
+     * @return int
      */
     public function runCommand($command)
     {
-        if($command==false){
+        if ($command==false) {
             $command='all';
         }
         $command = trim($command);
-        if($command=='quit'){
+        if ($command=='quit') {
             $event = new GenericEvent($this->container);
             $this->container->get('dispatcher')
                 ->dispatch(ApplicationEvents::terminated,$event)
             ;
-        }
-        else{
+        } else {
             $this->unsetStreamBlocking();
             $this->readlineWriteHistory($command);
             $input = new StringInput($command);
             $retVal = $this->application->run($input, $this->output);
             $this->setStreamBlocking();
             $this->showPrompt();
+
             return $retVal;
         }
     }
@@ -168,8 +169,8 @@ class Shell implements ShellInterface
      * Tries to return autocompletion for the current entered text.
      *
      *
-     * @return bool|array    A list of guessed strings or true
-     * @codeCoverageIgnore
+     * @return bool|array A list of guessed strings or true
+     *                    @codeCoverageIgnore
      */
     private function autocompleter()
     {
@@ -184,6 +185,7 @@ class Shell implements ShellInterface
             $commands = array_keys($this->application->all());
             $commands[] = 'quit';
             $commands[] = 'all';
+
             return $commands;
         }
 
@@ -197,7 +199,7 @@ class Shell implements ShellInterface
         $list = array('--help');
         foreach ($command->getDefinition()->getOptions() as $option) {
             $opt = '--'.$option->getName();
-            if(!in_array($opt,$list)){
+            if (!in_array($opt,$list)) {
                 $list[] = $opt;
             }
         }
@@ -207,7 +209,7 @@ class Shell implements ShellInterface
 
     public function readline()
     {
-        if(!$this->hasReadline){
+        if (!$this->hasReadline) {
             // read a character, will call the callback when a newline is entered
             $line = fgets(STDIN, 1024);
             $line = (!$line && strlen($line) == 0) ? false : rtrim($line);
@@ -222,11 +224,11 @@ class Shell implements ShellInterface
 
     /**
      * @param string $command
-     * @codeCoverageIgnore
+     *                        @codeCoverageIgnore
      */
     private function readlineWriteHistory($command)
     {
-        if($this->hasReadline){
+        if ($this->hasReadline) {
             readline_add_history($command);
             readline_write_history($this->historyFile);
         }

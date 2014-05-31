@@ -34,7 +34,7 @@ interface PluginInterface extends LoggerAwareInterface
     public function getOptions();
 
     /**
-     * @param \PhpGuard\Application\Watcher $watcher
+     * @param  \PhpGuard\Application\Watcher $watcher
      * @return void
      */
     public function addWatcher(Watcher $watcher);
@@ -46,7 +46,7 @@ interface PluginInterface extends LoggerAwareInterface
     public function runAll();
 
     /**
-     * @param   array $paths
+     * @param array $paths
      *
      * @return \PhpGuard\Application\Event\ProcessEvent
      */
@@ -58,31 +58,31 @@ interface PluginInterface extends LoggerAwareInterface
     public function isActive();
 
     /**
-     * @param   bool    $value
-     * @return  $this
+     * @param bool $value
+     *                    @return  $this
      */
     public function setActive($value);
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function getActive();
 
     /**
-     * @param array $options
+     * @param  array                               $options
      * @return \PhpGuard\Application\Plugin\Plugin
      */
     public function setOptions(array $options = array());
 
     /**
-     * @param OptionsResolverInterface $resolver
+     * @param  OptionsResolverInterface $resolver
      * @return void
      */
     public function setDefaultOptions(OptionsResolverInterface $resolver);
 
     /**
-     * @param EvaluateEvent $event
-     * @return array Matched files
+     * @param  EvaluateEvent $event
+     * @return array         Matched files
      */
     public function getMatchedFiles(EvaluateEvent $event);
 
@@ -98,9 +98,9 @@ interface PluginInterface extends LoggerAwareInterface
     public function reload();
 
     /**
-     * @param   mixed $tag
+     * @param mixed $tag
      *
-     * @return  void
+     * @return void
      */
     public function addTag($tag);
 }

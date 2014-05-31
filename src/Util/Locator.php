@@ -51,7 +51,7 @@ class Locator extends ContainerAware implements EventSubscriberInterface
         spl_autoload_register(array($this,'loadClass'));
     }
 
-    static public function getSubscribedEvents()
+    public static function getSubscribedEvents()
     {
         return array(
             ApplicationEvents::initialize => array('onApplicationInitialize',1000),
@@ -61,16 +61,16 @@ class Locator extends ContainerAware implements EventSubscriberInterface
     public function onApplicationInitialize(GenericEvent $event)
     {
         $container = $event->getContainer();
-        if($container->getParameter('application.initialized',false)){
+        if ($container->getParameter('application.initialized',false)) {
             return;
         }
         $logger = $container->get('logger');
         $logger->addDebug('Loading plugins');
         $prefixes = array_merge($this->prefixesPsr4);
-        foreach($prefixes as $ns=>$dir){
+        foreach ($prefixes as $ns=>$dir) {
             $pluginPrefix = 'PhpGuard\\Plugins';
             $ns = rtrim($ns,'\\');
-            if(false!==strpos($ns,$pluginPrefix)){
+            if (false!==strpos($ns,$pluginPrefix)) {
                 $parts = explode('\\',$ns);
                 $lastPart = array_pop($parts);
                 $class = $ns.'\\'.$lastPart.'Plugin';
@@ -78,21 +78,22 @@ class Locator extends ContainerAware implements EventSubscriberInterface
             }
         }
 
-        $container->setShared('linters.php',function($c){
+        $container->setShared('linters.php',function ($c) {
             $linter = new PhpLinter();
             $linter->setContainer($c);
+
             return $linter;
         });
     }
 
     private function loadPlugin(ContainerInterface $container,$class)
     {
-        if(class_exists($class)){
+        if (class_exists($class)) {
             $r = new \ReflectionClass($class);
             $ob = new $class();
             $id = 'plugins.'.$ob->getName();
-            if(!$container->has($id) && !$r->isAbstract()){
-                $container->setShared($id,function($c) use($class){
+            if (!$container->has($id) && !$r->isAbstract()) {
+                $container->setShared($id,function ($c) use ($class) {
                     return new $class();
                 });
             }
@@ -102,15 +103,15 @@ class Locator extends ContainerAware implements EventSubscriberInterface
     public function loadClass($class)
     {
         /* @var ClassLoader $loader */
-        foreach($this->autoLoaders as $loader)
-        {
-            if($loader->loadClass($class)){
+        foreach ($this->autoLoaders as $loader) {
+            if ($loader->loadClass($class)) {
                 return true;
             }
         }
-        if($this->mainLoader->loadClass($class)){
+        if ($this->mainLoader->loadClass($class)) {
             return true;
         }
+
         return false;
     }
 
@@ -118,6 +119,7 @@ class Locator extends ContainerAware implements EventSubscriberInterface
     {
         $this->mainLoader->add($prefix,$path,$prepend);
         $this->prefixes = array_merge($this->prefixes,$this->mainLoader->getPrefixes());
+
         return $this;
     }
 
@@ -126,16 +128,17 @@ class Locator extends ContainerAware implements EventSubscriberInterface
         $this->mainLoader->addPsr4($prefix,$paths,$prepend);
         $this->prefixesPsr4 = array_merge($this->prefixesPsr4,$this->mainLoader->getPrefixesPsr4());
         $this->fallbackDirsPsr4 = array_merge($this->fallbackDirsPsr4,$this->mainLoader->getFallbackDirsPsr4());
+
         return $this;
     }
 
     /**
      * Find class file for class
      *
-     * @param   string  $class Class name
-     * @param   string  $baseDir
+     * @param string $class   Class name
+     * @param string $baseDir
      *
-     * @return  string  The filename or false if file not found
+     * @return string The filename or false if file not found
      */
     public function findClassFile($class,$baseDir = null)
     {
@@ -145,18 +148,18 @@ class Locator extends ContainerAware implements EventSubscriberInterface
         $baseDir = is_null($baseDir) ? getcwd():$baseDir;
 
         $file = $this->mainLoader->findFile($class);
-        if(!is_file($file)){
-            foreach($autoLoaders as $loader)
-            {
+        if (!is_file($file)) {
+            foreach ($autoLoaders as $loader) {
                 $file = $loader->findFile($class);
-                if(is_file($file)){
+                if (is_file($file)) {
                     break;
                 }
             }
         }
 
-        if(is_file($file)){
+        if (is_file($file)) {
             $spl = PathUtil::createSplFileInfo($baseDir,$file);
+
             return $spl;
         }
 
@@ -171,9 +174,8 @@ class Locator extends ContainerAware implements EventSubscriberInterface
         $class = array_pop($exp);//
         $dir = implode(DIRECTORY_SEPARATOR,$exp);
 
-
         $testClass = $this->getClass($dir,$class,$checkExistence);
-        if(false===$testClass){
+        if (false===$testClass) {
             $testClass = $this->getClassPsr4($dir,$class,$checkExistence);
         }
 
@@ -183,32 +185,32 @@ class Locator extends ContainerAware implements EventSubscriberInterface
     public function getPathOfNamespace($namespace)
     {
         $path = false;
-        foreach($this->fallbackDirs as $dir){
+        foreach ($this->fallbackDirs as $dir) {
             $testDir = $dir.DIRECTORY_SEPARATOR.$namespace;
-            if(is_dir($testDir)){
+            if (is_dir($testDir)) {
                 return $testDir;
             }
         }
 
-        foreach($this->fallbackDirsPsr4 as $dir){
+        foreach ($this->fallbackDirsPsr4 as $dir) {
             $testDir = $dir.DIRECTORY_SEPARATOR.$namespace;
-            if(is_dir($testDir)){
+            if (is_dir($testDir)) {
                 return $testDir;
             }
         }
 
         $exp = explode('\\',$namespace);
         $topNamespace = $exp[0];
-        foreach($this->prefixes as $ns=>$prefix){
-            if(false!==strpos($ns,$topNamespace)){
+        foreach ($this->prefixes as $ns=>$prefix) {
+            if (false!==strpos($ns,$topNamespace)) {
                 //print_r($prefix);
             }
         }
 
-        foreach($this->prefixesPsr4 as $ns=>$prefix){
-            if(false!==strpos($ns,$namespace)){
-                foreach($prefix as $dir){
-                    if(is_dir($dir)){
+        foreach ($this->prefixesPsr4 as $ns=>$prefix) {
+            if (false!==strpos($ns,$namespace)) {
+                foreach ($prefix as $dir) {
+                    if (is_dir($dir)) {
                         return $dir;
                     }
                 }
@@ -233,19 +235,19 @@ class Locator extends ContainerAware implements EventSubscriberInterface
         $absPath = realpath($dir);
 
         $testClass = false;
-        foreach($prefixes as $ns=>$prefix){
-            foreach($prefix as $nsDir){
+        foreach ($prefixes as $ns=>$prefix) {
+            foreach ($prefix as $nsDir) {
                 $len = strlen($nsDir);
-                if($nsDir===substr($absPath,0,$len)){
+                if ($nsDir===substr($absPath,0,$len)) {
                     $namespace = ltrim(substr($absPath,$len),'\\/');
-                    if($class){
+                    if ($class) {
                         $testClass = $namespace.DIRECTORY_SEPARATOR.$class;
                         $testClass = str_replace(DIRECTORY_SEPARATOR,'\\',$testClass);
                         $testClass = ltrim($testClass,'\\');
-                    }else{
+                    } else {
                         $testClass = $namespace;
                     }
-                    if(false!==strpos($ns,'\\')){
+                    if (false!==strpos($ns,'\\')) {
                         $ns = rtrim($ns,'\\');
                         $testClass = $ns.'\\'.$testClass;
                     }
@@ -253,16 +255,18 @@ class Locator extends ContainerAware implements EventSubscriberInterface
                 }
             }
         }
-        if(!is_null($testClass)){
-            if($checkExistence){
-                if(class_exists($testClass)){
+        if (!is_null($testClass)) {
+            if ($checkExistence) {
+                if (class_exists($testClass)) {
                     return $testClass;
-                }else{
+                } else {
                     return false;
                 }
             }
+
             return $testClass;
         }
+
         return false;
     }
 
@@ -272,17 +276,17 @@ class Locator extends ContainerAware implements EventSubscriberInterface
     private function initialize()
     {
 
-        if(is_file($file = getcwd().'/vendor/autoload.php')){
+        if (is_file($file = getcwd().'/vendor/autoload.php')) {
             $autoload = include_once $file;
-            if(is_object($autoload)){
+            if (is_object($autoload)) {
                 $autoload->register();
             }
         }
         $functions = spl_autoload_functions();
-        foreach($functions as $loader){
-            if(is_array($loader)){
+        foreach ($functions as $loader) {
+            if (is_array($loader)) {
                 $ob = $loader[0];
-                if(is_object($ob)){
+                if (is_object($ob)) {
                     $this->addAutoloader($ob);
                 }
             }
@@ -304,18 +308,18 @@ class Locator extends ContainerAware implements EventSubscriberInterface
             $this->mainLoader = $object;
         }
 
-        if(is_array($object->getFallbackDirs())){
+        if (is_array($object->getFallbackDirs())) {
             $this->fallbackDirs = array_merge_recursive($this->fallbackDirs,$object->getFallbackDirs());
         }
 
-        if(is_array($object->getFallbackDirsPsr4())){
+        if (is_array($object->getFallbackDirsPsr4())) {
             $this->fallbackDirs = array_merge_recursive($this->fallbackDirs,$object->getFallbackDirs());
         }
 
-        if(is_array(@$object->getPrefixes())){
+        if (is_array(@$object->getPrefixes())) {
             $this->prefixes = array_merge_recursive($this->prefixes,$object->getPrefixes());
         }
-        if(is_array(@$object->getPrefixesPsr4())){
+        if (is_array(@$object->getPrefixesPsr4())) {
             $this->prefixesPsr4 = array_merge_recursive($this->prefixesPsr4,$object->getPrefixesPsr4());
         }
 

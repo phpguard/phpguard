@@ -34,12 +34,13 @@ class Container implements ContainerInterface
     public function setParameter($name,$value)
     {
         $this->parameters[$name] = $value;
+
         return $this;
     }
 
     /**
-     * @param string $name
-     * @param mixed|null   $default
+     * @param string     $name
+     * @param mixed|null $default
      *
      * @return mixed|null
      */
@@ -67,7 +68,7 @@ class Container implements ContainerInterface
      */
     public function set($id, $service)
     {
-        if(!is_object($service)){
+        if (!is_object($service)) {
             throw new \InvalidArgumentException(sprintf(
                 'Service should be callback or object, but "%s" type given.',
                 gettype($service)
@@ -95,7 +96,7 @@ class Container implements ContainerInterface
      */
     public function get($id)
     {
-        if(!array_key_exists($id,$this->services)){
+        if (!array_key_exists($id,$this->services)) {
             throw new \InvalidArgumentException(sprintf(
                 'Service with id "%s" is not registered.',
                 $id
@@ -106,10 +107,11 @@ class Container implements ContainerInterface
         if (method_exists($value, '__invoke')) {
             $value = $value($this);
         }
-        
-        if(method_exists($value,'setContainer')){
+
+        if (method_exists($value,'setContainer')) {
             $value->setContainer($this);
         }
+
         return $value;
     }
 
@@ -183,6 +185,7 @@ class Container implements ContainerInterface
 
             return $instance;
         });
+
         return $this;
     }
 }

@@ -64,19 +64,20 @@ class Watcher extends ContainerAware implements TaggableInterface
 
     public function hasTags($tags)
     {
-        if(empty($tags)){
+        if (empty($tags)) {
             return true;
         }
 
-        if(!is_array($tags)){
+        if (!is_array($tags)) {
             $tags = array($tags);
         }
 
-        foreach($tags as $tag){
-            if(in_array($tag,$this->options['tags'])){
+        foreach ($tags as $tag) {
+            if (in_array($tag,$this->options['tags'])) {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -87,13 +88,13 @@ class Watcher extends ContainerAware implements TaggableInterface
 
     public function addTags($tags)
     {
-        if(!is_array($tags)){
+        if (!is_array($tags)) {
             $tags = array($tags);
         }
 
         $cTags = $this->options['tags'];
-        foreach($tags as $tag){
-            if(!in_array($tag,$cTags)){
+        foreach ($tags as $tag) {
+            if (!in_array($tag,$cTags)) {
                 $cTags[] = $tag;
             }
         }
@@ -102,31 +103,31 @@ class Watcher extends ContainerAware implements TaggableInterface
 
     public function matchFile($file)
     {
-        if(!is_file($file)){
+        if (!is_file($file)) {
             return false;
         }
 
-        if($file instanceof FileResource){
-            $file = (string)$file->getResource();
+        if ($file instanceof FileResource) {
+            $file = (string) $file->getResource();
         }
 
-        if(!$file instanceof SplFileInfo){
-            $file = PathUtil::createSplFileInfo(getcwd(),(string)$file);
+        if (!$file instanceof SplFileInfo) {
+            $file = PathUtil::createSplFileInfo(getcwd(),(string) $file);
         }
 
         $pattern = $this->options['pattern'];
 
         $retVal = false;
-        if(preg_match($pattern,$file)){
+        if (preg_match($pattern,$file)) {
             $retVal = $file;
-        }elseif(preg_match($pattern,$file->getRelativePathname())){
+        } elseif (preg_match($pattern,$file->getRelativePathname())) {
             $retVal = $file;
         }
 
-        if($retVal && $this->options['transform']){
+        if ($retVal && $this->options['transform']) {
             $transformed = preg_replace($pattern,$this->options['transform'],$file->getRelativePathname());
             $this->container->get('logger')->addDebug('Transform: '.$file->getRelativePathname(). ' To '.$transformed);
-            if(!is_file($transformed)){
+            if (!is_file($transformed)) {
                 return false;
             }
             $retVal = PathUtil::createSplFileInfo(getcwd(),$transformed);
@@ -148,20 +149,21 @@ class Watcher extends ContainerAware implements TaggableInterface
             'lint' => array()
         ));
 
-        $arrayNormalizer = function($options,$value){
-            if(!is_array($value)){
+        $arrayNormalizer = function ($options,$value) {
+            if (!is_array($value)) {
                 $value = array($value);
             }
+
             return $value;
         };
 
         $container = $this->container;
-        $lintChecker = function(Options $options,$value) use($arrayNormalizer,$container){
+        $lintChecker = function (Options $options,$value) use ($arrayNormalizer,$container) {
             $value = $arrayNormalizer($options,$value);
             $linters = array();
-            foreach($value as $name){
+            foreach ($value as $name) {
                 $id = 'linters.'.$name;
-                if(!$container->has($id)){
+                if (!$container->has($id)) {
                     throw new InvalidArgumentException(sprintf(
                         'Linter "%s" not exists',
                         $name
@@ -170,6 +172,7 @@ class Watcher extends ContainerAware implements TaggableInterface
                 $linter = $container->get($id);
                 $linters[$linter->getName()] = $linter;
             }
+
             return $linters;
         };
         $resolver->setNormalizers(array(
@@ -182,16 +185,16 @@ class Watcher extends ContainerAware implements TaggableInterface
     public function lint($file)
     {
         $output = array();
-        foreach($this->linters as $linter){
-            try{
+        foreach ($this->linters as $linter) {
+            try {
                 $linter->check($file);
-            }catch(LinterException $e){
+            } catch (LinterException $e) {
                 $output[] = $e->getFormattedOutput();
             }
         }
-        if(empty($output)){
+        if (empty($output)) {
             return true;
-        }else{
+        } else {
             return $output;
         }
     }

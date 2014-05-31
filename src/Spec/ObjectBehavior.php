@@ -21,7 +21,7 @@ use PhpSpec\ObjectBehavior as BaseObjectBehavior;
  */
 abstract class ObjectBehavior extends BaseObjectBehavior
 {
-    static public $tmpDir;
+    public static $tmpDir;
 }
 
 ObjectBehavior::$tmpDir = sys_get_temp_dir().'/phpguard-test';

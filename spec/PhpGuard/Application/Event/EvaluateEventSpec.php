@@ -4,21 +4,20 @@ namespace spec\PhpGuard\Application\Event;
 
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Application\Spec\ObjectBehavior;
-use Prophecy\Argument;
 
 class EvaluateEventSpec extends ObjectBehavior
 {
-    function let(ChangeSetEvent $event)
+    public function let(ChangeSetEvent $event)
     {
         $this->beConstructedWith($event);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Event\EvaluateEvent');
     }
 
-    function its_delegate_changeset_event(ChangeSetEvent $event)
+    public function its_delegate_changeset_event(ChangeSetEvent $event)
     {
         $this->getChangeset()->shouldReturn($event);
 

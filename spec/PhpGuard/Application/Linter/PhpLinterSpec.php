@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PhpLinterSpec extends ObjectBehavior
 {
-    function let(ContainerInterface $container,OutputInterface $output,ConsoleHandler $handler)
+    public function let(ContainerInterface $container,OutputInterface $output,ConsoleHandler $handler)
     {
         Filesystem::mkdir(self::$tmpDir);
         $container->get('logger.handler')
@@ -25,22 +25,22 @@ class PhpLinterSpec extends ObjectBehavior
 
     }
 
-    function letgo()
+    public function letgo()
     {
         Filesystem::cleanDir(self::$tmpDir);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Linter\PhpLinter');
     }
 
-    function its_check_returns_true_if_no_syntax_error()
+    public function its_check_returns_true_if_no_syntax_error()
     {
         $this->check(__FILE__)->shouldReturn(true);
     }
 
-    function its_check_throws_if_file_have_syntax_error()
+    public function its_check_throws_if_file_have_syntax_error()
     {
         file_put_contents($file=self::$tmpDir.'/error.php','<?php adakaa');
         $this->shouldThrow('PhpGuard\\Application\\Linter\\LinterException')

@@ -24,7 +24,7 @@ class Filesystem
      * @param string $targetFile
      * @param mixed  $data
      */
-    static public function serialize($targetFile,$data)
+    public static function serialize($targetFile,$data)
     {
         $contents = serialize($data);
         file_put_contents($targetFile,$contents,LOCK_EX);
@@ -33,11 +33,11 @@ class Filesystem
     /**
      * Unserialize file
      *
-     * @param   string $file A file to be unserialize
+     * @param string $file A file to be unserialize
      *
-     * @return  mixed
+     * @return mixed
      */
-    static public function unserialize($file)
+    public static function unserialize($file)
     {
         $contents = file_get_contents($file,LOCK_EX);
         $data = unserialize($contents);
@@ -46,20 +46,20 @@ class Filesystem
     }
 
     /**
-     * @param string    $from
-     * @param string    $to
-     * @param Finder    $finder
+     * @param string $from
+     * @param string $to
+     * @param Finder $finder
      *
      * @author Anthonius Munthi <me@itstoni.com>
      */
-    static public function copyDir($from,$to,Finder $finder)
+    public static function copyDir($from,$to,Finder $finder)
     {
         /* @var \Symfony\Component\Finder\SplFileInfo $path */
 
         $finder->in($from);
-        foreach($finder->files() as $path){
+        foreach ($finder->files() as $path) {
             $targetDir = $to.DIRECTORY_SEPARATOR.$path->getRelativePath();
-            if(!is_dir($targetDir)){
+            if (!is_dir($targetDir)) {
                 mkdir($targetDir,0755,true);
             }
             $target = $to.DIRECTORY_SEPARATOR.$path->getRelativePathname();
@@ -67,7 +67,7 @@ class Filesystem
         }
     }
 
-    static public function mkdir($dir,$mode=0777,$recursive=true)
+    public static function mkdir($dir,$mode=0777,$recursive=true)
     {
         @mkdir($dir,$mode,$recursive);
     }
@@ -75,7 +75,7 @@ class Filesystem
     /**
      * @param string $dir
      */
-    static public function cleanDir($dir)
+    public static function cleanDir($dir)
     {
         if (!is_dir($dir)) {
             return;

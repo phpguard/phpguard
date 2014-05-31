@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Functional;
 
-
 use PhpGuard\Application\Test\FunctionalTestCase;
 use PhpGuard\Application\Test\TestApplication;
 use PhpGuard\Application\Util\Filesystem;
@@ -25,23 +24,22 @@ class TestCase extends FunctionalTestCase
         static::buildFixtures();
     }
 
-    static public function buildFixtures($suffix='common')
+    public static function buildFixtures($suffix='common')
     {
         $finder = Finder::create();
         Filesystem::copyDir(static::$cwd.'/tests/fixtures/'.$suffix,static::$tmpDir,$finder);
     }
 
-
     /**
-     * @param   bool $initialize
-     * @return  TestApplication
+     * @param  bool            $initialize
+     * @return TestApplication
      */
-    static public function createApplication($initialize = false)
+    public static function createApplication($initialize = false)
     {
         parent::createApplication($initialize);
-        static::$container->setShared('plugins.test',function(){
+        static::$container->setShared('plugins.test',function () {
             return new TestPlugin();
         });
 
     }
-} 
+}

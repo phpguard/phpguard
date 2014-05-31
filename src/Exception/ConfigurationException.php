@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Exception;
 
-
 class ConfigurationException extends \InvalidArgumentException
 {
     /**

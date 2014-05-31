@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Functional\Coverage;
 
-
 use PhpGuard\Application\Bridge\CodeCoverageRunner;
 use PhpGuard\Application\Functional\TestCase;
 use PhpGuard\Application\Util\Filesystem;
@@ -24,10 +23,9 @@ class CodeCoverageRunnerTest extends TestCase
         $this->getTester()->run('-vvv');
     }
 
-
     public function testPrintReport()
     {
-        if(file_exists($file=CodeCoverageRunner::getCacheFile())){
+        if (file_exists($file=CodeCoverageRunner::getCacheFile())) {
             unlink($file);
         }
 
@@ -57,4 +55,3 @@ class CodeCoverageRunnerTest extends TestCase
         $this->assertDisplayContains('clover output');
     }
 }
- 

@@ -22,7 +22,7 @@ class PhpGuardSpec extends ObjectBehavior
 {
     static $cwd;
 
-    function let(
+    public function let(
         ContainerInterface $container,
         ConsoleOutput $output,
         EventDispatcherInterface $dispatcher,
@@ -58,23 +58,23 @@ class PhpGuardSpec extends ObjectBehavior
         $output->writeln(Argument::any())
             ->willReturn(null);
 
-        if(!is_dir(self::$cwd)){
+        if (!is_dir(self::$cwd)) {
             self::$cwd = getcwd();
         }
     }
 
-    function letgo()
+    public function letgo()
     {
         chdir(self::$cwd);
         Filesystem::cleanDir(self::$tmpDir.'/test-config');
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\PhpGuard');
     }
 
-    function it_should_set_default_options()
+    public function it_should_set_default_options()
     {
         $this->setOptions(array());
         $options = $this->getOptions();
@@ -83,7 +83,7 @@ class PhpGuardSpec extends ObjectBehavior
         $options->shouldHaveKey('latency');
     }
 
-    function it_should_evaluate_when_the_file_system_change(
+    public function it_should_evaluate_when_the_file_system_change(
         EventDispatcherInterface $dispatcher,
         ChangeSetEvent $event,
         ContainerInterface $container
@@ -99,7 +99,7 @@ class PhpGuardSpec extends ObjectBehavior
         $this->listen($event);
     }
 
-    function it_should_reload_when_configuration_changed(
+    public function it_should_reload_when_configuration_changed(
         ContainerInterface $container,
         ChangeSetEvent $event,
         EventDispatcherInterface $dispatcher,
@@ -127,7 +127,7 @@ class PhpGuardSpec extends ObjectBehavior
         $this->listen($event);
     }
 
-    function it_should_run_shell_when_started(ShellInterface $shell)
+    public function it_should_run_shell_when_started(ShellInterface $shell)
     {
         $shell->run()
             ->shouldBeCalled()
@@ -139,8 +139,7 @@ class PhpGuardSpec extends ObjectBehavior
         $this->start();
     }
 
-
-    function it_should_stop_application(EventDispatcherInterface $dispatcher)
+    public function it_should_stop_application(EventDispatcherInterface $dispatcher)
     {
         $this->stop();
         $this->shouldNotBeRunning();

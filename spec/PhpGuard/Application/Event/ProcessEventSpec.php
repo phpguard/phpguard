@@ -4,28 +4,27 @@ namespace spec\PhpGuard\Application\Event;
 
 use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
-use Prophecy\Argument;
 
 class ProcessEventSpec extends ObjectBehavior
 {
-    function let(PluginInterface $plugin)
+    public function let(PluginInterface $plugin)
     {
         $this->beConstructedWith($plugin);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Event\ProcessEvent');
     }
 
-    function it_returns_related_plugin_for_event(
+    public function it_returns_related_plugin_for_event(
         PluginInterface $plugin
     )
     {
         $this->getPlugin()->shouldReturn($plugin);
     }
 
-    function it_returns_results(
+    public function it_returns_results(
         PluginInterface $plugin
     )
     {

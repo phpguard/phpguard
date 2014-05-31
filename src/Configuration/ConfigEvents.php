@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Configuration;
 
-
 final class ConfigEvents
 {
     /**

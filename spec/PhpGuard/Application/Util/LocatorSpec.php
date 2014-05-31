@@ -10,7 +10,7 @@ use Prophecy\Argument;
 
 class LocatorSpec extends ObjectBehavior
 {
-    function let(ContainerInterface $container,Logger $logger)
+    public function let(ContainerInterface $container,Logger $logger)
     {
         $container->get('logger')->willReturn($logger);
         $container->has(Argument::any())
@@ -18,23 +18,23 @@ class LocatorSpec extends ObjectBehavior
         $this->setContainer($container);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Util\Locator');
     }
 
-    function it_should_locate_class_file()
+    public function it_should_locate_class_file()
     {
         $this->findClassFile('PhpGuard\Application\Container')->shouldHaveType('SplFileInfo');
     }
 
-    function it_should_find_class_from_file()
+    public function it_should_find_class_from_file()
     {
         $this->findClass(getcwd().'/src/Container.php')
             ->shouldReturn('PhpGuard\\Application\\Container');
     }
 
-    function it_should_delegate_add()
+    public function it_should_delegate_add()
     {
         $specDir = getcwd().'/spec/PhpGuard/Application';
         $this->findClass($file = $specDir.'/ContainerSpec.php',false)
@@ -47,7 +47,7 @@ class LocatorSpec extends ObjectBehavior
             ->shouldReturn($class);
     }
 
-    function it_should_delegate_addPsr4()
+    public function it_should_delegate_addPsr4()
     {
         $this->addPsr4(__NAMESPACE__."\\",__DIR__)->shouldReturn($this);
         $this->findClass(__FILE__,false)->shouldReturn(__CLASS__);
@@ -61,7 +61,7 @@ class LocatorSpec extends ObjectBehavior
 
     }
 
-    function it_should_load_plugin(
+    public function it_should_load_plugin(
         ContainerInterface $container,
         GenericEvent $event
     )

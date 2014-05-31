@@ -28,20 +28,20 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     /**
      * @var ContainerInterface
      */
-    static protected $container;
+    protected static $container;
 
-    static protected $tmpDir;
+    protected static $tmpDir;
 
-    static protected $cwd;
+    protected static $cwd;
 
     public static function setUpBeforeClass()
     {
         static::createApplication();
-        if(is_null(static::$tmpDir)){
+        if (is_null(static::$tmpDir)) {
             static::$tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpguard');
         }
         Filesystem::mkdir(static::$tmpDir);
-        if(is_null(static::$cwd)){
+        if (is_null(static::$cwd)) {
             static::$cwd = getcwd();
         }
         chdir(static::$tmpDir);
@@ -54,7 +54,7 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
         @chdir(static::$cwd);
     }
 
-    static public function createApplication()
+    public static function createApplication()
     {
         $app = new TestApplication();
         static::$container = $app->getContainer();
@@ -99,7 +99,7 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return  ApplicationTester
+     * @return ApplicationTester
      */
     protected function getTester()
     {
@@ -117,4 +117,4 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
         $display = $this->getDisplay();
         $this->assertNotContains($expected,$display,$message);
     }
-} 
+}

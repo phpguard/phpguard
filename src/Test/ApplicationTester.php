@@ -3,7 +3,6 @@
 namespace PhpGuard\Application\Test;
 
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -51,9 +50,9 @@ class ApplicationTester
      *  * verbosity:   Sets the output verbosity flag
      *
      * @param string $input   An array of arguments and options
-     * @param array $options An array of options
+     * @param array  $options An array of options
      *
-     * @return int     The command exit code
+     * @return int The command exit code
      */
     public function run($input=null, $options = array())
     {
@@ -82,7 +81,7 @@ class ApplicationTester
     /**
      * Gets the display returned by the last execution of the application.
      *
-     * @param bool    $normalize Whether to normalize end of lines to \n or not
+     * @param bool $normalize Whether to normalize end of lines to \n or not
      *
      * @return string The display
      */
@@ -122,7 +121,7 @@ class ApplicationTester
     /**
      * Gets the status code returned by the last execution of the application.
      *
-     * @return int     The status code
+     * @return int The status code
      */
     public function getStatusCode()
     {

@@ -35,7 +35,7 @@ class ApplicationListener implements EventSubscriberInterface
     public function initialize(GenericEvent $event,$eventName,EventDispatcherInterface $dispatcher)
     {
         $container = $event->getContainer();
-        if($container->getParameter('app.initialized',false)){
+        if ($container->getParameter('app.initialized',false)) {
             return;
         }
         $dispatcher->dispatch(ConfigEvents::LOAD,$event);

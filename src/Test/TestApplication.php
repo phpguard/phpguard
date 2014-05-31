@@ -15,9 +15,7 @@ use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Console\Application;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Container;
-use PhpGuard\Application\Event\GenericEvent;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -49,17 +47,16 @@ class TestApplication extends Application implements EventSubscriberInterface
         $this->getContainer()->get('phpguard')->stop();
     }
 
-
     public function setupContainer(ContainerInterface $container)
     {
         parent::setupContainer($container);
-        $container->setShared('tester',function($c){
+        $container->setShared('tester',function ($c) {
             return new ApplicationTester($c->get('ui.application'));
         });
-        $container->setShared('ui.shell',function($c){
+        $container->setShared('ui.shell',function ($c) {
             return new TestShell($c);
         });
-        $container->setShared('dispatcher.listeners.test_application',function($c){
+        $container->setShared('dispatcher.listeners.test_application',function ($c) {
             return $c->get('ui.application');
         });
     }
@@ -69,8 +66,8 @@ class TestApplication extends Application implements EventSubscriberInterface
         $this->getContainer()->setParameter('runner.tty',false);
         $command = $this->getCommandName($input);
         $output->writeln('Running start: '.$command);
+
         return parent::doRun($input,$output);
     }
-
 
 }

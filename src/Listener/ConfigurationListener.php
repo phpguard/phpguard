@@ -64,20 +64,19 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         $guard->setOptions(array());
 
         $configFile = null;
-        if(is_file($file=getcwd().'/phpguard.yml')){
+        if (is_file($file=getcwd().'/phpguard.yml')) {
             $configFile = $file;
-        }
-        elseif(is_file($file = getcwd().'/phpguard.yml.dist')){
+        } elseif (is_file($file = getcwd().'/phpguard.yml.dist')) {
             $configFile = $file;
         }
 
-        if(is_null($configFile)){
+        if (is_null($configFile)) {
             throw new ConfigurationException('Can not find configuration file "phpguard.yml" or "phpguard.yml.dist" in the current directory');
         }
         $container->setParameter('config.file',$configFile);
 
         $plugins = $container->getByPrefix('plugins');
-        foreach($plugins as $plugin){
+        foreach ($plugins as $plugin) {
             $plugin->reload();
         }
     }
@@ -89,8 +88,8 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         /* @var \PhpGuard\Application\Log\Logger $logger */
         $container = $this->container;
         $plugins = $container->getByPrefix('plugins');
-        foreach($plugins as $plugin){
-            if(!$plugin->isActive()){
+        foreach ($plugins as $plugin) {
+            if (!$plugin->isActive()) {
                 continue;
             }
             $plogger = new Logger($plugin->getTitle());
@@ -105,7 +104,7 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     {
         $container = $this->container;
 
-        if(is_null($container->getParameter('runner.tty',null))){
+        if (is_null($container->getParameter('runner.tty',null))) {
             $container->setParameter('runner.tty',true);
         }
     }

@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Functional\Linter;
 
-
 use PhpGuard\Application\Linter\PhpLinter;
 use PhpGuard\Application\Functional\TestCase;
 
@@ -30,4 +29,3 @@ class PhpLinterTest extends TestCase
         $this->assertContains($linter->getTitle(),$display);
     }
 }
- 

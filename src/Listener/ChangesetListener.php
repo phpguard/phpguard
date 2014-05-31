@@ -21,7 +21,6 @@ use PhpGuard\Application\Event\EvaluateEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
-
 /**
  * Class ChangesetListener
  *
@@ -58,26 +57,26 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $exception = null;
         $loggerHandler->reset();
         $results = array();
-        foreach($container->getByPrefix('plugins') as $plugin){
-            if(!$plugin->isActive()){
+        foreach ($container->getByPrefix('plugins') as $plugin) {
+            if (!$plugin->isActive()) {
                 continue;
             }
             $paths = $plugin->getMatchedFiles($event);
-            if(count($paths) > 0){
+            if (count($paths) > 0) {
                 $runEvent = new GenericEvent($plugin,array('paths' =>$paths));
                 $dispatcher->dispatch(
                     ApplicationEvents::preRunCommand,
                     $runEvent
                 );
-                try{
+                try {
                     $result = $plugin->run($paths);
-                    if($result){
-                        if(!is_array($result)){
+                    if ($result) {
+                        if (!is_array($result)) {
                             $result = array($result);
                         }
                         $results = array_merge($results,$result);
                     }
-                }catch(\Exception $e){
+                } catch (\Exception $e) {
                     $resultEvent = new ResultEvent(ResultEvent::ERROR,$e->getMessage(),array(),$e);
                     $results[] = new ProcessEvent($plugin,array($resultEvent));
                 }
@@ -96,7 +95,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
     public function showPrompt()
     {
         $loggerHandler = $this->container->get('logger.handler');
-        if(count($this->results) > 0 || $loggerHandler->isLogged()){
+        if (count($this->results) > 0 || $loggerHandler->isLogged()) {
             $this->container->get('ui.shell')->showPrompt();
         }
         $loggerHandler->reset();
@@ -109,7 +108,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
             'Begin executing '.$event->getSubject()->getName()
         );
 
-        foreach($event->getArgument('paths') as $path){
+        foreach ($event->getArgument('paths') as $path) {
             $this->getLogger()->addDebug(
                 'Match file: '.$path->getRelativePathName()
             );
@@ -133,14 +132,12 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         $this->container->setParameter('application.exit_code',0);
         if ( is_null($plugin = $event->getArgument('plugin')) ) {
             $plugins = $this->container->getByPrefix('plugins');
-        }
-        else {
+        } else {
             $name = 'plugins.'.$plugin;
-            if($this->container->has($name)){
+            if ($this->container->has($name)) {
                 $plugin = $this->container->get('plugins.'.$plugin);
                 $plugins = array($plugin);
-            }
-            else {
+            } else {
                 throw new \RuntimeException(sprintf(
                         'Plugin "%s" is not registered',
                         $plugin
@@ -148,12 +145,11 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
             }
         }
         $results = array();
-        foreach($plugins as $plugin)
-        {
-            if(!$plugin->isActive()){
+        foreach ($plugins as $plugin) {
+            if (!$plugin->isActive()) {
                 $this->getLogger()->addFail(sprintf('Plugin "%s" is not active',$plugin->getTitle()));
                 continue;
-            }else{
+            } else {
                 $this->getLogger()->addDebug(
                     'Start running all for plugin '.$plugin->getTitle()
                 );
@@ -163,7 +159,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
                 );
             }
         }
-        if(count($results) > 0){
+        if (count($results) > 0) {
             $this->renderResults($event->getSubject(),$results);
         }
         $event->getSubject()->setParameter('session.results',$results);
@@ -192,12 +188,10 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         /* @var \PhpGuard\Application\Event\ResultEvent $event */
         $logger = $container->get('logger');
 
-        foreach($results as $resultEvent)
-        {
-            foreach($resultEvent->getResults() as $event)
-            {
+        foreach ($results as $resultEvent) {
+            foreach ($resultEvent->getResults() as $event) {
                 $status = $event->getResult();
-                switch($status){
+                switch ($status) {
                     case ResultEvent::SUCCEED:
                         $logger->addSuccess($event->getMessage());
                         break;

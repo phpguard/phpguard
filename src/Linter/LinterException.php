@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Linter;
 
-
 use PhpGuard\Listen\Exception\RuntimeException;
 
 class LinterException extends RuntimeException
@@ -34,6 +33,7 @@ class LinterException extends RuntimeException
     {
         $format = '%s failed: <comment>%s</comment>';
         $output = sprintf($format,$this->linter->getTitle(),$this->message);
+
         return $output;
     }
-} 
+}

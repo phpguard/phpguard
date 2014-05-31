@@ -11,52 +11,51 @@
 
 namespace PhpGuard\Application\Container;
 
-
 interface ContainerInterface
 {
     /**
-     * @param   string  $name
-     * @param   mixed   $value
+     * @param string $name
+     * @param mixed  $value
      *
      * @return  $this
      */
     public function setParameter($name,$value);
 
     /**
-     * @param       string  $name
-     * @param       mixed   $default
+     * @param string $name
+     * @param mixed  $default
      *
-     * @return      mixed
+     * @return mixed
      */
     public function getParameter($name,$default = null);
 
     /**
-     * @param   string  $name
+     * @param string $name
      *
-     * @return  bool True if parameter exists
+     * @return bool True if parameter exists
      */
     public function hasParameter($name);
 
     /**
-     * @param   string  $id
-     * @param   mixed  $service
+     * @param string $id
+     * @param mixed  $service
      *
      * @return  $this
      */
     public function set($id,$service);
 
     /**
-     * @param   string      $id
-     * @param   callable    $callable
+     * @param string   $id
+     * @param callable $callable
      *
      * @return  $this
      */
     public function setShared($id,$callable);
 
     /**
-     * @param   string  $id
+     * @param string $id
      *
-     * @return  mixed
+     * @return mixed
      */
     public function get($id);
 
@@ -68,9 +67,9 @@ interface ContainerInterface
     public function has($id);
 
     /**
-     * @param   string  $prefix
+     * @param string $prefix
      *
-     * @return  array
+     * @return array
      */
     public function getByPrefix($prefix);
 }

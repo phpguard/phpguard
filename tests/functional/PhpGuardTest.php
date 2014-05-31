@@ -69,7 +69,6 @@ class PhpGuardTest extends TestCase
         $this->assertContains($ftag1,$this->getDisplay());
         $this->assertNotContains($ftag2,$this->getDisplay());
 
-
         $this->getTester()->run('--tags=tag2');
         touch($ftag1 = $dirTag1.'/test2.php');
         touch($ftag2 = $dirTag2.'/test2.php');
@@ -83,9 +82,7 @@ class PhpGuardTest extends TestCase
         touch($ftag2 = $dirTag2.'/test3.php');
         $this->evaluate();
 
-
         $this->assertContains($ftag2,$this->getDisplay());
         $this->assertContains($ftag1,$this->getDisplay());
     }
 }
- 

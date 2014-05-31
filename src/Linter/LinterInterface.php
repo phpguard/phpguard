@@ -11,16 +11,15 @@
 
 namespace PhpGuard\Application\Linter;
 
-
 interface LinterInterface
 {
     /**
      * Validate file syntax
      *
-     * @param   string $file
-     * @throws  \PhpGuard\Application\Linter\LinterException
+     * @param  string                                       $file
+     * @throws \PhpGuard\Application\Linter\LinterException
      *
-     * @return  bool
+     * @return bool
      */
     public function check($file);
 

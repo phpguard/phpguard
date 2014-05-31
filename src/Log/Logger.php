@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Log;
 
-use Monolog\Handler\StreamHandler;
 use Monolog\Logger as BaseLogger;
 
 /**
@@ -67,7 +66,7 @@ class Logger extends BaseLogger
 
     /**
      * Adds a log record
-     * @param int $level
+     * @param int    $level
      * @param string $message
      * @param array  $context
      *
@@ -76,16 +75,17 @@ class Logger extends BaseLogger
     public function addRecord($level, $message, array $context = array())
     {
         $replacement = array();
-        foreach($context as $key=>$value){
-            if(!is_array($value)){
+        foreach ($context as $key=>$value) {
+            if (!is_array($value)) {
                 $rkey = '%'.$key.'%';
                 $replacement[$rkey] = $value;
-                if(false!==strpos($message,$rkey)){
+                if (false!==strpos($message,$rkey)) {
                     unset($context[$key]);
                 }
             }
         }
         $message = strtr($message,$replacement);
+
         return parent::addRecord($level, $message, $context);
     }
 }

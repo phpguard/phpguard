@@ -13,7 +13,6 @@ namespace PhpGuard\Application\Plugin;
 
 use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Log\Logger;
-use PhpGuard\Application\Runner;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Listen\Util\PathUtil;
@@ -50,7 +49,7 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     /**
      * @return void
      */
-    public function configure(){}
+    public function configure() {}
 
     /**
      * @param Watcher $watcher
@@ -62,7 +61,7 @@ abstract class Plugin extends ContainerAware implements PluginInterface
 
     /**
      * @return array
-     * @author Anthonius Munthi <me@itstoni.com>
+     *               @author Anthonius Munthi <me@itstoni.com>
      */
     public function getWatchers()
     {
@@ -80,8 +79,8 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     }
 
     /**
-     * @param   EvaluateEvent $event
-     * @return  array
+     * @param  EvaluateEvent $event
+     * @return array
      */
     public function getMatchedFiles(EvaluateEvent $event)
     {
@@ -89,17 +88,18 @@ abstract class Plugin extends ContainerAware implements PluginInterface
 
         $filtered = array();
         $files = $event->getFiles();
-        foreach($files as $file){
-            if($file==$container->getParameter('config.file')){
+        foreach ($files as $file) {
+            if ($file==$container->getParameter('config.file')) {
                 continue;
             }
-            if($matched=$this->matchFile($file)){
-                if(!$matched instanceof SplFileInfo){
+            if ($matched=$this->matchFile($file)) {
+                if (!$matched instanceof SplFileInfo) {
                     $matched = PathUtil::createSplFileInfo(getcwd(),$matched);
                 }
                 $filtered[] = $matched;
             }
         }
+
         return $filtered;
     }
 
@@ -133,6 +133,7 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     public function setActive($active)
     {
         $this->active = $active;
+
         return $this;
     }
 
@@ -165,9 +166,9 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     }
 
     /**
-     * @param   mixed $tag
+     * @param mixed $tag
      *
-     * @return  void
+     * @return void
      */
     public function addTag($tag)
     {
@@ -177,32 +178,33 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     /**
      * @param $file
      * @return string
-     * @author Anthonius Munthi <me@itstoni.com>
+     *                @author Anthonius Munthi <me@itstoni.com>
      */
     private function matchFile($file)
     {
         $tags = $this->container->getParameter('filter.tags',array());
         /* @var Watcher $watcher */
-        foreach($this->watchers as $watcher){
-            if(false===$watcher->hasTags($tags)){
+        foreach ($this->watchers as $watcher) {
+            if (false===$watcher->hasTags($tags)) {
                 $options = $watcher->getOptions();
                 $this->logger->debug('Unmatched tags',array('watcher.tags'=>$options['tags'],'app.tags'=>$tags));
                 continue;
             }
-            if($matched = $watcher->matchFile($file)){
-                if(true===($output=$watcher->lint($file))){
+            if ($matched = $watcher->matchFile($file)) {
+                if (true===($output=$watcher->lint($file))) {
                     return $matched;
-                }else{
+                } else {
                     $this->renderLintOutput($output);
                 }
             }
         }
+
         return false;
     }
 
     private function renderLintOutput($output)
     {
-        foreach($output as $message){
+        foreach ($output as $message) {
             $this->logger->addFail($message);
         }
     }

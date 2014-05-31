@@ -15,7 +15,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ShellSpec extends ObjectBehavior
 {
-    function let(
+    public function let(
         ContainerInterface $container,
         PhpGuard $phpGuard,
         Application $application,
@@ -34,12 +34,12 @@ class ShellSpec extends ObjectBehavior
         $this->beAnInstanceOf('PhpGuard\\Application\\Test\\TestShell',array($container));
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Console\Shell');
     }
 
-    function it_should_quit_application(
+    public function it_should_quit_application(
         EventDispatcherInterface $dispatcher
     )
     {
@@ -48,14 +48,14 @@ class ShellSpec extends ObjectBehavior
         $this->runCommand('quit');
     }
 
-    function it_should_run_command(
+    public function it_should_run_command(
         Application $application,
         OutputInterface $output
     )
     {
         $application->getName()->willReturn('some');
         $application
-            ->run(Argument::any(function(StringInput $value){
+            ->run(Argument::any(function (StringInput $value) {
                 return $value->getFirstArgument()==='some';
             }),$output)->shouldBeCalled()
             ->willReturn('retval')
@@ -63,14 +63,14 @@ class ShellSpec extends ObjectBehavior
         $this->runCommand('some')->shouldReturn('retval');
     }
 
-    function it_should_run_all_when_command_is_false(
+    public function it_should_run_all_when_command_is_false(
         Application $application,
         OutputInterface $output
     )
     {
         $application->getName()->willReturn('some');
         $application
-            ->run(Argument::that(function(StringInput $value){
+            ->run(Argument::that(function (StringInput $value) {
                 return $value->getFirstArgument() == 'all';
             }),$output)->shouldBeCalled()
             ->willReturn('retval')
@@ -78,7 +78,7 @@ class ShellSpec extends ObjectBehavior
         $this->runCommand(false)->shouldReturn('retval');
     }
 
-    function it_should_show_prompt(
+    public function it_should_show_prompt(
         Application $application,
         OutputInterface $output,
         OutputFormatterInterface $outputFormatter
@@ -98,13 +98,13 @@ class ShellSpec extends ObjectBehavior
         $this->showPrompt();
     }
 
-    function it_should_read_user_input(
+    public function it_should_read_user_input(
         OutputInterface $output,
         Application $application
     )
     {
         $application
-            ->run(Argument::that(function(StringInput $value){
+            ->run(Argument::that(function (StringInput $value) {
                 return $value->getFirstArgument()==='all';
             }),$output)
             ->shouldBeCalled()

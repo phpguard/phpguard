@@ -9,7 +9,6 @@ use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -45,7 +44,7 @@ class MockPlugin extends Plugin
 
 class PluginSpec extends ObjectBehavior
 {
-    function let(Watcher $watcher,ContainerInterface $container,Logger $logger)
+    public function let(Watcher $watcher,ContainerInterface $container,Logger $logger)
     {
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockPlugin');
         $this->addWatcher($watcher);
@@ -66,17 +65,17 @@ class PluginSpec extends ObjectBehavior
         $this->setLogger($logger);
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Plugin\Plugin');
     }
 
-    function it_should_add_watcher($watcher)
+    public function it_should_add_watcher($watcher)
     {
         $this->getWatchers()->shouldContain($watcher);
     }
 
-    function its_getMatchedFiles_returns_an_array_of_matched_file(
+    public function its_getMatchedFiles_returns_an_array_of_matched_file(
         EvaluateEvent $event,
         Watcher $watcher
     )
@@ -91,7 +90,7 @@ class PluginSpec extends ObjectBehavior
         $this->getMatchedFiles($event)->shouldHaveCount(1);
     }
 
-    function its_getMatchedFiles_returns_an_empty_array_if_there_are_not_matched_files(
+    public function its_getMatchedFiles_returns_an_empty_array_if_there_are_not_matched_files(
         EvaluateEvent $event,
         Watcher $watcher
     )
@@ -107,7 +106,7 @@ class PluginSpec extends ObjectBehavior
         $this->getMatchedFiles($event)->shouldNotHaveCount(1);
     }
 
-    function its_getMatchedFiles_convert_paths_into_SplFileInfo(
+    public function its_getMatchedFiles_convert_paths_into_SplFileInfo(
         EvaluateEvent $event,
         Watcher $watcher
     )
@@ -124,7 +123,7 @@ class PluginSpec extends ObjectBehavior
         $paths[0]->shouldHaveType('SplFileInfo');
     }
 
-    function its_getMatchedFiles_should_only_match_againts_tag_if_defined(
+    public function its_getMatchedFiles_should_only_match_againts_tag_if_defined(
         EvaluateEvent $event,
         Watcher $watcher,
         ContainerInterface $container
@@ -148,11 +147,10 @@ class PluginSpec extends ObjectBehavior
         $event->getFiles()
             ->willReturn(array(__FILE__));
 
-
         $this->getMatchedFiles($event);
     }
 
-    function its_getMatchedFiles_returns_false_if_tag_is_not_matched(
+    public function its_getMatchedFiles_returns_false_if_tag_is_not_matched(
         EvaluateEvent $event,
         Watcher $watcher,
         ContainerInterface $container
@@ -179,7 +177,7 @@ class PluginSpec extends ObjectBehavior
         $this->getMatchedFiles($event);
     }
 
-    function its_getMatchedFiles_should_not_process_configuration_file(
+    public function its_getMatchedFiles_should_not_process_configuration_file(
         EvaluateEvent $event,
         ContainerInterface $container,
         Watcher $watcher
@@ -194,7 +192,7 @@ class PluginSpec extends ObjectBehavior
         $this->getMatchedFiles($event);
     }
 
-    function its_options_should_be_mutable()
+    public function its_options_should_be_mutable()
     {
         $this->setOptions(array('some' => 'value'))->shouldReturn($this);
         $this->getOptions()->shouldContain('value');
@@ -210,12 +208,12 @@ class PluginSpec extends ObjectBehavior
         $runner->getArguments()->shouldContain('foobar');
     }*/
 
-    function its_isActive_returns_false_by_default()
+    public function its_isActive_returns_false_by_default()
     {
         $this->shouldNotBeActive();
     }
 
-    function its_active_should_be_mutable()
+    public function its_active_should_be_mutable()
     {
         $this->setActive(true)->shouldReturn($this);
         $this->getActive()->shouldReturn(true);

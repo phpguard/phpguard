@@ -11,7 +11,6 @@
 
 namespace PhpGuard\Application\Console;
 
-
 interface ShellInterface
 {
     public function run();

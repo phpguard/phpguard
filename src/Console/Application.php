@@ -39,7 +39,7 @@ class Application extends BaseApplication
     {
         parent::__construct('phpguard',PhpGuard::VERSION);
 
-        if(is_null($container)){
+        if (is_null($container)) {
             $container = new Container();
         }
         $this->setupContainer($container);
@@ -57,7 +57,7 @@ class Application extends BaseApplication
             $this->add($command);
         }
 
-        if($input->hasParameterOption(array('--tags','-t'))){
+        if ($input->hasParameterOption(array('--tags','-t'))) {
             $tags = $input->getParameterOption(array('--tags','-t'));
             $tags = explode(',',$tags);
 
@@ -65,7 +65,7 @@ class Application extends BaseApplication
             $container->get('logger')->addDebug('Filtered using tags',array('tags'=>$tags));
         }
 
-        if($input->hasParameterOption(array('--coverage','-r'))){
+        if ($input->hasParameterOption(array('--coverage','-r'))) {
             $container->setParameter('coverage.enabled',true);
         }
 
@@ -73,7 +73,7 @@ class Application extends BaseApplication
         $container->get('dispatcher')->dispatch(ApplicationEvents::initialize,$event);
 
         $command = $this->getCommandName($input);
-        if(trim($command)===''){
+        if (trim($command)==='') {
             $input = new StringInput('start');
         }
 
@@ -136,11 +136,11 @@ class Application extends BaseApplication
     public function setupContainer(ContainerInterface $container)
     {
         $container->set('ui.application',$this);
-        $container->setShared('ui.shell',function($c){
+        $container->setShared('ui.shell',function ($c) {
             $shell = new Shell($c);
+
             return $shell;
         });
-
 
         $phpGuard = new PhpGuard();
         $phpGuard->setContainer($container);

@@ -13,12 +13,8 @@ namespace PhpGuard\Application\Log;
 
 use Monolog\Handler\AbstractProcessingHandler;
 
-use Symfony\Component\Console\ConsoleEvents;
-use Symfony\Component\Console\Event\ConsoleCommandEvent;
-use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Writes logs to the console output depending on its verbosity setting.
@@ -133,13 +129,13 @@ class ConsoleHandler extends AbstractProcessingHandler
      */
     protected function write(array $record)
     {
-        $formatted = (string)$record['formatted'];
+        $formatted = (string) $record['formatted'];
         $formatted = str_replace('[COMMON]','',$formatted);
         $formatted = str_replace('[Main][SUCCESS] ','[Main]',$formatted);
         $formatted = str_replace('[] []','',$formatted);
         $formatted = trim($formatted)."\n";
 
-        if(!$this->logged && $this->isHandling($record)){
+        if (!$this->logged && $this->isHandling($record)) {
             $this->output->writeln("");
         }
         if ($record['level'] >= Logger::ERROR && $this->output instanceof ConsoleOutputInterface) {
@@ -161,7 +157,7 @@ class ConsoleHandler extends AbstractProcessingHandler
     /**
      * Updates the logging level based on the verbosity setting of the console output.
      *
-     * @return bool    Whether the handler is enabled and verbosity is not set to quiet.
+     * @return bool Whether the handler is enabled and verbosity is not set to quiet.
      */
     private function updateLevel()
     {

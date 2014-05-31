@@ -26,9 +26,9 @@ class Runner extends ContainerAware
 {
 
     /**
-     * @param   ProcessBuilder $builder
-     * @param   array          $options
-     * @return  Process
+     * @param  ProcessBuilder $builder
+     * @param  array          $options
+     * @return Process
      */
     public function run(ProcessBuilder $builder,array $options=array())
     {
@@ -45,8 +45,8 @@ class Runner extends ContainerAware
         $options['command'] = $process->getCommandLine();
         $this->getLogger()->addDebug('Begin run command',$options);
 
-        $process->run(function($type,$output) use ($options,$writer){
-            if(!$options['silent']){
+        $process->run(function ($type,$output) use ($options,$writer) {
+            if (!$options['silent']) {
                 $writer->write($output);
             }
         });
@@ -54,6 +54,7 @@ class Runner extends ContainerAware
             'exit.code' => $process->getExitCode(),
             'exit.text' => $process->getExitCodeText(),
         ));
+
         return $process;
     }
 
@@ -62,12 +63,13 @@ class Runner extends ContainerAware
         $finder = new ExecutableFinder();
         $extraDirs = array_merge($this->getDefaultDirs(),$extraDirs);
         $executable = $finder->find($name,$default,$extraDirs);
+
         return is_executable($executable) ? $executable:false;
     }
 
     private function getDefaultDirs()
     {
-        if (false !== ($dirs = $this->container->getParameter('runner.default_dirs',false)) ){
+        if (false !== ($dirs = $this->container->getParameter('runner.default_dirs',false)) ) {
             return $dirs;
         }
 
@@ -78,12 +80,13 @@ class Runner extends ContainerAware
             $cwd.'/app/bin',
         );
         $dirs = array();
-        foreach($defaultDirs as $dir){
-            if(is_dir($dir)){
+        foreach ($defaultDirs as $dir) {
+            if (is_dir($dir)) {
                 $dirs[] = $dir;
             }
         }
         $this->container->setParameter('runner.default_dirs',$dirs);
+
         return $dirs;
     }
 

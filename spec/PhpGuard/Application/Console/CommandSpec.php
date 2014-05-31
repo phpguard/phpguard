@@ -4,7 +4,6 @@ namespace spec\PhpGuard\Application\Console;
 
 use PhpGuard\Application\Console\Command;
 use PhpGuard\Application\Spec\ObjectBehavior;
-use Prophecy\Argument;
 
 class MockCommand extends Command
 {
@@ -13,17 +12,17 @@ class MockCommand extends Command
 
 class CommandSpec extends ObjectBehavior
 {
-    function let()
+    public function let()
     {
         $this->beAnInstanceOf(__NAMESPACE__.'\\MockCommand');
     }
 
-    function it_is_initializable()
+    public function it_is_initializable()
     {
         $this->shouldHaveType('PhpGuard\Application\Console\Command');
     }
 
-    function it_should_implement_the_ContainerAwareInterface()
+    public function it_should_implement_the_ContainerAwareInterface()
     {
         $this->shouldImplement('PhpGuard\Application\Container\ContainerAwareInterface');
     }

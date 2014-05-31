@@ -76,47 +76,46 @@ class ResultEvent
         $this->createMessage($message);
         $this->arguments = $arguments;
 
-        if(!empty($trace)){
+        if (!empty($trace)) {
             // always use passed argument as trace
             // useful for fatal error
             $this->trace = $trace;
-        }
-        elseif ($exception) {
+        } elseif ($exception) {
             // use exception trace
             $this->createTrace($exception->getTrace());
         }
 
     }
 
-    static public function createSucceed($message, array $arguments = array())
+    public static function createSucceed($message, array $arguments = array())
     {
         return new self(static::SUCCEED,$message,$arguments);
     }
 
-    static public function createFailed($message,array $arguments = array(),\Exception $e = null)
+    public static function createFailed($message,array $arguments = array(),\Exception $e = null)
     {
         return new self(static::FAILED,$message,$arguments,$e);
     }
 
-    static public function createBroken($message,array $arguments = array(),\Exception $e = null)
+    public static function createBroken($message,array $arguments = array(),\Exception $e = null)
     {
         return new self(static::BROKEN,$message,$arguments,$e);
     }
 
-    static public function createError($message,array $arguments = array(),\Exception $e = null,array $trace=array())
+    public static function createError($message,array $arguments = array(),\Exception $e = null,array $trace=array())
     {
         return new self(static::ERROR,$message,$arguments,$e,$trace);
     }
 
     /**
-     * @param   int        $result
-     * @param   string     $message
-     * @param   array      $arguments
-     * @param   \Exception $exception
+     * @param int        $result
+     * @param string     $message
+     * @param array      $arguments
+     * @param \Exception $exception
      *
-     * @return  ResultEvent
+     * @return ResultEvent
      */
-    static public function create($result,$message,array $arguments=array(),\Exception $exception=null)
+    public static function create($result,$message,array $arguments=array(),\Exception $exception=null)
     {
         $map = array(
             static::SUCCEED => 'createSucceed',
@@ -175,10 +174,10 @@ class ResultEvent
     }
 
     /**
-     * @param   string   $name
-     * @param   mixed    $default
+     * @param string $name
+     * @param mixed  $default
      *
-     * @return  mixed
+     * @return mixed
      */
     public function getArgument($name,$default=null)
     {
@@ -211,7 +210,7 @@ class ResultEvent
             $function = $trace[$i]['function'];
             $line = isset($trace[$i]['line']) ? $trace[$i]['line'] : 'n/a';
 
-            if($file!='n/a'){
+            if ($file!='n/a') {
                 $file = $trace[$i]['file'];
                 $file = ltrim(str_replace(getcwd(),'',$file),'\\/');
             }
