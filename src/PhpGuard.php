@@ -11,7 +11,7 @@ namespace PhpGuard\Application;
  * file that was distributed with this source code.
  */
 
-use PhpGuard\Application\Bridge\CodeCoverageRunner;
+use PhpGuard\Application\Bridge\CodeCoverage\CodeCoverageSession;
 use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Console\Command\RunAllCommand;
@@ -151,7 +151,7 @@ class PhpGuard
             return new Runner();
         });
 
-        CodeCoverageRunner::setupContainer($container);
+        CodeCoverageSession::setupContainer($container);
     }
 
     public function setupCommands($container)

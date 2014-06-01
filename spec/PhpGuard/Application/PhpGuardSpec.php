@@ -2,7 +2,7 @@
 
 namespace spec\PhpGuard\Application;
 
-use PhpGuard\Application\Bridge\CodeCoverageRunner;
+use PhpGuard\Application\Bridge\CodeCoverage\CodeCoverageSession;
 use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Configuration\Processor;
 use PhpGuard\Application\Console\Application;
@@ -86,7 +86,7 @@ class PhpGuardSpec extends ObjectBehavior
 
     function it_should_set_coverage_options_if_defined(
         ContainerInterface $container,
-        CodeCoverageRunner $runner
+        CodeCoverageSession $runner
     )
     {
         $container->get('coverage.runner')

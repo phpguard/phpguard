@@ -6,7 +6,7 @@ use Monolog\Handler\HandlerInterface;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Container\ContainerInterface;
-use PhpGuard\Application\Log\Logger;
+
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Application\Util\Filesystem;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use PHP_CodeCoverage;
 use PHP_CodeCoverage_Filter;
 
-class CodeCoverageRunnerSpec extends ObjectBehavior
+class CodeCoverageSessionSpec extends ObjectBehavior
 {
     protected $options;
 
@@ -77,7 +77,7 @@ class CodeCoverageRunnerSpec extends ObjectBehavior
 
     function it_is_initializable()
     {
-        $this->shouldHaveType('PhpGuard\Application\Bridge\CodeCoverageRunner');
+        $this->shouldHaveType('PhpGuard\Application\Bridge\CodeCoverage\CodeCoverageRunner');
     }
 
     function it_should_be_serializable()

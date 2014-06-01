@@ -11,7 +11,7 @@
 
 namespace PhpGuard\Application\Functional\Coverage;
 
-use PhpGuard\Application\Bridge\CodeCoverageRunner;
+use PhpGuard\Application\Bridge\CodeCoverage\CodeCoverageSession;
 use PhpGuard\Application\Functional\TestCase;
 use PhpGuard\Application\Util\Filesystem;
 
@@ -25,7 +25,7 @@ class CodeCoverageRunnerTest extends TestCase
 
     public function testPrintReport()
     {
-        if (file_exists($file=CodeCoverageRunner::getCacheFile())) {
+        if (file_exists($file=CodeCoverageSession::getCacheFile())) {
             unlink($file);
         }
 
@@ -37,7 +37,7 @@ class CodeCoverageRunnerTest extends TestCase
         );
         static::$container->setParameter('session.results',array('some'));
 
-        $runner = new CodeCoverageRunner();
+        $runner = new CodeCoverageSession();
         $runner->setOptions($options);
         $runner->setContainer(static::$container);
 

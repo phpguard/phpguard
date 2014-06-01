@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace PhpGuard\Application\Bridge;
+namespace PhpGuard\Application\Bridge\CodeCoverage;
 
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Configuration\ConfigEvents;
@@ -25,10 +25,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
- * Class CodeCoverageRunner
+ * Class CodeCoverageSession
  *
  */
-class CodeCoverageRunner extends ContainerAware implements Serializable,EventSubscriberInterface
+class CodeCoverageSession extends ContainerAware implements Serializable,EventSubscriberInterface
 {
     /**
      * @var \PHP_CodeCoverage
@@ -98,7 +98,7 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
         });
 
         $container->setShared('coverage.runner',function () {
-            $runner = new CodeCoverageRunner();
+            $runner = new CodeCoverageSession();
 
             return new $runner;
         });
@@ -275,7 +275,7 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     }
 
     /**
-     * @return CodeCoverageRunner
+     * @return CodeCoverageSession
      */
     public static function getCached()
     {
