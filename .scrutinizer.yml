@@ -1,9 +1,5 @@
 imports:
     - php
-
-tools:
-  external_code_coverage: true
-
 filter:
   excluded-paths:
     - spec/*
