@@ -211,14 +211,30 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
     public function start($id, $clear = false)
     {
         if ($this->isEnabled()) {
+            $old = error_reporting();
+
+            // disable fb_enable_code_coverage notice
+            error_reporting(~E_NOTICE);
+
             $this->coverage->start($id,$clear);
+
+            // restore error reporting
+            error_reporting($old);
         }
     }
 
     public function stop($append=true,$linesToBeCovered=array(),array $linesToBeUsed=array())
     {
         if ($this->isEnabled()) {
+            $old = error_reporting();
+
+            // disable fb_enable_code_coverage notice
+            error_reporting(~E_NOTICE);
+
             $this->coverage->stop($append,$linesToBeCovered,$linesToBeUsed);
+
+            // restore error reporting
+            error_reporting($old);
         }
     }
 
