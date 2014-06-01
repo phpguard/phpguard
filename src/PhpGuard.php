@@ -197,7 +197,7 @@ class PhpGuard
     public function setOptions(array $options=array())
     {
         if (isset($options['coverage'])) {
-            $this->container->get('coverage.runner')->setOptions($options['coverage']);
+            $this->container->get('coverage.session')->setOptions($options['coverage']);
             unset($options['coverage']);
         }
 

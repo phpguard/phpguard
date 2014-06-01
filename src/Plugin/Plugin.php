@@ -168,16 +168,16 @@ abstract class Plugin extends ContainerAware implements PluginInterface
     }
 
     /**
-     * @param mixed $tags
+     * @param  mixed $tags
      * @return void
      */
     public function addTags($tags)
     {
-        if(!is_array($tags)){
+        if (!is_array($tags)) {
             $tags = array($tags);
         }
-        foreach($tags as $tag){
-            if(!$this->hasTags($tag)){
+        foreach ($tags as $tag) {
+            if (!$this->hasTags($tag)) {
                 $this->options['tag'][] = $tag;
             }
         }
@@ -185,23 +185,24 @@ abstract class Plugin extends ContainerAware implements PluginInterface
 
     public function hasTags($tags)
     {
-        if(!is_array($tags)){
+        if (!is_array($tags)) {
             $tags = array($tags);
         }
 
         $pluginTags = $this->options['tag'];
 
-        foreach($tags as $tag){
-            if(in_array($tag,$pluginTags)){
+        foreach ($tags as $tag) {
+            if (in_array($tag,$pluginTags)) {
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     * @param   string    $file
-     * @return  string
+     * @param  string $file
+     * @return string
      */
     private function matchFile($file)
     {

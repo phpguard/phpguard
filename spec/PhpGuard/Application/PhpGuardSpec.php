@@ -89,7 +89,7 @@ class PhpGuardSpec extends ObjectBehavior
         CodeCoverageSession $runner
     )
     {
-        $container->get('coverage.runner')
+        $container->get('coverage.session')
             ->shouldBeCalled()
             ->willReturn($runner)
         ;

@@ -23,7 +23,7 @@ class TestPlugin extends Plugin
     const RUN_MESSAGE = 'Test Plugin Run';
     public $runCount = 0;
 
-    static public $throwException = false;
+    public static $throwException = false;
 
     public function configure()
     {

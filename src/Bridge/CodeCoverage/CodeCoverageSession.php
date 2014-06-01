@@ -97,14 +97,14 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
             return new \PHP_CodeCoverage(null,$filter);
         });
 
-        $container->setShared('coverage.runner',function () {
+        $container->setShared('coverage.session',function () {
             $runner = new CodeCoverageSession();
 
             return new $runner;
         });
 
         $container->setShared('dispatcher.listeners.coverage',function ($c) {
-            return $c->get('coverage.runner');
+            return $c->get('coverage.session');
         });
     }
 

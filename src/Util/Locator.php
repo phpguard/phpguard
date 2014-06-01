@@ -142,6 +142,7 @@ class Locator extends ContainerAware implements EventSubscriberInterface
         $file = $this->mainLoader->findFile($class);
         if (is_file($file)) {
             $spl = PathUtil::createSplFileInfo($baseDir,$file);
+
             return $spl;
         }
 

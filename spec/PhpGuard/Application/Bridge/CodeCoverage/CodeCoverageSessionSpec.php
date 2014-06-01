@@ -6,7 +6,6 @@ use Monolog\Handler\HandlerInterface;
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Configuration\ConfigEvents;
 use PhpGuard\Application\Container\ContainerInterface;
-
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use PhpGuard\Application\Util\Filesystem;
