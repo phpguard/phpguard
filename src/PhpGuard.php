@@ -22,6 +22,7 @@ use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Util\Locator;
 use PhpGuard\Application\Event\GenericEvent;
+use PhpGuard\Application\Util\Report;
 use PhpGuard\Application\Util\Runner;
 use PhpGuard\Listen\Event\ChangeSetEvent;
 use PhpGuard\Listen\Listen;
@@ -75,6 +76,10 @@ class PhpGuard
 
         $container->setShared('dispatcher.listeners.changeset',function () {
             return new ChangesetListener();
+        });
+
+        $container->setShared('dispatcher.listeners.report',function(){
+            return new Report();
         });
     }
 
@@ -189,6 +194,14 @@ class PhpGuard
 
         $evaluateEvent = new EvaluateEvent($event);
         $dispatcher->dispatch(
+            ApplicationEvents::preEvaluate,
+            $evaluateEvent
+        );
+        $dispatcher->dispatch(
+            ApplicationEvents::evaluate,
+            $evaluateEvent
+        );
+        $dispatcher->dispatch(
             ApplicationEvents::postEvaluate,
             $evaluateEvent
         );
@@ -214,14 +227,14 @@ class PhpGuard
     public function start()
     {
         $container = $this->container;
-        $dispatcher = $container->get('dispatcher');
-
-        $event = new GenericEvent($container);
-        $dispatcher->dispatch(ApplicationEvents::started,$event);
 
         $application = $container->get('ui.application');
         $application->setAutoExit(false);
         $application->setCatchExceptions(true);
+
+        $dispatcher = $container->get('dispatcher');
+        $event = new GenericEvent($container);
+        $dispatcher->dispatch(ApplicationEvents::started,$event);
 
         $shell = $container->get('ui.shell');
         $this->showHeader();

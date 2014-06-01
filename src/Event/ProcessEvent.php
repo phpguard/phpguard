@@ -10,6 +10,7 @@
  */
 
 namespace PhpGuard\Application\Event;
+
 use PhpGuard\Application\Plugin\PluginInterface;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -20,7 +21,7 @@ use Symfony\Component\EventDispatcher\Event;
 class ProcessEvent extends Event
 {
     /**
-     * @var array
+     * @var \PhpGuard\Application\Event\ResultEvent[]
      */
     private $results;
 
@@ -44,7 +45,7 @@ class ProcessEvent extends Event
     }
 
     /**
-     * @return array
+     * @return \PhpGuard\Application\Event\ResultEvent[]
      */
     public function getResults()
     {

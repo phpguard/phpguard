@@ -12,13 +12,12 @@
 namespace PhpGuard\Application\Event;
 
 use PhpGuard\Listen\Event\ChangeSetEvent;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Class EvaluateEvent
  *
  */
-class EvaluateEvent extends Event
+class EvaluateEvent extends GenericEvent
 {
     /**
      * @var \PhpGuard\Listen\Event\ChangeSetEvent

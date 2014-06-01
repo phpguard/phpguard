@@ -24,6 +24,11 @@ class GenericEvent extends BaseGenericEvent
      */
     private $container;
 
+    /**
+     * @var ProcessEvent[]
+     */
+    private $processEvents = array();
+
     public function __construct(ContainerInterface $container,array $arguments=array())
     {
         $this->container = $container;
@@ -36,5 +41,21 @@ class GenericEvent extends BaseGenericEvent
     public function getContainer()
     {
         return $this->container;
+    }
+
+    /**
+     * @param ProcessEvent $event
+     */
+    public function addProcessEvent(ProcessEvent $event)
+    {
+        $this->processEvents[] = $event;
+    }
+
+    /**
+     * @return \PhpGuard\Application\Event\ProcessEvent[]
+     */
+    public function getProcessEvents()
+    {
+        return $this->processEvents;
     }
 }

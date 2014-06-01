@@ -73,8 +73,8 @@ class ResultEvent
     {
         $this->result       = $result;
         $this->exception    = $exception;
-        $this->createMessage($message);
-        $this->arguments = $arguments;
+        $this->message      = $message;
+        $this->arguments    = $arguments;
 
         if (!empty($trace)) {
             // always use passed argument as trace
@@ -192,13 +192,6 @@ class ResultEvent
     public function getTrace()
     {
         return $this->trace;
-    }
-
-    private function createMessage($message)
-    {
-        $format         = '[%s] %s';
-        $message        = sprintf($format,'Results',$message);
-        $this->message  = $message;
     }
 
     private function createTrace($trace)

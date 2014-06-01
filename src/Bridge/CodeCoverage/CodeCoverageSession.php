@@ -13,6 +13,7 @@ namespace PhpGuard\Application\Bridge\CodeCoverage;
 
 use PhpGuard\Application\ApplicationEvents;
 use PhpGuard\Application\Configuration\ConfigEvents;
+use PhpGuard\Application\Event\GenericEvent;
 use PhpGuard\Application\Exception\ConfigurationException;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
@@ -76,9 +77,9 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
     {
         return array(
             ConfigEvents::POSTLOAD => array('onConfigPostLoad',-100),
-            ApplicationEvents::preRunCommand => array('preCoverage',100),
+            ApplicationEvents::preEvaluate => array('preCoverage',100),
             ApplicationEvents::postEvaluate => array(
-                array('process',-100)
+                array('process',-1000)
             ),
             ApplicationEvents::preRunAll => array('preCoverage',10),
             ApplicationEvents::postRunAll => array('process',10),
@@ -286,9 +287,9 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
         }
     }
 
-    public function process()
+    public function process(GenericEvent $event)
     {
-        $results = $this->container->getParameter('session.results',array());
+        $results = $event->getProcessEvents();
         if (empty($results) || !$this->isEnabled()) {
             return;
         }

@@ -75,21 +75,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $this->getSubscribedEvents()->shouldHaveKey(ApplicationEvents::postEvaluate);
     }
 
-    function it_should_run_plugins_when_the_paths_is_matched(
-        EvaluateEvent $evaluateEvent,
-        PluginInterface $plugin,
-        EventDispatcherInterface $dispatcher
-    )
-    {
-        $plugin->getMatchedFiles($evaluateEvent)
-            ->shouldBeCalled()
-            ->willReturn(array('some_path'))
-        ;
 
-        $plugin->run(array('some_path'))
-            ->shouldBeCalled();
-        $this->postEvaluate($evaluateEvent);
-    }
 
     function it_should_not_run_plugins_when_the_paths_is_no_match($plugin,EvaluateEvent $evaluateEvent)
     {
@@ -100,59 +86,7 @@ class ChangesetListenerSpec extends ObjectBehavior
         $plugin->run(Argument::any())
             ->shouldNotBeCalled()
         ;
-        $this->postEvaluate($evaluateEvent);
-    }
-
-    function it_should_render_result_after_running_plugin(
-        PluginInterface $plugin,
-        ResultEvent $succeed,
-        ResultEvent $failed,
-        ResultEvent $broken,
-        EvaluateEvent $event,
-        ContainerInterface $container,
-        Logger $logger,
-        $resultsEvent
-    )
-    {
-        $resultsEvent->beADoubleOf(
-            'PhpGuard\\Application\\Event\\ProcessEvent',
-            array($plugin,array($succeed,$failed,$broken))
-        );
-        $container->get('logger')
-            ->willReturn($logger);
-
-        $resultsEvent->getResults()
-            ->willReturn(array($succeed,$failed,$broken))
-        ;
-        $plugin->run(Argument::any())
-            ->willReturn($resultsEvent)
-        ;
-        $plugin->getMatchedFiles(Argument::any())
-            ->willReturn(array('some_path'))
-        ;
-
-        $succeed->getMessage()
-            ->shouldBeCalled();
-        $succeed->getResult()
-            ->shouldBeCalled()
-            ->willReturn(ResultEvent::SUCCEED)
-        ;
-
-        $failed->getResult()
-            ->shouldBeCalled()
-            ->willReturn(ResultEvent::FAILED)
-        ;
-        $failed->getMessage()
-            ->shouldBeCalled();
-
-        $broken->getResult()
-            ->shouldBeCalled()
-            ->willReturn(ResultEvent::BROKEN)
-        ;
-        $broken->getMessage()
-            ->shouldBeCalled();
-
-        $this->postEvaluate($event);
+        $this->evaluate($evaluateEvent);
     }
 
     function it_plugin_should_not_run_if_not_active(
@@ -184,40 +118,7 @@ class ChangesetListenerSpec extends ObjectBehavior
             ->shouldNotBeCalled()
         ;
 
-        $this->postEvaluate($event);
-    }
-
-    function it_should_handle_preRunCommand_events(
-        GenericEvent $event,
-        PluginInterface $plugin,
-        Logger $logger
-    )
-    {
-        $logger->addDebug(Argument::containingString('Begin'))
-            ->shouldBeCalled();
-
-        $logger->addDebug(Argument::containingString('Match file: '))
-            ->shouldBeCalled();
-        $event->getSubject()->willReturn($plugin);
-        $event->getArgument('paths')
-            ->willReturn(array(PathUtil::createSplFileInfo(getcwd(),__FILE__)));
-
-        $this->preRunCommand($event);
-    }
-
-    function it_should_handle_postRunCommand_events(
-        GenericEvent $event,
-        PluginInterface $plugin,
-        Logger $logger
-    )
-    {
-        $event->getSubject()
-            ->willReturn($plugin);
-
-        $logger->addDebug(Argument::containingString('End'))
-            ->shouldBeCalled();
-
-        $this->postRunCommand($event);
+        $this->evaluate($event);
     }
 
     function it_should_handle_runAllCommand_events(
@@ -228,6 +129,8 @@ class ChangesetListenerSpec extends ObjectBehavior
     )
     {
         $event->getSubject()->willReturn($container);
+        $event->addProcessEvent(Argument::any())
+            ->shouldBeCalled();
         $logger->addDebug(Argument::cetera())
             ->shouldBeCalled();
         $logger->addDebug(Argument::containingString('Start'))
@@ -256,6 +159,8 @@ class ChangesetListenerSpec extends ObjectBehavior
         ContainerInterface $container
     )
     {
+        $event->addProcessEvent(Argument::any())
+            ->shouldBeCalled();
         $event->getSubject()->willReturn($container);
 
         $container->getByPrefix('plugins')
@@ -305,6 +210,8 @@ class ChangesetListenerSpec extends ObjectBehavior
             ->willReturn($container);
         $event->getArgument('plugin')
             ->willReturn(null);
+        $event->addProcessEvent(Argument::any())
+            ->shouldBeCalled();
         $container->getByPrefix('plugins')
             ->willReturn(array($active,$inactive))
         ;

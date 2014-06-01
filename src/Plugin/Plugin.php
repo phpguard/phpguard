@@ -48,6 +48,11 @@ abstract class Plugin extends ContainerAware implements PluginInterface
      */
     protected $active = false;
 
+    public static function getSubscribedEvents()
+    {
+        return array();
+    }
+
     /**
      * @return void
      */

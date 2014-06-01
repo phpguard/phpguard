@@ -111,6 +111,10 @@ class PhpGuardSpec extends ObjectBehavior
 
         $event->getFiles()
             ->willReturn(array('some_file'));
+        $dispatcher->dispatch(ApplicationEvents::preEvaluate,Argument::cetera())
+            ->shouldBeCalled();
+        $dispatcher->dispatch(ApplicationEvents::evaluate,Argument::cetera())
+            ->shouldBeCalled();
         $dispatcher->dispatch(ApplicationEvents::postEvaluate,Argument::cetera())
             ->shouldBeCalled();
         $this->listen($event);
@@ -151,6 +155,10 @@ class PhpGuardSpec extends ObjectBehavior
         $dispatcher->dispatch(ConfigEvents::RELOAD,Argument::any())
             ->shouldBeCalled();
 
+        $dispatcher->dispatch(ApplicationEvents::preEvaluate,Argument::any())
+            ->shouldBeCalled();
+        $dispatcher->dispatch(ApplicationEvents::evaluate,Argument::any())
+            ->shouldBeCalled();
         $dispatcher->dispatch(ApplicationEvents::postEvaluate,Argument::any())
             ->shouldBeCalled();
 

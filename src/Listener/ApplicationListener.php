@@ -27,8 +27,8 @@ class ApplicationListener implements EventSubscriberInterface
     {
         return array(
             ApplicationEvents::initialize => 'initialize',
-            ApplicationEvents::started => 'started',
             ApplicationEvents::terminated => 'terminated',
+            ApplicationEvents::started => array('started',1000),
         );
     }
 
@@ -43,16 +43,16 @@ class ApplicationListener implements EventSubscriberInterface
         $container->get('logger')->addDebug('Application initialized');
     }
 
-    public function started(GenericEvent $event)
-    {
-        $this->setupListen($event->getContainer());
-    }
-
     public function terminated(GenericEvent $event)
     {
         $container = $event->getContainer();
         $container->get('phpguard')->stop();
         $container->get('ui.application')->exitApplication();
+    }
+
+    public function started(GenericEvent $event)
+    {
+        $this->setupListen($event->getContainer());
     }
 
     private function setupListen($container)

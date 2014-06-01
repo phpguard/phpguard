@@ -13,6 +13,7 @@ namespace PhpGuard\Application\Functional;
 
 use PhpGuard\Application\Event\ResultEvent;
 use PhpGuard\Application\Event\ProcessEvent;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\Plugin\Plugin;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
@@ -27,6 +28,9 @@ class TestPlugin extends Plugin
 
     public function configure()
     {
+        $logger = new Logger($this->getTitle());
+        $logger->pushHandler($this->container->get('logger.handler'));
+        $this->setLogger($logger);
     }
 
     /**

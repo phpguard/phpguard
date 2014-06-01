@@ -16,6 +16,7 @@ use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Event\GenericEvent;
 use PhpGuard\Application\Linter\PhpLinter;
+use PhpGuard\Application\Log\Logger;
 use PhpGuard\Listen\Util\PathUtil;
 use SplObjectStorage;
 use Composer\Autoload\ClassLoader;
@@ -90,12 +91,19 @@ class Locator extends ContainerAware implements EventSubscriberInterface
     {
         if (class_exists($class)) {
             $r = new \ReflectionClass($class);
-            $ob = new $class();
-            $id = 'plugins.'.$ob->getName();
-            if (!$container->has($id) && !$r->isAbstract()) {
-                $container->setShared($id,function ($c) use ($class) {
-                    return new $class();
-                });
+            if (!$r->isAbstract()) {
+                $plugin = new $class();
+                $id = 'plugins.'.$plugin->getName();
+                if (!$container->has($id)) {
+                    $logger = new Logger($plugin->getTitle());
+                    $logger->pushHandler($container->get('logger.handler'));
+                    $plugin->setLogger($logger);
+                    $plugin->setContainer($container);
+                    $container->set($id,$plugin);
+                    $container->get('dispatcher')
+                        ->addSubscriber($plugin)
+                    ;
+                }
             }
         }
     }

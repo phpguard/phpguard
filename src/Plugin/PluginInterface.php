@@ -13,9 +13,10 @@ namespace PhpGuard\Application\Plugin;
 use PhpGuard\Application\Watcher;
 use PhpGuard\Application\Event\EvaluateEvent;
 use Psr\Log\LoggerAwareInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
-interface PluginInterface extends LoggerAwareInterface
+interface PluginInterface extends LoggerAwareInterface, EventSubscriberInterface
 {
     /**
      * @return string

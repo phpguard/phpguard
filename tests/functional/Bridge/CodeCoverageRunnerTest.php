@@ -12,6 +12,8 @@
 namespace PhpGuard\Application\Functional\Coverage;
 
 use PhpGuard\Application\Bridge\CodeCoverage\CodeCoverageSession;
+use PhpGuard\Application\Event\GenericEvent;
+use PhpGuard\Application\Event\ProcessEvent;
 use PhpGuard\Application\Functional\TestCase;
 use PhpGuard\Application\Util\Filesystem;
 
@@ -41,15 +43,18 @@ class CodeCoverageRunnerTest extends TestCase
         $runner->setOptions($options);
         $runner->setContainer(static::$container);
 
+        $event = new ProcessEvent(static::$container->get('plugins.test'));
+        $genericEvent = new GenericEvent(static::$container);
+        $genericEvent->addProcessEvent($event);
         // not display coverage when results file not exists
-        $runner->process();
+        $runner->process($genericEvent);
         $this->assertNotDisplayContains('html output');
         $this->assertNotDisplayContains('text output');
         $this->assertNotDisplayContains('clover output');
 
         // display coverage when cache file exists
         Filesystem::serialize($file,$runner);
-        $runner->process();
+        $runner->process($genericEvent);
         $this->assertDisplayContains('html output');
         $this->assertDisplayContains('text output');
         $this->assertDisplayContains('clover output');

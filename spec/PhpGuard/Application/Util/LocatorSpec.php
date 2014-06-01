@@ -4,9 +4,13 @@ namespace spec\PhpGuard\Application\Util;
 
 use PhpGuard\Application\Container\ContainerInterface;
 use PhpGuard\Application\Event\GenericEvent;
+use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
+use PhpGuard\Application\Plugin\PluginInterface;
 use PhpGuard\Application\Spec\ObjectBehavior;
 use Prophecy\Argument;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class LocatorSpec extends ObjectBehavior
 {
@@ -64,10 +68,15 @@ class LocatorSpec extends ObjectBehavior
 
     function it_should_load_plugin(
         ContainerInterface $container,
-        GenericEvent $event
+        GenericEvent $event,
+        EventDispatcherInterface $dispatcher,
+        ConsoleHandler $logHandler
     )
     {
         $event->getContainer()->willReturn($container);
+        $container->get('dispatcher')
+            ->willReturn($dispatcher);
+
         $container->getParameter('application.initialized',false)
             ->willReturn(false);
         $this->addPsr4(
@@ -78,12 +87,18 @@ class LocatorSpec extends ObjectBehavior
         $container->has('plugins.some')
             ->shouldBeCalled()
             ->willReturn(false);
-        $container->setShared('plugins.some',Argument::any())
+        $container->set('plugins.some',Argument::any())
             ->shouldBeCalled()
         ;
         $container->setShared('linters.php',Argument::any())
             ->shouldBeCalled()
         ;
+        ;
+        $container->get('logger.handler')
+            ->willReturn($logHandler);
+
+        $dispatcher->addSubscriber(Argument::any())
+            ->shouldBeCalled();
 
         $this->onApplicationInitialize($event);
     }
