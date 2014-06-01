@@ -216,7 +216,7 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
             // disable fb_enable_code_coverage notice
             error_reporting(~E_NOTICE);
 
-            $this->coverage->start($id,$clear);
+            @$this->coverage->start($id,$clear);
 
             // restore error reporting
             error_reporting($old);
@@ -231,7 +231,7 @@ class CodeCoverageRunner extends ContainerAware implements Serializable,EventSub
             // disable fb_enable_code_coverage notice
             error_reporting(~E_NOTICE);
 
-            $this->coverage->stop($append,$linesToBeCovered,$linesToBeUsed);
+            @$this->coverage->stop($append,$linesToBeCovered,$linesToBeUsed);
 
             // restore error reporting
             error_reporting($old);
