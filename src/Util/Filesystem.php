@@ -27,7 +27,7 @@ class Filesystem
     public function serialize($targetFile,$data)
     {
         $contents = serialize($data);
-        file_put_contents($targetFile,$contents,LOCK_EX);
+        $this->putFileContents($targetFile,$contents);
     }
 
     /**
@@ -39,7 +39,7 @@ class Filesystem
      */
     public function unserialize($file)
     {
-        $contents = file_get_contents($file,LOCK_EX);
+        $contents =$this->getFileContents($file);
         $data = unserialize($contents);
 
         return $data;
@@ -96,6 +96,51 @@ class Filesystem
         }
 
         @rmdir($dir);
+    }
+
+    /**
+     * @param $path
+     * @return bool
+     */
+    public function pathExists($path)
+    {
+        return file_exists($path);
+    }
+
+    /**
+     * @param $path
+     * @return string
+     */
+    public function getFileContents($path)
+    {
+        return file_get_contents($path);
+    }
+
+    /**
+     * @param $path
+     * @param $content
+     */
+    public function putFileContents($path, $content)
+    {
+        file_put_contents($path, $content);
+    }
+
+    /**
+     * @param $path
+     * @return bool
+     */
+    public function isDirectory($path)
+    {
+        return is_dir($path);
+    }
+
+    /**
+     * @param $path
+     * @return bool
+     */
+    public function isFile($path)
+    {
+        return is_file($path);
     }
 
     /**
