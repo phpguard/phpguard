@@ -9,16 +9,16 @@ Simple tool to monitor file changes, and execute command automatically.
 [![Master Build Status](https://secure.travis-ci.org/phpguard/phpguard.png?branch=master)](http://travis-ci.org/phpguard/phpguard)
 [![Coverage Status](https://coveralls.io/repos/phpguard/phpguard/badge.png?branch=master)](https://coveralls.io/r/phpguard/phpguard?branch=master)
 
-# Installation
+## Installation
 Using composer:
 ```bash
 $ cd /paths/to/project
 $ composer require --dev "phpguard/phpguard 0.1.*@dev"
 ```
 
-# Inotify Requirement
+## PHP Extension
 At least for now `phpguard\listen` provide inotify support, so if you using linux you can run `phpguard` faster by installing `inotify` extension:
-```bash
+```shell
 $ sudo pecl install inotify
 ```
 And add this line to your `php.ini` file:
@@ -26,46 +26,122 @@ And add this line to your `php.ini` file:
 extension=inotify.so
 ```
 
-# PhpSpec Processor
-
-```yaml
-# /path/to/project/phpguard.yml
-phpspec:
-    options:
-        format:             pretty  # run phpspec with pretty format
-        ansi:               true    # force phpspec to use ansi color
-        all_after_pass:     true    # run all spec after run spec file success
-        run_all:
-            format: progress        # use progress format when running all spec
-    watch:
-        # watch src/Namespace/Class.php for changes and ask phpguard to run phpspec
-        # with file name "spec/Namespace/ClassSpec.php"
-        - { pattern: "#^src\/(.+)\.php$#", transform: "spec/${1}Spec.php" }
-        # watch file in spec directory and ask phpguard to run phpspec for that file
-        - { pattern: "#^spec.*\.php$#" }
+## Install Plugin
+By this time only 2 plugin provided by phpguard:
+* PHPUnit Plugin: https://github.com/phpguard/plugin-phpunit
+* PhpSpec Plugin: https://github.com/phpguard/plugin-phpunit
+Please go to the documentation for this plugin in the link above.
+To install this plugin simply type:
+```shell
+$ cd /path/to/project
+$ composer install phpguard/plugin-phpunit
+$ composer install phpguard/plugin-phpspec
 ```
 
-# PHPUnit Processor
-
-```yaml
-# /path/to/project/phpguard.yml
-phpunit:
-    options:
-        cli: "--exclude-group phpspec"  # set argument and options for phpunit cli
-        all_after_pass: true            # run all tests after pass
-    watch:
-        # watch src/PhpGuard/Application/Class.php for changes and ask phpguard to run phpunit
-        # with file name "tests/PhpGuard/Application/Tests/ClassTest.php"
-        - { pattern: "#^src\/PhpGuard\/Application\/(.+)\.php$#", transform: "tests/PhpGuard/Application/Tests/${1}Test.php" }
-        # watch file in tests directory and ask phpguard to run phpunit for that file
-        - { pattern: "#^tests\/.*Test\.php$#" }
-```
-
-# Running PhpGuard
-
-```bash
+## Running phpguard
+You have to create `phpguard.yml` configuration file first, in order to run `phpguard`.
+Please take a look at `watcher` documentation section below. To start phpguard just type:
+```shell
 $ cd /path/to/project
 $ ./vendor/bin/phpguard
 ```
-PhpGuard will run commands automatically when you change your source file.
-If you need to run all tests, just press `enter`.
+`phpguard` now will start to monitor and run command on file system events.
+To run all command anytime just press `enter`.
+
+## PHP Code Coverage options
+`phpguard` provide coverage feature for cross testing tools. When enabled every test like `phpspec`,
+and `phpunit` will be use the same code coverage. Available options for coverage:
+```yaml
+phpguard:
+    coverage:
+        whitelist:
+            - src
+        blacklist:
+            - spec
+            - tests
+            - vendor
+        show_uncovered_files:   false
+        show_only_summary:      false
+        output.html:            build/coverage
+        output.text:            true
+        output.clover:          build/logs/clover.xml
+```
+You can collect code coverage by using command `./vendor/bin/phpguard all --coverage`
+
+## global options
+### Ignored directories
+By default `phpguard` will ignore `vendor` and also all VCS directories.
+To add more ignore directories just define `ignores` options in your `phpguard.yml` file.
+```yaml
+phpguard:
+    ignores:
+        - build
+        - app/cache
+        - app/logs
+```
+
+### watch
+`watch` options allow you to define which files are watched by `phpguard` by simply use php regular expression patterns:
+```yaml
+# /path/to/project/phpguard.yml
+phpunit:
+    watch:
+        - { pattern: "#^tests\/(.+)Test\.php$#" }
+```
+This instructs phpguard to watch for file changes in the tests folder,
+but only for file names that ends with `Test.php`.
+
+### transform
+You can modify changed file name before sending it to the plugin for processing:
+```yaml
+phpunit:
+    watch:
+        - { pattern: "#^src\/(.+)\.php$#", transform: "tests/${1}Test.php }
+```
+`phpguard` now will use php `preg_replace` function to transform a file change in the `src` folder
+to it's test case in the `tests` folder.
+
+
+## Configuration Sample for PhpSpec and PHPUnit
+```yaml
+# phpguard config section
+phpguard:
+    ignores: build
+    coverage:
+        enabled: false
+        whitelist:
+            - src
+        blacklist:
+            - spec
+            - tests
+            - vendor
+        show_uncovered_files:   false
+        show_only_summary:      false
+        output.html:            build/coverage
+        output.text:            true
+        output.clover:          build/logs/clover.xml
+
+# phpunit config section
+phpunit:
+    options:
+        cli:            "--colors"
+        all_on_start:   true
+        all_after_pass: true
+        keep_failed:    true
+        run_all_cli:    "--colors"
+    watch:
+        - { pattern: "#^src\/(.+)\.php$#", transform: "tests/functional/${1}Test.php" }
+        - { pattern: "#^tests\/functional\/.*Test\.php$#" }
+# phpspec config section
+phpspec:
+    options:
+        cli:                "--format=pretty"
+        all_on_start:       true
+        all_after_pass:     true
+        keep_failed:        true
+        import_suites:      false
+        run_all_cli:        "--format=dot -vvv"
+    watch:
+        - { pattern: "#^src\/(.+)\.php$#", transform: "spec/PhpGuard/Application/${1}Spec.php" }
+        - { pattern: "#^spec.*\.php$#" }
+```
