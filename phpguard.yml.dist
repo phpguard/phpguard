@@ -1,6 +1,7 @@
 phpguard:
+    ignores:
+        - build
     coverage:
-        enabled: false
         whitelist:
             - src
         blacklist:
@@ -23,13 +24,12 @@ phpunit:
 
 phpspec:
     options:
-        cli: "--format=pretty"
+        cli:                "--format=pretty"
         all_on_start:       true
         all_after_pass:     true
         keep_failed:        true
         import_suites:      false
-        run_all:
-            cli:            "--format=pretty"
+        run_all_cli:        "--format=pretty"
 
     watch:
         - { pattern: "#^src\/(.+)\.php$#", transform: "spec/PhpGuard/Application/${1}Spec.php" }
