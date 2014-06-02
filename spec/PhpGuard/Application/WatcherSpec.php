@@ -16,7 +16,7 @@ class WatcherSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,OutputInterface $output,Logger $logger)
     {
-        Filesystem::mkdir(self::$tmpDir);
+        Filesystem::create()->mkdir(self::$tmpDir);
         $this->beConstructedWith($container);
         $container->get('logger')->willReturn($logger);
         $container->get('ui.output')->willReturn($output);
@@ -24,7 +24,7 @@ class WatcherSpec extends ObjectBehavior
 
     function letgo()
     {
-        Filesystem::cleanDir(self::$tmpDir);
+        Filesystem::create()->cleanDir(self::$tmpDir);
     }
 
     function it_is_initializable()

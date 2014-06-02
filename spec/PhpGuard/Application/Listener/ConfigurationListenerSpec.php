@@ -34,7 +34,7 @@ class ConfigurationListenerSpec extends ObjectBehavior
         if(is_null(static::$cwd)){
             static::$cwd = getcwd();
         }
-        Filesystem::mkdir(static::$tmpDir);
+        Filesystem::create()->mkdir(static::$tmpDir);
         $container->getByPrefix('plugins')
             ->willReturn(array($plugin))
         ;

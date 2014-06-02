@@ -13,8 +13,8 @@ class ProcessorSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,PhpGuard $guard, PluginInterface $plugin)
     {
-        Filesystem::cleanDir(self::$tmpDir);
-        Filesystem::mkdir(self::$tmpDir);
+        Filesystem::create()->cleanDir(self::$tmpDir);
+        Filesystem::create()->mkdir(self::$tmpDir);
         $container->get('phpguard')
             ->willReturn($guard)
         ;

@@ -40,7 +40,8 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
         if (is_null(static::$tmpDir)) {
             static::$tmpDir = sys_get_temp_dir().'/phpguard-test/'.uniqid('phpguard');
         }
-        Filesystem::mkdir(static::$tmpDir);
+        static::$container->get('filesystem')->mkdir(static::$tmpDir);
+
         if (is_null(static::$cwd)) {
             static::$cwd = getcwd();
         }
@@ -50,7 +51,7 @@ abstract class FunctionalTestCase extends \PHPUnit_Framework_TestCase
     public static function tearDownAfterClass()
     {
         parent::tearDownAfterClass();
-        Filesystem::cleanDir(static::$tmpDir);
+        static::$container->get('filesystem')->create(static::$tmpDir);
         @chdir(static::$cwd);
     }
 

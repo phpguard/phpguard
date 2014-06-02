@@ -33,7 +33,7 @@ class CodeCoverageSessionSpec extends ObjectBehavior
         if (is_null(static::$cwd)) {
             static::$cwd = getcwd();
         }
-        Filesystem::mkdir(static::$tmpDir);
+        Filesystem::create()->mkdir(static::$tmpDir);
         chdir(static::$tmpDir);
         $container->get('coverage.filter')
             ->willReturn($filter)
@@ -70,7 +70,7 @@ class CodeCoverageSessionSpec extends ObjectBehavior
 
     function letgo()
     {
-        Filesystem::cleanDir(static::$tmpDir);
+        Filesystem::create()->cleanDir(static::$tmpDir);
         chdir(static::$cwd);
     }
 

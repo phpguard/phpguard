@@ -119,9 +119,9 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
     public function serialize()
     {
         $data = array(
-            'coverage' => $this->coverage,
-            'filter' => $this->filter,
-            'options' => $this->options
+            'coverage'      => $this->coverage,
+            'filter'        => $this->filter,
+            'options'       => $this->options,
         );
 
         return serialize($data);
@@ -257,7 +257,7 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
 
     public function saveState()
     {
-        Filesystem::serialize(static::getCacheFile(),$this);
+        Filesystem::create()->serialize(static::getCacheFile(),$this);
     }
 
     public function isEnabled()
@@ -281,7 +281,7 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
     public static function getCached()
     {
         if (file_exists(static::getCacheFile())) {
-            return Filesystem::unserialize(static::getCacheFile());
+            return Filesystem::create()->unserialize(static::getCacheFile());
         } else {
             return false;
         }

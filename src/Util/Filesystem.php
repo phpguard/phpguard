@@ -24,7 +24,7 @@ class Filesystem
      * @param string $targetFile
      * @param mixed  $data
      */
-    public static function serialize($targetFile,$data)
+    public function serialize($targetFile,$data)
     {
         $contents = serialize($data);
         file_put_contents($targetFile,$contents,LOCK_EX);
@@ -37,7 +37,7 @@ class Filesystem
      *
      * @return mixed
      */
-    public static function unserialize($file)
+    public function unserialize($file)
     {
         $contents = file_get_contents($file,LOCK_EX);
         $data = unserialize($contents);
@@ -52,7 +52,7 @@ class Filesystem
      *
      * @author Anthonius Munthi <me@itstoni.com>
      */
-    public static function copyDir($from,$to,Finder $finder)
+    public function copyDir($from,$to,Finder $finder)
     {
         /* @var \Symfony\Component\Finder\SplFileInfo $path */
 
@@ -67,7 +67,7 @@ class Filesystem
         }
     }
 
-    public static function mkdir($dir,$mode=0777,$recursive=true)
+    public function mkdir($dir,$mode=0777,$recursive=true)
     {
         @mkdir($dir,$mode,$recursive);
     }
@@ -75,7 +75,7 @@ class Filesystem
     /**
      * @param string $dir
      */
-    public static function cleanDir($dir)
+    public function cleanDir($dir)
     {
         if (!is_dir($dir)) {
             return;
@@ -96,5 +96,13 @@ class Filesystem
         }
 
         @rmdir($dir);
+    }
+
+    /**
+     * @return Filesystem
+     */
+    static public function create()
+    {
+        return new self();
     }
 }

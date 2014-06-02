@@ -27,7 +27,7 @@ class TestCase extends FunctionalTestCase
     public static function buildFixtures($suffix='common')
     {
         $finder = Finder::create();
-        Filesystem::copyDir(static::$cwd.'/tests/fixtures/'.$suffix,static::$tmpDir,$finder);
+        Filesystem::create()->copyDir(static::$cwd.'/tests/fixtures/'.$suffix,static::$tmpDir,$finder);
     }
 
     /**

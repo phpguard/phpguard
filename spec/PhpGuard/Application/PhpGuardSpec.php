@@ -67,7 +67,7 @@ class PhpGuardSpec extends ObjectBehavior
     function letgo()
     {
         chdir(self::$cwd);
-        Filesystem::cleanDir(self::$tmpDir.'/test-config');
+        Filesystem::create()->cleanDir(self::$tmpDir.'/test-config');
     }
 
     function it_is_initializable()

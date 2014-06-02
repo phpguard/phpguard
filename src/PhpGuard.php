@@ -20,6 +20,7 @@ use PhpGuard\Application\Listener\ApplicationListener;
 use PhpGuard\Application\Log\ConsoleFormatter;
 use PhpGuard\Application\Log\ConsoleHandler;
 use PhpGuard\Application\Log\Logger;
+use PhpGuard\Application\Util\Filesystem;
 use PhpGuard\Application\Util\Locator;
 use PhpGuard\Application\Event\GenericEvent;
 use PhpGuard\Application\Util\Report;
@@ -154,6 +155,10 @@ class PhpGuard
 
         $container->setShared('runner',function () {
             return new Runner();
+        });
+
+        $container->setShared('filesystem',function(){
+            return new Filesystem();
         });
 
         CodeCoverageSession::setupContainer($container);

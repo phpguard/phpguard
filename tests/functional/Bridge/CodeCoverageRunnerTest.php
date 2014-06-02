@@ -53,7 +53,7 @@ class CodeCoverageRunnerTest extends TestCase
         $this->assertNotDisplayContains('clover output');
 
         // display coverage when cache file exists
-        Filesystem::serialize($file,$runner);
+        Filesystem::create()->serialize($file,$runner);
         $runner->process($genericEvent);
         $this->assertDisplayContains('html output');
         $this->assertDisplayContains('text output');

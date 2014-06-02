@@ -20,8 +20,8 @@ class FilesystemTest extends TestCase
     public function testCopyDir()
     {
         $source = static::$cwd.'/tests/fixtures/filesystem';
-        Filesystem::mkdir($target = getcwd());
-        Filesystem::copyDir($source,$target,Finder::create());
+        Filesystem::create()->mkdir($target = getcwd());
+        Filesystem::create()->copyDir($source,$target,Finder::create());
         $this->assertFileExists($target.'/foo/test.txt');
     }
 
@@ -29,7 +29,7 @@ class FilesystemTest extends TestCase
     {
         $cwd = getcwd();
         $dir = $cwd.'/foo/bar/hello/world';
-        Filesystem::mkdir($dir,0755,true);
+        Filesystem::create()->mkdir($dir,0755,true);
         $this->assertTrue(is_dir($cwd.'/foo/bar'));
         $this->assertTrue(is_dir($cwd.'/foo/bar/hello/world'));
     }
@@ -38,9 +38,9 @@ class FilesystemTest extends TestCase
     {
         $file = getcwd().'/test.dat';
         $data = array('foo'=>'bar','hello'=>'world');
-        Filesystem::serialize($file,$data);
+        Filesystem::create()->serialize($file,$data);
 
-        $unserialized = Filesystem::unserialize($file);
+        $unserialized = Filesystem::create()->unserialize($file);
         $this->assertEquals($data,$unserialized);
     }
 }

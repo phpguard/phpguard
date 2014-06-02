@@ -13,7 +13,7 @@ class PhpLinterSpec extends ObjectBehavior
 {
     function let(ContainerInterface $container,OutputInterface $output,ConsoleHandler $handler)
     {
-        Filesystem::mkdir(self::$tmpDir);
+        Filesystem::create()->mkdir(self::$tmpDir);
         $container->get('logger.handler')
             ->willReturn($handler);
         $this->setContainer($container);
@@ -27,7 +27,7 @@ class PhpLinterSpec extends ObjectBehavior
 
     function letgo()
     {
-        Filesystem::cleanDir(self::$tmpDir);
+        Filesystem::create()->cleanDir(self::$tmpDir);
     }
 
     function it_is_initializable()

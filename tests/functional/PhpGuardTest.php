@@ -55,11 +55,11 @@ class PhpGuardTest extends TestCase
     public function testShouldMonitorBasedOnTags()
     {
 
-        Filesystem::cleanDir($dirTag1 = self::$tmpDir.'/tag1');
-        Filesystem::cleanDir($dirTag2 = self::$tmpDir.'/tag2');
+        Filesystem::create()->cleanDir($dirTag1 = self::$tmpDir.'/tag1');
+        Filesystem::create()->cleanDir($dirTag2 = self::$tmpDir.'/tag2');
 
-        Filesystem::mkdir($dirTag1);
-        Filesystem::mkdir($dirTag2);
+        Filesystem::create()->mkdir($dirTag1);
+        Filesystem::create()->mkdir($dirTag2);
         $ftag1 = $dirTag1.'/test1.php';
         $ftag2 = $dirTag2.'/test1.php';
         $this->getTester()->run('--tags=tag1');
