@@ -33,7 +33,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
         return array(
             //ApplicationEvents::postEvaluate =>
             ApplicationEvents::evaluate => 'evaluate',
-            ApplicationEvents::postEvaluate => 'showPrompt',
+            ApplicationEvents::postEvaluate => array('showPrompt',-1000),
             ApplicationEvents::preRunCommand => 'preRunCommand',
             ApplicationEvents::postRunCommand => 'postRunCommand',
             ApplicationEvents::runAll => 'runAllCommand',
@@ -123,7 +123,7 @@ class ChangesetListener extends ContainerAware implements EventSubscriberInterfa
 
         foreach ($plugins as $plugin) {
             if (!$plugin->isActive()) {
-                $this->getLogger()->addFail(sprintf('Plugin "%s" is not active',$plugin->getTitle()));
+                $this->getLogger()->addDebug(sprintf('Plugin "%s" is not active',$plugin->getTitle()));
                 continue;
             } else {
                 $this->getLogger()->addDebug(
