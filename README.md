@@ -30,8 +30,9 @@ extension=inotify.so
 By this time only 2 plugin provided by phpguard:
 * PHPUnit Plugin: https://github.com/phpguard/plugin-phpunit
 * PhpSpec Plugin: https://github.com/phpguard/plugin-phpunit
-Please go to the documentation for this plugin in the link above.
-To install this plugin simply type:
+
+To learn how to use this plugin, please go to the plugin documentation in the related link above.
+You can install this plugin by using this command:
 ```shell
 $ cd /path/to/project
 $ composer install phpguard/plugin-phpunit
@@ -40,7 +41,7 @@ $ composer install phpguard/plugin-phpspec
 
 ## Running phpguard
 You have to create `phpguard.yml` configuration file first, in order to run `phpguard`.
-Please take a look at `watcher` documentation section below. To start phpguard just type:
+Please take a look `configuration` section below. To start phpguard just type:
 ```shell
 $ cd /path/to/project
 $ ./vendor/bin/phpguard
@@ -48,7 +49,8 @@ $ ./vendor/bin/phpguard
 `phpguard` now will start to monitor and run command on file system events.
 To run all command anytime just press `enter`.
 
-## PHP Code Coverage options
+## Configuration
+### PHP Code Coverage options
 `phpguard` provide coverage feature for cross testing tools. When enabled every test like `phpspec`,
 and `phpunit` will be use the same code coverage. Available options for coverage:
 ```yaml
@@ -68,7 +70,6 @@ phpguard:
 ```
 You can collect code coverage by using command `./vendor/bin/phpguard all --coverage`
 
-## global options
 ### Ignored directories
 By default `phpguard` will ignore `vendor` and also all VCS directories.
 To add more ignore directories just define `ignores` options in your `phpguard.yml` file.
@@ -80,7 +81,7 @@ phpguard:
         - app/logs
 ```
 
-### watch
+### watchers
 `watch` options allow you to define which files are watched by `phpguard` by simply use php regular expression patterns:
 ```yaml
 # /path/to/project/phpguard.yml
@@ -102,7 +103,7 @@ phpunit:
 to it's test case in the `tests` folder.
 
 
-## Configuration Sample for PhpSpec and PHPUnit
+### Configuration Sample for PhpSpec and PHPUnit
 ```yaml
 # phpguard config section
 phpguard:
@@ -120,7 +121,6 @@ phpguard:
         output.html:            build/coverage
         output.text:            true
         output.clover:          build/logs/clover.xml
-
 # phpunit config section
 phpunit:
     options:
