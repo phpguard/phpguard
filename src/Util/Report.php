@@ -47,11 +47,13 @@ class Report extends ContainerAware implements EventSubscriberInterface
 
     public function summary(GenericEvent $event)
     {
-        $this->container->get('ui.output')->writeln('');
-        $this->container->get('ui.output')->writeln('');
-        $this->container->get('logger')->addDebug('Print Summary');
-        foreach($event->getProcessEvents() as $processEvent){
-            $this->renderResult($processEvent);
+        if(count($event->getProcessEvents()) > 0){
+            $this->container->get('ui.output')->writeln('');
+            $this->container->get('ui.output')->writeln('');
+            $this->container->get('logger')->addDebug('Print Summary');
+            foreach($event->getProcessEvents() as $processEvent){
+                $this->renderResult($processEvent);
+            }
         }
     }
 
