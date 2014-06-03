@@ -48,8 +48,11 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
      */
     private $logger;
 
+    private $path;
+
     public function __construct()
     {
+        $this->path = PhpGuard::getCacheDir();
         $this->setOptions(array());
     }
 
@@ -73,7 +76,7 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
      *
      * @api
      */
-    public static function getSubscribedEvents()
+    static public function getSubscribedEvents()
     {
         return array(
             ConfigEvents::POSTLOAD => array('onConfigPostLoad',-100),
@@ -86,7 +89,7 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
         );
     }
 
-    public static function setupContainer(ContainerInterface $container)
+    static public function setupContainer(ContainerInterface $container)
     {
         $container->setShared('coverage.filter',function () {
             return new \PHP_CodeCoverage_Filter();
@@ -109,6 +112,27 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
         });
     }
 
+    static public function getCacheFile()
+    {
+        $dir = PhpGuard::getCacheDir();
+        if (!is_dir($dir)) {
+            mkdir($dir,0775,true);
+        }
+        return $dir.'/coverage_session.dat';
+    }
+
+    /**
+     * @return CodeCoverageSession
+     */
+    static public function getCached()
+    {
+        if (file_exists(static::getCacheFile())) {
+            return Filesystem::create()->unserialize(static::getCacheFile());
+        } else {
+            return null;
+        }
+    }
+
     /**
      * (PHP 5 &gt;= 5.1.0)<br/>
      * String representation of object
@@ -122,6 +146,7 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
             'coverage'      => $this->coverage,
             'filter'        => $this->filter,
             'options'       => $this->options,
+            'path'          => $this->path,
         );
 
         return serialize($data);
@@ -145,6 +170,7 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
         $this->coverage = $data['coverage'];
         $this->filter   = $data['filter'];
         $this->options  = $data['options'];
+        $this->path     = $data['path'];
     }
 
     public function setOptions($options)
@@ -257,34 +283,15 @@ class CodeCoverageSession extends ContainerAware implements Serializable,EventSu
 
     public function saveState()
     {
-        Filesystem::create()->serialize(static::getCacheFile(),$this);
+        $target = $this->path.'/coverage_session.dat';
+        if(is_writable($this->path)){
+            Filesystem::create()->serialize($target,$this);
+        }
     }
 
     public function isEnabled()
     {
         return $this->options['input.option.enabled'] || $this->options['enabled'];
-    }
-
-    public static function getCacheFile()
-    {
-        $dir = PhpGuard::getCacheDir().'/coverage';
-        if (!is_dir($dir)) {
-            mkdir($dir,0775,true);
-        }
-
-        return $dir.'/runner.dat';
-    }
-
-    /**
-     * @return CodeCoverageSession
-     */
-    public static function getCached()
-    {
-        if (file_exists(static::getCacheFile())) {
-            return Filesystem::create()->unserialize(static::getCacheFile());
-        } else {
-            return false;
-        }
     }
 
     public function process(GenericEvent $event)

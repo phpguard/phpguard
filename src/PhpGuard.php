@@ -57,7 +57,30 @@ class PhpGuard
     {
         // force to setup default values
         $this->setOptions(array());
+    }
 
+    static public function getCacheDir()
+    {
+        $path = getcwd();
+        if(false!==strpos($path,'phpguard-test')){
+            return $path;
+        }else{
+            $hash = crc32($path);
+            $dir = sys_get_temp_dir().'/phpguard/cache/'.$hash;
+            @mkdir($dir,0755,true);
+            return $dir;
+        }
+    }
+
+    static public function getPluginCache($plugin)
+    {
+        $cache = static::getCacheDir();
+        $dir = $cache.DIRECTORY_SEPARATOR.'plugins'.DIRECTORY_SEPARATOR.$plugin;
+        if (!is_dir($dir)) {
+            mkdir($dir,0755,true);
+        }
+
+        return $dir;
     }
 
     public function setContainer(ContainerInterface $container)
@@ -290,26 +313,6 @@ EOF;
     public function isRunning()
     {
         return $this->running;
-    }
-
-    public static function getCacheDir()
-    {
-        $hash = md5(getcwd());
-        $dir = sys_get_temp_dir().'/phpguard/cache/'.$hash;
-        @mkdir($dir,0755,true);
-
-        return $dir;
-    }
-
-    public static function getPluginCache($plugin)
-    {
-        $cache = static::getCacheDir();
-        $dir = $cache.DIRECTORY_SEPARATOR.'plugins'.DIRECTORY_SEPARATOR.$plugin;
-        if (!is_dir($dir)) {
-            mkdir($dir,0755,true);
-        }
-
-        return $dir;
     }
 
     private function setDefaultOptions(OptionsResolverInterface $resolver)
