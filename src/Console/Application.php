@@ -128,6 +128,13 @@ class Application extends BaseApplication
             'Run only for this tags'
         );
 
+        $options['config'] = new InputOption(
+            'config',
+            'c',
+            InputOption::VALUE_OPTIONAL,
+            'Use custom configuration file'
+        );
+
         $definition->setOptions($options);
 
         return $definition;

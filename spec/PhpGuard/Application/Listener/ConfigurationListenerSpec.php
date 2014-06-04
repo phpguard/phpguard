@@ -16,6 +16,7 @@ use PhpGuard\Listen\Listener;
 use PhpGuard\Application\Event\GenericEvent;
 
 use Prophecy\Argument;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ConfigurationListenerSpec extends ObjectBehavior
@@ -28,7 +29,8 @@ class ConfigurationListenerSpec extends ObjectBehavior
         Listener $listener,
         ConsoleHandler $handler,
         Logger $logger,
-        GenericEvent $event
+        GenericEvent $event,
+        InputInterface $input
     )
     {
         if(is_null(static::$cwd)){
@@ -52,6 +54,8 @@ class ConfigurationListenerSpec extends ObjectBehavior
         $container->get('logger')
             ->willReturn($logger);
         $event->getContainer()->willReturn($container);
+
+        $container->get('ui.input')->willReturn($input);
 
         $this->setContainer($container);
     }
@@ -79,9 +83,11 @@ class ConfigurationListenerSpec extends ObjectBehavior
     function it_should_pre_load_configuration_properly(
         GenericEvent $event,
         ContainerInterface $container,
-        PhpGuard $guard
+        PhpGuard $guard,
+        InputInterface $input
     )
     {
+        $input->hasParameterOption(Argument::cetera())->willReturn(false);
         $container->get('phpguard')->willReturn($guard);
 
         $guard->setOptions(array())

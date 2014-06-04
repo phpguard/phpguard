@@ -23,7 +23,9 @@
     },
     "require-dev": {
         "phpguard/plugin-phpspec":      "dev-master",
-        "phpguard/plugin-phpunit":      "dev-master"
+        "phpguard/plugin-phpunit":      "dev-master",
+        "phpguard/plugin-behat":        "dev-master",
+        "bossa/phpspec2-expect":        "dev-master"
     },
     "autoload": {
         "psr-4": {

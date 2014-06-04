@@ -17,6 +17,7 @@ use PhpGuard\Application\Container\ContainerAware;
 use PhpGuard\Application\Log\Logger;
 use PhpGuard\Application\PhpGuard;
 use PhpGuard\Application\Event\GenericEvent;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -60,11 +61,16 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
     {
         $container = $event->getContainer();
         /* @var PhpGuard $guard */
+        /* @var InputInterface $input */
         $guard = $container->get('phpguard');
         $guard->setOptions(array());
-
         $configFile = null;
-        if (is_file($file=getcwd().'/phpguard.yml')) {
+
+        $input = $container->get('ui.input');
+
+        if($input->hasParameterOption('--config','-c')){
+            $configFile = $input->getParameterOption(array('--config','-c'));
+        }elseif (is_file($file=getcwd().'/phpguard.yml')) {
             $configFile = $file;
         } elseif (is_file($file = getcwd().'/phpguard.yml.dist')) {
             $configFile = $file;
@@ -73,6 +79,7 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
         if (is_null($configFile)) {
             throw new ConfigurationException('Can not find configuration file "phpguard.yml" or "phpguard.yml.dist" in the current directory');
         }
+
         $container->setParameter('config.file',$configFile);
 
         $plugins = $container->getByPrefix('plugins');
@@ -95,6 +102,7 @@ class ConfigurationListener extends ContainerAware implements EventSubscriberInt
             $plugin->configure();
             $container->get('logger')->addCommon('Plugin <comment>'.$plugin->getTitle().'</comment> activated');
         }
+
     }
 
     private function setupParameters()

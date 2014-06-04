@@ -34,3 +34,12 @@ phpspec:
     watch:
         - { pattern: "#^src\/(.+)\.php$#", transform: "spec/PhpGuard/Application/${1}Spec.php" }
         - { pattern: "#^spec.*\.php$#" }
+
+behat:
+    options:
+        cli:            "--format=pretty"
+        all_on_start:   false
+        keep_failed:    true
+    watch:
+        - { pattern: "#^feature/(.+)\.feature$#" }
+        - { pattern: "#^src/(.+)Configuration(.+)\.php$#", transform: "features/config" }
