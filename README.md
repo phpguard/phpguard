@@ -27,16 +27,18 @@ extension=inotify.so
 ```
 
 ## Install Plugin
-By this time only 2 plugin provided by phpguard:
+By this time only 3 plugin provided by phpguard:
+* Behat Plugin: https://github.com/phpguard/plugin-behat
+* PhpSpec Plugin: https://github.com/phpguard/plugin-phpspec
 * PHPUnit Plugin: https://github.com/phpguard/plugin-phpunit
-* PhpSpec Plugin: https://github.com/phpguard/plugin-phpunit
 
-To learn how to use this plugin, please go to the plugin documentation in the related link above.
+To learn more about this plugin, please go to the plugin documentation in the related link above.
 You can install this plugin by using this command:
 ```shell
 $ cd /path/to/project
-$ composer install phpguard/plugin-phpunit
+$ composer install phpguard/plugin-behat
 $ composer install phpguard/plugin-phpspec
+$ composer install phpguard/plugin-phpunit
 ```
 
 ## Running phpguard
@@ -51,8 +53,8 @@ To run all command anytime just press `enter`.
 
 ## Configuration
 ### PHP Code Coverage options
-`phpguard` provide coverage feature for cross testing tools. When enabled every test like `phpspec`,
-and `phpunit` will be use the same code coverage. Available options for coverage:
+`phpguard` provide coverage feature for cross testing tools. When enabled every test like `phpspec`, `behat`
+and `phpunit` will be use the same code coverage collector. Available options for coverage:
 ```yaml
 phpguard:
     coverage:
@@ -82,7 +84,7 @@ phpguard:
 ```
 
 ### watchers
-`watch` options allow you to define which files are watched by `phpguard` by simply use php regular expression patterns:
+`watch` options allow you to define which files are watched by `phpguard` by using php regular expression patterns:
 ```yaml
 # /path/to/project/phpguard.yml
 phpunit:
@@ -102,8 +104,7 @@ phpunit:
 `phpguard` now will use php `preg_replace` function to transform a file change in the `src` folder
 to it's test case in the `tests` folder.
 
-
-### Configuration Sample for PhpSpec and PHPUnit
+### Configuration Sample
 ```yaml
 # phpguard config section
 phpguard:
@@ -121,6 +122,7 @@ phpguard:
         output.html:            build/coverage
         output.text:            true
         output.clover:          build/logs/clover.xml
+
 # phpunit config section
 phpunit:
     options:
@@ -139,7 +141,6 @@ phpspec:
         all_on_start:       true
         all_after_pass:     true
         keep_failed:        true
-        import_suites:      false
         run_all_cli:        "--format=dot -vvv"
     watch:
         - { pattern: "#^src\/(.+)\.php$#", transform: "spec/PhpGuard/Application/${1}Spec.php" }
